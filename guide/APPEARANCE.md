@@ -59,7 +59,7 @@ A style changes fonts, corners, borders and shadows, but never colors, so every 
 | **Fire** | Red, with warm backgrounds |
 | **Beach** | Light blue on cool sand |
 | **Mountain** | Slate gray and soft white on off-tone gray |
-| **Vanilla** | Light gray and white; bright and cool |
+| **Plum** | Reddish purple on cool, purplish backgrounds |
 | **Obsidian** | Dark purple and black on crisp lavender, or purple on near-black in dark mode |
 
 Each color has a light and a dark version; the two swatches show both.

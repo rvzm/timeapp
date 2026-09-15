@@ -8,7 +8,7 @@
 // A style changes shape and feel: fonts, corners, borders, shadows (data-style on <html>;
 // section 9 of the CSS overrides the style tokens from section 1). It never sets colors.
 
-export const THEME_COLORS = ["standard", "ocean", "forest", "sunset", "grape", "fire", "beach", "mountain", "vanilla", "obsidian"];
+export const THEME_COLORS = ["standard", "ocean", "forest", "sunset", "grape", "fire", "beach", "mountain", "plum", "obsidian"];
 
 export const THEME_COLOR_LABELS = {
   standard: "Standard",
@@ -19,7 +19,7 @@ export const THEME_COLOR_LABELS = {
   fire: "Fire",
   beach: "Beach",
   mountain: "Mountain",
-  vanilla: "Vanilla",
+  plum: "Plum",
   obsidian: "Obsidian",
 };
 

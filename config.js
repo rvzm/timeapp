@@ -37,7 +37,7 @@ export const time_config = {
 
 export const ui_config = {
   defaultStyle: "modern",   // [setting] Theme style (fonts, corners, borders, shadows) for anyone who hasn't picked: "modern", "minimal", "boxworld", "terminal", or "blueprint"
-  defaultColor: "standard", // [setting] Color theme for anyone who hasn't picked one: "standard", "ocean", "forest", "sunset", "grape", "fire", "beach", "mountain", "vanilla", or "obsidian"
+  defaultColor: "standard", // [setting] Color theme for anyone who hasn't picked one: "standard", "ocean", "forest", "sunset", "grape", "fire", "beach", "mountain", "plum", or "obsidian"
   defaultTheme: "system",   // [setting] Light/dark for anyone who hasn't picked: "system" (match the device), "light", or "dark"
   defaultBackground: "aurora", // [setting] Page background for anyone who hasn't picked: "none" (plain), "glow", "aurora" (moving), "dots", "grain", "waves" (moving), "starfield" (moving), "cityscape", "farm" (turning windmill), or "cornershot" (moving)
 };

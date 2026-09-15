@@ -183,6 +183,14 @@ const migrations = [
       UPDATE settings SET value = '"modern"' WHERE key = 'defaultStyle' AND value = '"ombre"';
     `);
   },
+
+  // 9: the "vanilla" color was replaced by "plum".
+  () => {
+    db.exec(`
+      UPDATE users SET theme_color = 'plum' WHERE theme_color = 'vanilla';
+      UPDATE settings SET value = '"plum"' WHERE key = 'defaultColor' AND value = '"vanilla"';
+    `);
+  },
 ];
 
 function migrate() {

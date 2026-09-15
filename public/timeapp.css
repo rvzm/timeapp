@@ -117,7 +117,7 @@
 
 /* Lines drawn in the accent color (focus rings, the current tab, the selected option,
    style details) use --accent-line. It's the accent itself unless a color's accent is too
-   light to see as a line, like Vanilla's. The [data-color] selector also matches the theme
+   light to see as a line, like Beach's light blue. The [data-color] selector also matches the theme
    picker's swatches, so each swatch gets its own color's line. */
 [data-color] { --accent-line: var(--accent); }
 
@@ -297,30 +297,28 @@
   --link: #e8e6e0;
 }
 
-/* Vanilla: light gray and white accents, bright cool backgrounds */
-[data-color="vanilla"] {
-  --bg: #f7f9fc;
-  --surface: #ffffff;
-  --surface-2: #eef1f5;
-  --text: #1b2027;
-  --muted: #5a6370;
-  --border: #dde2e8;
-  --accent: #cfd6de;
-  --accent-contrast: #1b2027;
-  --accent-line: #6f7a87; /* light gray lines would vanish on white */
-  --link: #3a4552;
+/* Plum: reddish-purple accents, cool purplish backgrounds */
+[data-color="plum"] {
+  --bg: #f3f0f7;
+  --surface: #fdfcff;
+  --surface-2: #e9e3f0;
+  --text: #211a2b;
+  --muted: #5d5068;
+  --border: #dcd3e6;
+  --accent: #a3336e;
+  --accent-contrast: #ffffff;
+  --link: #8a2a5d;
 }
-[data-color="vanilla"][data-theme="dark"] {
-  --bg: #15181c;
-  --surface: #1d2126;
-  --surface-2: #272c32;
-  --text: #f4f6f8;
-  --muted: #a9b1ba;
-  --border: #363c43;
-  --accent: #f4f6f8;
-  --accent-contrast: #15181c;
-  --accent-line: var(--accent);
-  --link: #dfe6ec;
+[data-color="plum"][data-theme="dark"] {
+  --bg: #16121c;
+  --surface: #1f1927;
+  --surface-2: #2a2233;
+  --text: #f1ecf6;
+  --muted: #b0a3bd;
+  --border: #3a3046;
+  --accent: #d0679f;
+  --accent-contrast: #1c0f17;
+  --link: #eaa3c8;
 }
 
 /* Obsidian: dark purple and black accents, sharp backgrounds (near-black in dark mode) */
