@@ -1,0 +1,11 @@
+node_modules/
+data/
+.claude/
+.vscode/
+CLAUDE.md
+*.claude
+*.sqlite
+*.sqlite-*
+*.log
+.env
+package-lock.json
