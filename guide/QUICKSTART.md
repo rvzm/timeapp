@@ -93,26 +93,34 @@ Then set `session_config.secure: true` in `config.js` and restart.
 > **Styles look old after an update?** Pages are never cached, but the stylesheet can be. Cloudflare's default browser cache keeps files like `/timeapp.css` for 4 hours, so people can get new pages with old styles for a while (for example, new backgrounds that don't show). A hard reload (**Ctrl+Shift+R**, or **Cmd+Shift+R** on a Mac) fixes it for one browser. **Caching → Purge Cache** in Cloudflare fixes it for everyone.
 
 ### Updating
-1. `npm stop`
-2. Back up `data/` (see [Backups](#backups)).
-3. Upload the new code.
-   - **Don't overwrite `data/`.** It holds the live database.
-   - **Compare `config.js`** before replacing it. Keep your secret, timezone and port, and bring over any new settings.
-4. `npm install`. New versions can add packages; without them some pages lose their fonts and styles.
-5. `npm start`
-
-Database changes run automatically at startup. The log in `data/timeapp.log` shows a line like `Database migrated to version 8.` for each one. They can't be undone, but an older version of TimeApp still runs on an updated database, so rolling back the code is safe.
-
-### Backups
-Everything is in `data/timeapp.sqlite`, with `timeapp.sqlite-wal` and `timeapp.sqlite-shm` beside it while the server runs. To back up, stop the server and copy the whole folder:
-
 ```sh
+npm run backup     # copies the database and config.js into backup/
 npm stop
-cp -a data "backup-$(date +%F)"
+# update the files: git pull, or upload the new version (don't upload over data/ or backup/)
+npm install        # new versions can add packages
+npm run migrate    # shows what it will do, asks, then restores and upgrades
 npm start
 ```
 
-To restore, stop the server, put the copied files back in `data/`, and start it again.
+`npm run migrate` does two things:
+- **Settings:** every setting in `backup/config.js` that differs from the new `config.js` (your secret, port, timezone, and so on) is written into the new `config.js`. Only the values change; the comments and any new settings are kept. Settings the new version no longer has are listed and skipped, and a few renamed values are updated for you (e.g. the old "Vanilla" color becomes "Plum").
+- **Database:** `backup/timeapp.sqlite` is put in `data/` and upgraded to the new version. You'll see a `Database migrated to version N.` line for each change, then a check that everything is intact.
+
+It shows the full list first and asks before changing anything. Answer **c** to pick settings one at a time. `npm run migrate -- --dry-run` only shows the list, and `--yes` skips the question. Nothing is lost:
+- the database it replaces is kept as `data/timeapp.sqlite.before-migrate-<date>`
+- the new `config.js` as it was is kept as `config.js.before-migrate`
+- if the upgrade fails, the earlier database is put back
+
+It won't run while the server is up, and it refuses a backup from a *newer* version of TimeApp. An older version of TimeApp still runs on an upgraded database, so rolling back the code is safe.
+
+If you'd rather not use the commands, the manual way still works: stop the server, keep your `data/` folder and `config.js`, update the other files, run `npm install`, copy your changed settings into the new `config.js`, and start. The database upgrades itself at startup.
+
+### Backups
+Run `npm run backup` any time, even while the server is running. It saves a consistent copy of the database and your `config.js` into `backup/`, and moves the previous backup into `backup/previous/`.
+
+**Keep `backup/` private.** It holds your session secret and everyone's data (it's in `.gitignore`). Copy it somewhere off the server for safekeeping.
+
+To restore, stop the server and run `npm run migrate`. You can point it at another folder with `npm run migrate -- /path/to/backup`; the folder needs a `config.js` (or `config.js-bak`) and/or a `.sqlite` file.
 
 ---
 

@@ -50,6 +50,8 @@ Then open http://localhost:3000.
 | `npm run status` | Is it running? |
 | `npm run serve` | Run in the foreground instead (Ctrl+C stops it); use this under systemd, Docker, etc. |
 | `npm run dev` | Foreground, restarting whenever a file changes |
+| `npm run backup` | Copy the database and `config.js` into `backup/` (safe while running) |
+| `npm run migrate` | After updating: restore `backup/`, carry your settings into the new `config.js`, and upgrade the database (`-- --dry-run` to preview) |
  Before real use, set `session_config.secret` (and probably `time_config.timezone`) in `config.js`.
 
 Create more admins the same way: `npm run seed -- <username> [password]`. Create employees and managers from **Admin → Accounts**.
