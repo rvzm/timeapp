@@ -8,4 +8,6 @@ CLAUDE.md
 *.sqlite-*
 *.log
 .env
+backup/
+config.js.before-migrate
 package-lock.json
