@@ -1,0 +1,57 @@
+<%- include("../partials/head") %>
+<%- include("../partials/nav") %>
+
+<div class="page-head">
+  <h1>Manage</h1>
+</div>
+
+<%- include("../partials/manage-tabs", { current: "requests" }) %>
+
+<section class="card">
+  <h2>Pending <span class="muted">(<%= pending.length %>)</span></h2>
+  <% if (pending.length === 0) { %>
+    <p class="muted">No pending requests.</p>
+  <% } else { %>
+    <ul class="request-list">
+      <% pending.forEach((request) => { %>
+        <li class="request">
+          <%- include("../partials/request-review", { request, back: "/manage/requests" }) %>
+        </li>
+      <% }) %>
+    </ul>
+  <% } %>
+</section>
+
+<section class="card">
+  <h2>Recently reviewed</h2>
+  <% if (recent.length === 0) { %>
+    <p class="muted">Nothing reviewed yet.</p>
+  <% } else { %>
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr><th>Employee</th><th>Request</th><th>Status</th><th>Reviewed</th></tr>
+        </thead>
+        <tbody>
+          <% recent.forEach((request) => { %>
+            <tr>
+              <td><a href="/manage/employees/<%= request.user_id %>/requests"><%= request.user_name %></a></td>
+              <td>
+                <%- include("../partials/request-summary", { request }) %>
+                <div class="muted small">Reason: <%= request.reason %></div>
+              </td>
+              <td><%- include("../partials/request-status", { request }) %></td>
+              <td class="small">
+                <% if (request.reviewed_at) { %><%= fmt.formatWhen(request.reviewed_at) %><% } %>
+                <% if (request.reviewer_name) { %><div>by <%= request.reviewer_name %></div><% } %>
+                <% if (request.review_note) { %><div class="muted"><%= request.review_note %></div><% } %>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  <% } %>
+</section>
+
+<%- include("../partials/foot") %>

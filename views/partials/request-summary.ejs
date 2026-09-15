@@ -1,0 +1,22 @@
+<%# What an edit request asks for, in words. Needs `request` (a row from db/requests.js). %>
+<% const punchText = (type, iso) => `${PUNCH_LABELS[type]} at ${fmt.formatDateTime(iso)}`; %>
+<p class="request-summary">
+  <% if (request.kind === "change") { %>
+    Change <strong><%= punchText(request.original_type, request.original_timestamp) %></strong>
+    to <strong><%= punchText(request.type, request.timestamp) %></strong>
+  <% } else if (request.kind === "add") { %>
+    Add <strong><%= punchText(request.type, request.timestamp) %></strong>
+  <% } else if (request.kind === "delete") { %>
+    Delete <strong><%= punchText(request.original_type, request.original_timestamp) %></strong>
+  <% } else { %>
+    Add a shift from <strong><%= fmt.formatDateTime(request.timestamp) %></strong>
+    to <strong><%= fmt.formatDateTime(request.end_timestamp) %></strong>
+  <% } %>
+</p>
+<% if (request.status === "pending" && (request.kind === "change" || request.kind === "delete")) { %>
+  <% if (!request.punch_id) { %>
+    <p class="muted small">That punch has been deleted since this was requested.</p>
+  <% } else if (request.punch_type !== request.original_type || request.punch_timestamp !== request.original_timestamp) { %>
+    <p class="muted small">That punch has been changed since this was requested. It's now <%= punchText(request.punch_type, request.punch_timestamp) %>.</p>
+  <% } %>
+<% } %>

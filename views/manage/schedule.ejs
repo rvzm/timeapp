@@ -1,0 +1,38 @@
+<%- include("../partials/head") %>
+<%- include("../partials/nav") %>
+
+<div class="page-head">
+  <h1>Manage</h1>
+</div>
+
+<%- include("../partials/manage-tabs", { current: "schedule" }) %>
+
+<section class="card">
+  <div class="page-head">
+    <div>
+      <h2>Week of <%= fmt.formatDay(week.from) %></h2>
+      <p class="muted small">To assign a shift, open an employee from the Employees tab.</p>
+    </div>
+    <div class="page-head-actions">
+      <a class="btn btn-small" href="/manage/schedule?week=<%= prevWeek %>">← Previous</a>
+      <a class="btn btn-small btn-ghost" href="/manage/schedule">This week</a>
+      <a class="btn btn-small" href="/manage/schedule?week=<%= nextWeek %>">Next →</a>
+    </div>
+  </div>
+
+  <% days.forEach((day) => { %>
+    <h3 class="schedule-day"><%= fmt.formatDay(day.date) %></h3>
+    <% if (day.assignments.length === 0) { %>
+      <p class="muted small">Nothing assigned.</p>
+    <% } else { %>
+      <%- include("../partials/schedule-list", {
+        assignments: day.assignments,
+        showName: true,
+        canDelete,
+        back: `/manage/schedule?week=${week.from}`,
+      }) %>
+    <% } %>
+  <% }) %>
+</section>
+
+<%- include("../partials/foot") %>

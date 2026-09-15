@@ -1,0 +1,62 @@
+<%- include("../partials/head") %>
+<%- include("../partials/nav") %>
+
+<div class="page-head">
+  <div>
+    <h1>Manage</h1>
+    <div class="badges">
+      <span class="badge badge-in"><span class="dot"></span><%= counts.in %> clocked in</span>
+      <span class="badge badge-break"><span class="dot"></span><%= counts.break %> on break</span>
+      <span class="badge badge-out"><span class="dot"></span><%= counts.out %> clocked out</span>
+    </div>
+  </div>
+  <% if (isAdmin(user)) { %>
+    <a class="btn btn-primary" href="/admin/users/new">Add account</a>
+  <% } %>
+</div>
+
+<%- include("../partials/manage-tabs", { current: "employees" }) %>
+
+<section class="card">
+  <% if (users.length === 0) { %>
+    <p class="muted">No employees yet.</p>
+  <% } else { %>
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr><th>Name</th><th>Role</th><th>Status</th><th>Last punch</th><th></th></tr>
+        </thead>
+        <tbody>
+          <% users.forEach((u) => { %>
+            <tr class="<%= u.active ? "" : "row-inactive" %>">
+              <td>
+                <a href="/manage/employees/<%= u.id %>"><%= displayName(u) %></a>
+                <% if (u.job_title) { %><div class="muted small"><%= u.job_title %></div><% } %>
+              </td>
+              <td><%= ROLE_LABELS[u.role] %></td>
+              <td>
+                <span class="badge badge-<%= u.status %>"><span class="dot"></span><%= STATUS_LABELS[u.status] %></span>
+                <% if (!u.active) { %><span class="badge badge-inactive">Inactive</span><% } %>
+                <% (scheduledToday.get(u.id) ?? []).forEach((a) => { %>
+                  <div class="muted small">Scheduled <%= fmt.formatTime(a.start_at) %> – <%= fmt.formatTime(a.end_at) %></div>
+                <% }) %>
+              </td>
+              <td class="nowrap">
+                <% if (u.last_timestamp) { %>
+                  <%= PUNCH_LABELS[u.last_type] %> · <%= fmt.formatWhen(u.last_timestamp) %>
+                <% } else { %>
+                  <span class="muted">Never</span>
+                <% } %>
+              </td>
+              <td class="actions">
+                <a class="btn btn-small btn-ghost" href="/manage/employees/<%= u.id %>">Manage</a>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  <% } %>
+</section>
+
+<%- include("../partials/foot") %>

@@ -1,0 +1,29 @@
+<%# Assigned (mandatory) shifts with attendance badges.
+    Needs `assignments` (with .attendance). Optional:
+      `showName`  - show and link each employee's name
+      `canDelete` - function(assignment) -> true to show a Remove button, which returns to `back` %>
+<ul class="schedule-list">
+  <% assignments.forEach((a) => { %>
+    <li class="schedule-item">
+      <div>
+        <% if (locals.showName) { %>
+          <a href="/manage/employees/<%= a.user_id %>/schedule"><strong><%= a.user_name %></strong></a> ·
+        <% } %>
+        <span><%= fmt.formatRange(a.start_at, a.end_at) %></span>
+        <div class="muted small">
+          Assigned by <%= a.assigned_by_name %><% if (a.note) { %> · <%= a.note %><% } %>
+        </div>
+      </div>
+      <div class="schedule-badges">
+        <%- include("attendance", { attendance: a.attendance }) %>
+        <% if (locals.canDelete && canDelete(a)) { %>
+          <form method="post" action="/manage/schedule/<%= a.id %>/delete" class="inline"
+                data-question="Remove this assigned shift?" onsubmit="return confirm(this.dataset.question)">
+            <input type="hidden" name="back" value="<%= back %>">
+            <button class="btn btn-small btn-ghost-danger">Remove</button>
+          </form>
+        <% } %>
+      </div>
+    </li>
+  <% }) %>
+</ul>

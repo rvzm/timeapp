@@ -1,0 +1,116 @@
+<%# Timesheet export: a printable page (Save as PDF) that can also be downloaded as an image.
+    Needs `employee`, `sheet` (from timesheet.js), `exportUrl`, `backUrl`, and `filename`. %>
+<%- include("partials/head") %>
+<%
+  // Clock-out time, noting when it lands on a later day (overnight shifts).
+  const outTime = (iso, dayDate) => {
+    const outDate = fmt.localDate(iso);
+    if (outDate === dayDate) return fmt.formatTime(iso);
+    return outDate === fmt.addDays(dayDate, 1) ? `${fmt.formatTime(iso)} (next day)` : fmt.formatDateTime(iso);
+  };
+  const breakText = (brk) =>
+    brk.start && brk.end ? `${fmt.formatTime(brk.start.timestamp)} – ${fmt.formatTime(brk.end.timestamp)}` : "Incomplete";
+%>
+<main class="container export-page">
+  <div class="export-controls no-print">
+    <p class="breadcrumb"><a href="<%= backUrl %>">← Back</a></p>
+    <form method="get" action="<%= exportUrl %>" class="range-form">
+      <label class="field">
+        <span>Period</span>
+        <select name="period">
+          <option value="day"<%= sheet.period === "day" ? " selected" : "" %>>Day</option>
+          <option value="week"<%= sheet.period === "week" ? " selected" : "" %>>Week</option>
+          <option value="month"<%= sheet.period === "month" ? " selected" : "" %>>Month</option>
+        </select>
+      </label>
+      <label class="field">
+        <span>Including</span>
+        <input type="date" name="date" value="<%= sheet.date %>">
+      </label>
+      <button class="btn">Show</button>
+    </form>
+    <div class="form-actions">
+      <button type="button" class="btn btn-primary" data-export-print>Save as PDF</button>
+      <button type="button" class="btn" data-export-image data-filename="<%= filename %>">Download image</button>
+      <span class="muted small" data-export-status role="status"></span>
+    </div>
+    <p class="muted small">Save as PDF opens your browser's print dialog. Pick "Save as PDF" as the printer.</p>
+  </div>
+
+  <article id="timesheet" class="timesheet">
+    <header class="ts-header">
+      <div>
+        <p class="ts-app"><%= appConfig.name %></p>
+        <h1>Timesheet</h1>
+        <p class="ts-period"><%= sheet.label %></p>
+      </div>
+      <dl class="ts-employee">
+        <dt>Employee</dt><dd><%= displayName(employee) %></dd>
+        <% if (employee.employee_number) { %><dt>Employee #</dt><dd><%= employee.employee_number %></dd><% } %>
+        <% if (employee.job_title) { %><dt>Job title</dt><dd><%= employee.job_title %></dd><% } %>
+        <dt>Generated</dt><dd><%= fmt.formatDateTime(sheet.generatedAt) %></dd>
+      </dl>
+    </header>
+
+    <section class="ts-summary">
+      <div><span class="ts-label">Shifts</span><strong class="ts-shift-count"><%= sheet.shiftCount %></strong></div>
+      <div><span class="ts-label">Worked</span><strong class="ts-total-worked"><%= fmt.formatDuration(sheet.totalMs) %></strong></div>
+      <div><span class="ts-label">Breaks</span><strong class="ts-total-break"><%= fmt.formatDuration(sheet.breakMs) %></strong></div>
+    </section>
+
+    <% if (sheet.incompleteCount) { %>
+      <p class="ts-note">
+        <%= sheet.incompleteCount %> shift<%= sheet.incompleteCount === 1 ? " has" : "s have" %> a missing punch
+        and <%= sheet.incompleteCount === 1 ? "isn't" : "aren't" %> counted in the totals.
+      </p>
+    <% } %>
+
+    <% if (sheet.days.length === 0) { %>
+      <p class="ts-empty">No shifts in this period.</p>
+    <% } else { %>
+      <div class="table-wrap">
+        <table class="ts-table">
+          <thead>
+            <tr><th>Date</th><th>In</th><th>Out</th><th>Breaks</th><th>Worked</th><th>Notes</th></tr>
+          </thead>
+          <tbody>
+            <% sheet.days.forEach((day) => { %>
+              <% day.shifts.forEach((shift, i) => { %>
+                <tr class="ts-shift<%= shift.issues.length ? " ts-incomplete" : "" %>">
+                  <td class="nowrap"><%= i === 0 ? fmt.formatDay(day.date) : "" %></td>
+                  <td class="nowrap"><%= shift.clockIn ? fmt.formatTime(shift.clockIn.timestamp) : "—" %></td>
+                  <td class="nowrap">
+                    <%= shift.clockOut ? outTime(shift.clockOut.timestamp, day.date) : shift.inProgress ? "In progress" : "—" %>
+                  </td>
+                  <td><%= shift.breaks.length ? shift.breaks.map(breakText).join(", ") : "—" %></td>
+                  <td class="nowrap"><%= shift.workedMs === null ? "—" : fmt.formatDuration(shift.workedMs) %></td>
+                  <td><%= [...shift.issues, ...shift.warnings].join("; ") %></td>
+                </tr>
+              <% }) %>
+              <% if (day.shifts.length > 1) { %>
+                <tr class="ts-day-total">
+                  <td colspan="4">Day total</td>
+                  <td class="nowrap"><%= fmt.formatDuration(day.workedMs) %></td>
+                  <td></td>
+                </tr>
+              <% } %>
+            <% }) %>
+          </tbody>
+          <tfoot>
+            <tr>
+              <td colspan="4">Total</td>
+              <td class="nowrap"><%= fmt.formatDuration(sheet.totalMs) %></td>
+              <td></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    <% } %>
+
+    <footer class="ts-footer">Times in <%= fmt.timeZone %>. Shifts are listed on the day they start.</footer>
+  </article>
+</main>
+<script src="/vendor/html-to-image/html-to-image.js" defer></script>
+<script src="/export.js" defer></script>
+</body>
+</html>

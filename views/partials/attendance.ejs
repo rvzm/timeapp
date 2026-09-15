@@ -1,0 +1,20 @@
+<%# Attendance badges for one assigned shift. Needs `attendance` (from schedule.js). %>
+<% if (attendance.state === "upcoming") { %>
+  <span class="badge">Upcoming</span>
+<% } %>
+<% if (attendance.state === "in_progress") { %>
+  <span class="badge badge-in"><span class="dot"></span>In progress</span>
+  <% if (!attendance.clockedIn && !attendance.late) { %><span class="badge">Not clocked in yet</span><% } %>
+<% } %>
+<% if (attendance.missed) { %>
+  <span class="badge badge-denied"><span class="dot"></span>Missed</span>
+<% } %>
+<% if (attendance.late) { %>
+  <span class="badge badge-warn">Late <%= fmt.formatDuration(attendance.lateMs) %></span>
+<% } %>
+<% if (attendance.leftEarly) { %>
+  <span class="badge badge-warn">Left early <%= fmt.formatDuration(attendance.earlyMs) %></span>
+<% } %>
+<% if (attendance.onTime) { %>
+  <span class="badge badge-in"><span class="dot"></span>On time</span>
+<% } %>

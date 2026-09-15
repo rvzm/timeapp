@@ -1,0 +1,54 @@
+<%# Manage Employee: Shifts tab. %>
+<%- include("../partials/head") %>
+<%- include("../partials/nav") %>
+<%- include("../partials/employee-head", { current: "shifts" }) %>
+
+<section class="card">
+  <form method="get" action="/manage/employees/<%= target.id %>" class="range-form">
+    <label class="field">
+      <span>From</span>
+      <input type="date" name="from" value="<%= range.from %>">
+    </label>
+    <label class="field">
+      <span>To</span>
+      <input type="date" name="to" value="<%= range.to %>">
+    </label>
+    <button class="btn">Show</button>
+    <% if (range.from !== today || range.to !== today) { %>
+      <a class="btn btn-ghost" href="/manage/employees/<%= target.id %>">Today</a>
+    <% } %>
+  </form>
+
+  <h2>
+    Shifts
+    <span class="muted">· <%= fmt.formatDay(range.from) %><% if (range.to !== range.from) { %> – <%= fmt.formatDay(range.to) %><% } %></span>
+  </h2>
+
+  <% if (shifts.length === 0) { %>
+    <p class="muted">No punches in this range.</p>
+  <% } else { %>
+    <% if (shifts.some((shift) => shift.issues.length)) { %>
+      <p class="alert alert-warn">
+        Highlighted shifts are missing a punch. Add, edit, or delete punches to fix them.
+      </p>
+    <% } %>
+    <%- include("../partials/shifts", { shifts, mode: "manage", notesBack: `/manage/employees/${target.id}?from=${range.from}&to=${range.to}` }) %>
+  <% } %>
+</section>
+
+<section class="card">
+  <h2>Add punch</h2>
+
+  <% if (error) { %>
+    <p class="alert alert-error"><%= error %></p>
+  <% } %>
+
+  <form method="post" action="/manage/employees/<%= target.id %>/punches" class="form-grid">
+    <%- include("../partials/punch-fields") %>
+    <div class="form-actions field-wide">
+      <button class="btn btn-primary">Add punch</button>
+    </div>
+  </form>
+</section>
+
+<%- include("../partials/foot") %>

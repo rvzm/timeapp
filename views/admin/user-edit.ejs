@@ -1,0 +1,22 @@
+<%# Admin account: Profile tab. %>
+<%- include("../partials/head") %>
+<%- include("../partials/nav") %>
+<%- include("../partials/account-head", { current: "profile" }) %>
+
+<section class="card">
+  <% if (saved) { %>
+    <p class="alert alert-ok">Changes saved.</p>
+  <% } %>
+  <% if (error) { %>
+    <p class="alert alert-error"><%= error %></p>
+  <% } %>
+
+  <form method="post" action="/admin/users/<%= target.id %>" class="form-grid">
+    <%- include("../partials/account-fields", { form }) %>
+    <div class="form-actions field-wide">
+      <button class="btn btn-primary">Save profile</button>
+    </div>
+  </form>
+</section>
+
+<%- include("../partials/foot") %>

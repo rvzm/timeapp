@@ -1,0 +1,27 @@
+<%- include("../partials/head") %>
+<%- include("../partials/nav") %>
+
+<p class="breadcrumb"><a href="/admin">← Accounts</a></p>
+
+<section class="card">
+  <h1>Add account</h1>
+
+  <% if (error) { %>
+    <p class="alert alert-error"><%= error %></p>
+  <% } %>
+
+  <form method="post" action="/admin/users" class="form-grid">
+    <%- include("../partials/account-fields", { form }) %>
+    <%- include("../partials/role-field", { role: form.role }) %>
+    <label class="field">
+      <span>Password</span>
+      <input type="password" name="password" autocomplete="new-password" required>
+    </label>
+    <div class="form-actions field-wide">
+      <button class="btn btn-primary">Create account</button>
+      <a class="btn btn-ghost" href="/admin">Cancel</a>
+    </div>
+  </form>
+</section>
+
+<%- include("../partials/foot") %>

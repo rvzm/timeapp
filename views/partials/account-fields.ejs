@@ -1,0 +1,27 @@
+<%# Profile fields shared by the Add account form and an account's Profile tab. Needs `form`.
+    (The role picker is separate: partials/role-field.ejs.) %>
+<label class="field">
+  <span>Username</span>
+  <input name="username" value="<%= form.username %>" autocomplete="off" autocapitalize="none"
+         pattern="[A-Za-z0-9._\-]{2,32}" required>
+</label>
+<label class="field">
+  <span>Display name <span class="hint">(optional)</span></span>
+  <input name="display_name" value="<%= form.display_name %>" maxlength="80" placeholder="e.g. Jane Smith">
+</label>
+<label class="field">
+  <span>Email <span class="hint">(optional)</span></span>
+  <input type="email" name="email" value="<%= form.email %>" maxlength="120" autocomplete="off">
+</label>
+<label class="field">
+  <span>Phone <span class="hint">(optional)</span></span>
+  <input type="tel" name="phone" value="<%= form.phone %>" maxlength="40" autocomplete="off">
+</label>
+<label class="field">
+  <span>Job title <span class="hint">(optional)</span></span>
+  <input name="job_title" value="<%= form.job_title %>" maxlength="80" placeholder="e.g. Cashier">
+</label>
+<label class="field">
+  <span>Employee number <span class="hint">(optional)</span></span>
+  <input name="employee_number" value="<%= form.employee_number %>" maxlength="40">
+</label>

@@ -1,0 +1,9 @@
+<%# A delete button for one or more punches: a single punch, a break, or a shift.
+    Needs `ids`, `label`, and `question` (the confirm prompt), plus `target` and `range`. %>
+<form method="post" action="/manage/employees/<%= target.id %>/punches/delete" class="inline"
+      data-question="<%= question %>" onsubmit="return confirm(this.dataset.question)">
+  <input type="hidden" name="ids" value="<%= ids.join(",") %>">
+  <input type="hidden" name="from" value="<%= range.from %>">
+  <input type="hidden" name="to" value="<%= range.to %>">
+  <button class="btn btn-small btn-ghost-danger"><%= label %></button>
+</form>

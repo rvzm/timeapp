@@ -1,0 +1,8 @@
+<%# The Manager Console's tabs. Needs `current`: "employees", "schedule", "requests", or "breaks". %>
+<% const pendingCount = locals.pendingRequestCount ?? 0; %>
+<%- include("subnav", { tabs: [
+  { href: "/manage", label: "Employees", active: current === "employees" },
+  { href: "/manage/schedule", label: "Schedule", active: current === "schedule" },
+  { href: "/manage/requests", label: pendingCount ? `Requests (${pendingCount})` : "Requests", active: current === "requests" },
+  { href: "/manage/breaks", label: "Break rules", active: current === "breaks" },
+] }) %>

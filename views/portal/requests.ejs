@@ -1,0 +1,47 @@
+<%- include("../partials/head") %>
+<%- include("../partials/nav") %>
+
+<div class="page-head">
+  <h1>My Portal</h1>
+  <% if (requestsOn) { %>
+    <div class="page-head-actions">
+      <a class="btn" href="/portal/requests/new?kind=add">Request a missing punch</a>
+      <a class="btn btn-primary" href="/portal/requests/new?kind=add_shift">Request a missing shift</a>
+    </div>
+  <% } %>
+</div>
+
+<%- include("../partials/portal-tabs", { current: "requests" }) %>
+
+<section class="card">
+  <% if (submitted === "pending") { %>
+    <p class="alert alert-ok">Request sent. A manager will review it.</p>
+  <% } %>
+  <% if (submitted === "applied") { %>
+    <p class="alert alert-ok">Change applied.</p>
+  <% } %>
+  <% if (!requestsOn) { %>
+    <p class="alert alert-warn">Punch edit requests are turned off. Talk to a manager about changes.</p>
+  <% } %>
+
+  <h2>My requests</h2>
+  <% if (requests.length === 0) { %>
+    <p class="muted">You haven't made any requests. To ask for a change to a punch, use the links next to it on the My shifts tab.</p>
+  <% } else { %>
+    <ul class="request-list">
+      <% requests.forEach((request) => { %>
+        <li class="request">
+          <%- include("../partials/request-item", { request }) %>
+          <% if (request.status === "pending") { %>
+            <form method="post" action="/portal/requests/<%= request.id %>/cancel" class="inline"
+                  data-question="Cancel this request?" onsubmit="return confirm(this.dataset.question)">
+              <button class="btn btn-small btn-ghost-danger">Cancel request</button>
+            </form>
+          <% } %>
+        </li>
+      <% }) %>
+    </ul>
+  <% } %>
+</section>
+
+<%- include("../partials/foot") %>

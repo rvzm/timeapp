@@ -1,0 +1,63 @@
+<%- include("partials/head") %>
+<%- include("partials/nav") %>
+
+<% if (error) { %>
+  <p class="alert alert-error"><%= error %></p>
+<% } %>
+
+<section class="card punch-card">
+  <div class="status status-<%= status %>">
+    <span class="dot"></span><%= STATUS_LABELS[status] %>
+  </div>
+
+  <p class="muted status-since">
+    <% if (last) { %>
+      <%= PUNCH_LABELS[last.type] %> at <%= fmt.formatWhen(last.timestamp) %>
+      · <%= fmt.formatDuration(Date.now() - Date.parse(last.timestamp)) %> ago
+    <% } else { %>
+      No punches yet.
+    <% } %>
+  </p>
+
+  <% if (scheduledToday.length) { %>
+    <p class="small scheduled-today">
+      Scheduled today:
+      <%= scheduledToday.map((a) => `${fmt.formatTime(a.start_at)} – ${fmt.formatTime(a.end_at)}`).join(", ") %>
+    </p>
+  <% } %>
+
+  <% const rules = breaks.policy; %>
+  <% if (status !== "out" && (rules.maxCount !== null || rules.maxMinutes !== null)) { %>
+    <p class="muted small break-rules">
+      <% if (rules.maxCount !== null) { %>Breaks: <%= breaks.used %> of <%= rules.maxCount %> used<% } %>
+      <% if (rules.maxCount !== null && rules.maxMinutes !== null) { %>·<% } %>
+      <% if (rules.maxMinutes !== null) { %>up to <%= rules.maxMinutes %> min each<% } %>
+    </p>
+  <% } %>
+  <% if (breaks.overLimit) { %>
+    <p class="alert alert-warn">Your break has gone over <%= rules.maxMinutes %> minutes.</p>
+  <% } %>
+
+  <form method="post" action="/punch" class="punch-actions">
+    <button class="btn btn-<%= actions[0] %>" name="action" value="<%= actions[0] %>">
+      <%= PUNCH_LABELS[actions[0]] %>
+    </button>
+    <% if (actions[1]) { %>
+      <button class="btn btn-<%= actions[1] %>" name="action" value="<%= actions[1] %>">
+        <%= PUNCH_LABELS[actions[1]] %>
+      </button>
+    <% } %>
+  </form>
+</section>
+
+<section class="card">
+  <h2>Today <span class="muted">· <%= fmt.formatDay(today) %></span></h2>
+
+  <% if (shifts.length === 0) { %>
+    <p class="muted">No punches today.</p>
+  <% } else { %>
+    <%- include("partials/shifts", { shifts, mode: "clock" }) %>
+  <% } %>
+</section>
+
+<%- include("partials/foot") %>

@@ -1,0 +1,127 @@
+<%- include("../partials/head") %>
+<%- include("../partials/nav") %>
+
+<div class="page-head">
+  <h1>Settings</h1>
+</div>
+
+<section class="card">
+  <h2>Password</h2>
+  <% if (saved === "password") { %>
+    <p class="alert alert-ok">Password changed.</p>
+  <% } %>
+  <% if (errors.password) { %>
+    <p class="alert alert-error"><%= errors.password %></p>
+  <% } %>
+
+  <form method="post" action="/settings/password" class="form-grid">
+    <label class="field">
+      <span>Current password</span>
+      <input type="password" name="current_password" autocomplete="current-password" required>
+    </label>
+    <label class="field">
+      <span>New password</span>
+      <input type="password" name="new_password" autocomplete="new-password" required>
+    </label>
+    <label class="field">
+      <span>Confirm new password</span>
+      <input type="password" name="confirm_password" autocomplete="new-password" required>
+    </label>
+    <div class="form-actions field-wide">
+      <button class="btn btn-primary">Change password</button>
+      <span class="muted small">Your other devices will be logged out.</span>
+    </div>
+  </form>
+</section>
+
+<section class="card">
+  <h2>Appearance</h2>
+  <% if (saved === "theme") { %>
+    <p class="alert alert-ok">Theme saved.</p>
+  <% } %>
+  <% if (errors.theme) { %>
+    <p class="alert alert-error"><%= errors.theme %></p>
+  <% } %>
+  <% if (themeForm.usingDefault) { %>
+    <p class="muted small">You're using the app's default theme.</p>
+  <% } %>
+
+  <form method="post" action="/settings/theme" class="stack">
+    <fieldset>
+      <legend>Style</legend>
+      <div class="theme-options">
+        <% THEME_STYLES.forEach((style) => { %>
+          <label class="theme-option">
+            <input type="radio" name="style" value="<%= style %>"<%= themeForm.style === style ? " checked" : "" %>>
+            <span class="style-swatch" data-style="<%= style %>" aria-hidden="true">
+              <span class="style-swatch-title">Aa 9:41</span>
+              <span class="style-swatch-row"><span class="style-swatch-bar"></span><span class="style-swatch-pill">In</span></span>
+            </span>
+            <span><%= THEME_STYLE_LABELS[style] %></span>
+          </label>
+        <% }) %>
+      </div>
+      <p class="muted small">Fonts, corners, borders, and shadows. Works with any color and background.</p>
+    </fieldset>
+
+    <fieldset>
+      <legend>Color</legend>
+      <div class="theme-options">
+        <% THEME_COLORS.forEach((color) => { %>
+          <label class="theme-option">
+            <input type="radio" name="color" value="<%= color %>"<%= themeForm.color === color ? " checked" : "" %>>
+            <span class="theme-swatches" aria-hidden="true">
+              <span class="theme-swatch" data-color="<%= color %>" data-theme="light"><span class="theme-swatch-accent"></span></span>
+              <span class="theme-swatch" data-color="<%= color %>" data-theme="dark"><span class="theme-swatch-accent"></span></span>
+            </span>
+            <span><%= THEME_COLOR_LABELS[color] %></span>
+          </label>
+        <% }) %>
+      </div>
+    </fieldset>
+
+    <label class="field theme-mode">
+      <span>Light or dark</span>
+      <select name="mode">
+        <% THEME_MODES.forEach((mode) => { %>
+          <option value="<%= mode %>"<%= themeForm.mode === mode ? " selected" : "" %>><%= THEME_MODE_LABELS[mode] %></option>
+        <% }) %>
+      </select>
+    </label>
+
+    <fieldset>
+      <legend>Background</legend>
+      <div class="theme-options">
+        <% THEME_BACKGROUNDS.forEach((background) => { %>
+          <label class="theme-option">
+            <input type="radio" name="background" value="<%= background %>"<%= themeForm.background === background ? " checked" : "" %>>
+            <span class="bg-swatch" data-bg="<%= background %>" aria-hidden="true"></span>
+            <span><%= THEME_BACKGROUND_LABELS[background] %></span>
+          </label>
+        <% }) %>
+      </div>
+      <p class="muted small">Aurora, Waves, and Starfield move slowly. They hold still if your device is set to reduce motion.</p>
+    </fieldset>
+
+    <div class="form-actions">
+      <button class="btn btn-primary">Save theme</button>
+      <% if (!themeForm.usingDefault) { %>
+        <button class="btn btn-ghost" name="reset" value="1">Use the app default</button>
+      <% } %>
+    </div>
+  </form>
+</section>
+
+<section class="card">
+  <h2>Your data</h2>
+  <p class="muted">
+    Download every shift you've worked as a CSV file (opens in Excel, Numbers, or Google Sheets).
+    Times are in <%= fmt.timeZone %>. For a printable timesheet of one day, week, or month, use
+    <a href="/portal/export">Export timesheet</a>.
+  </p>
+  <div class="form-actions">
+    <a class="btn" href="/settings/export.csv">Export all shift data</a>
+  </div>
+</section>
+
+<%- include("../partials/foot") %>

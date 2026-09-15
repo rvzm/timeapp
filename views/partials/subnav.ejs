@@ -1,0 +1,6 @@
+<%# Tabs under a page heading. Needs `tabs`: [{ href, label, active }]. %>
+<nav class="subnav">
+  <% tabs.forEach((tab) => { %>
+    <a href="<%= tab.href %>"<%- tab.active ? ' aria-current="page"' : "" %>><%= tab.label %></a>
+  <% }) %>
+</nav>

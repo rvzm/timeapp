@@ -1,0 +1,76 @@
+<%- include("../partials/head") %>
+<%- include("../partials/nav") %>
+
+<div class="page-head">
+  <h1>Profile</h1>
+</div>
+
+<section class="card">
+  <div class="card-head">
+    <h2>Details</h2>
+    <a class="btn btn-small" href="/profile/edit">Edit</a>
+  </div>
+  <% if (saved === "profile") { %>
+    <p class="alert alert-ok">Profile saved.</p>
+  <% } %>
+
+  <dl class="details">
+    <dt>Username</dt><dd><code><%= account.username %></code></dd>
+    <dt>Name</dt><dd><%= account.display_name || "—" %></dd>
+    <dt>Email</dt><dd><%= account.email || "—" %></dd>
+    <dt>Phone</dt><dd><%= account.phone || "—" %></dd>
+    <dt>Job title</dt><dd><%= account.job_title || "—" %></dd>
+    <dt>Role</dt><dd><%= ROLE_LABELS[account.role] %></dd>
+  </dl>
+</section>
+
+<section class="card">
+  <h2>Availability</h2>
+  <p class="muted">
+    When you can be scheduled, one time range per day.
+    <%= availability.isSet ? "Days left blank count as unavailable." : "You haven't set your availability yet." %>
+  </p>
+  <% if (saved === "availability") { %>
+    <p class="alert alert-ok">Availability saved.</p>
+  <% } %>
+  <% if (errors.availability) { %>
+    <p class="alert alert-error"><%= errors.availability %></p>
+  <% } %>
+
+  <form method="post" action="/profile/availability" class="stack">
+    <div class="table-wrap">
+      <table class="table availability-table">
+        <thead>
+          <tr><th>Day</th><th>From</th><th>To</th></tr>
+        </thead>
+        <tbody>
+          <% availability.days.forEach((day) => { %>
+            <tr>
+              <td><%= day.name %></td>
+              <td><input type="time" name="start_<%= day.weekday %>" value="<%= day.start %>" aria-label="<%= day.name %> from"></td>
+              <td><input type="time" name="end_<%= day.weekday %>" value="<%= day.end %>" aria-label="<%= day.name %> to"></td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-primary">Save availability</button>
+      <span class="muted small">Clear every day to mark your availability as not set.</span>
+    </div>
+  </form>
+</section>
+
+<section class="card">
+  <div class="card-head">
+    <h2>Scheduled shifts</h2>
+    <a class="small" href="/portal/schedule">Full schedule →</a>
+  </div>
+  <% if (upcoming.length === 0) { %>
+    <p class="muted">No mandatory shifts in the next four weeks.</p>
+  <% } else { %>
+    <%- include("../partials/schedule-list", { assignments: upcoming }) %>
+  <% } %>
+</section>
+
+<%- include("../partials/foot") %>

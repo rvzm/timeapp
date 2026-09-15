@@ -1,0 +1,23 @@
+<%# The header and tab bar shared by an account's Admin tabs.
+    Needs `target` and `current`: "profile", "access", or "password". %>
+<% const base = `/admin/users/${target.id}`; %>
+
+<p class="breadcrumb"><a href="/admin">← Accounts</a></p>
+
+<div class="page-head">
+  <div>
+    <h1><%= displayName(target) %></h1>
+    <p class="muted"><code><%= target.username %></code> · account created <%= fmt.formatDate(target.created_at) %></p>
+  </div>
+  <div class="page-head-actions">
+    <span class="badge"><%= ROLE_LABELS[target.role] %></span>
+    <% if (!target.active) { %><span class="badge badge-inactive">Inactive</span><% } %>
+    <a class="btn btn-small" href="/manage/employees/<%= target.id %>">Shifts</a>
+  </div>
+</div>
+
+<%- include("subnav", { tabs: [
+  { href: base, label: "Profile", active: current === "profile" },
+  { href: `${base}/access`, label: "Access", active: current === "access" },
+  { href: `${base}/password`, label: "Password", active: current === "password" },
+] }) %>

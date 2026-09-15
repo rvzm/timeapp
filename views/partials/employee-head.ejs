@@ -1,0 +1,32 @@
+<%# The header and tab bar shared by the Manage Employee tabs.
+    Needs `target`, `currentStatus`, `pendingCount`, and `current`: "shifts", "schedule", "requests", or "details".
+    Uses `range` (Shifts tab) to pick the export's week, if there is one. %>
+<% const base = `/manage/employees/${target.id}`; %>
+
+<p class="breadcrumb"><a href="/manage">← Employees</a></p>
+
+<div class="page-head">
+  <div>
+    <h1><%= displayName(target) %></h1>
+    <p class="muted">
+      <code><%= target.username %></code> · <%= ROLE_LABELS[target.role] %>
+      <% if (target.job_title) { %> · <%= target.job_title %><% } %>
+      <% if (target.employee_number) { %> · #<%= target.employee_number %><% } %>
+    </p>
+  </div>
+  <div class="page-head-actions">
+    <span class="badge badge-<%= currentStatus %>"><span class="dot"></span><%= STATUS_LABELS[currentStatus] %></span>
+    <% if (!target.active) { %><span class="badge badge-inactive">Inactive</span><% } %>
+    <a class="btn btn-small" href="<%= base %>/export?period=week<%- locals.range ? `&amp;date=${range.from}` : "" %>">Export timesheet</a>
+    <% if (isAdmin(user)) { %>
+      <a class="btn btn-small" href="/admin/users/<%= target.id %>">Edit account</a>
+    <% } %>
+  </div>
+</div>
+
+<%- include("subnav", { tabs: [
+  { href: base, label: "Shifts", active: current === "shifts" },
+  { href: `${base}/schedule`, label: "Schedule", active: current === "schedule" },
+  { href: `${base}/requests`, label: pendingCount ? `Requests (${pendingCount})` : "Requests", active: current === "requests" },
+  { href: `${base}/details`, label: "Details", active: current === "details" },
+] }) %>

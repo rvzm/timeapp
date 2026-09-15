@@ -1,0 +1,28 @@
+<%- include("../partials/head") %>
+<%- include("../partials/nav") %>
+
+<% const backUrl = `/manage/employees/${target.id}?from=${range.from}&to=${range.to}`; %>
+
+<p class="breadcrumb"><a href="<%= backUrl %>">← <%= displayName(target) %></a></p>
+
+<section class="card">
+  <h1>Edit punch</h1>
+  <p class="muted">
+    <%= displayName(target) %> · currently <%= PUNCH_LABELS[punch.type] %> at <%= fmt.formatDateTime(punch.timestamp) %>
+    <% if (punch.edited_by) { %>· last adjusted by <%= punch.editor_name %><% } %>
+  </p>
+
+  <% if (error) { %>
+    <p class="alert alert-error"><%= error %></p>
+  <% } %>
+
+  <form method="post" action="/manage/punches/<%= punch.id %>" class="form-grid">
+    <%- include("../partials/punch-fields") %>
+    <div class="form-actions field-wide">
+      <button class="btn btn-primary">Save changes</button>
+      <a class="btn btn-ghost" href="<%= backUrl %>">Cancel</a>
+    </div>
+  </form>
+</section>
+
+<%- include("../partials/foot") %>

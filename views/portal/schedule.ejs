@@ -1,0 +1,28 @@
+<%- include("../partials/head") %>
+<%- include("../partials/nav") %>
+
+<div class="page-head">
+  <h1>My Portal</h1>
+</div>
+
+<%- include("../partials/portal-tabs", { current: "schedule" }) %>
+
+<section class="card">
+  <h2>Upcoming mandatory shifts</h2>
+  <% if (upcoming.length === 0) { %>
+    <p class="muted">No upcoming assigned shifts.</p>
+  <% } else { %>
+    <%- include("../partials/schedule-list", { assignments: upcoming }) %>
+  <% } %>
+</section>
+
+<section class="card">
+  <h2>Past 30 days</h2>
+  <% if (past.length === 0) { %>
+    <p class="muted">No assigned shifts in the past 30 days.</p>
+  <% } else { %>
+    <%- include("../partials/schedule-list", { assignments: past }) %>
+  <% } %>
+</section>
+
+<%- include("../partials/foot") %>

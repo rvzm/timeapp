@@ -1,0 +1,3 @@
+<%# A status badge for an edit request. Needs `request`. %>
+<% const dotClass = { pending: "break", approved: "in", auto_approved: "in", denied: "denied", cancelled: "out" }[request.status]; %>
+<span class="badge badge-<%= dotClass %>"><span class="dot"></span><%= REQUEST_STATUS_LABELS[request.status] %></span>

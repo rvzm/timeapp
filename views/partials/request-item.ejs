@@ -1,0 +1,13 @@
+<%# One edit request as a read-only history entry: kind, status, what it asks for, reason, and review. Needs `request`. %>
+<div class="request-head">
+  <span>
+    <strong><%= KIND_LABELS[request.kind] %></strong>
+    <span class="muted small">· <%= fmt.formatDateTime(request.created_at) %></span>
+  </span>
+  <%- include("request-status", { request }) %>
+</div>
+<%- include("request-summary", { request }) %>
+<p class="request-reason muted">Reason: <%= request.reason %></p>
+<% if (request.reviewer_name) { %>
+  <p class="small">Reviewed by <%= request.reviewer_name %><% if (request.review_note) { %>: <%= request.review_note %><% } %></p>
+<% } %>

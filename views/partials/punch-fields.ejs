@@ -1,0 +1,22 @@
+<%# Shared fields for the add-punch and edit-punch forms. Needs `form` and `range`. %>
+<label class="field">
+  <span>Type</span>
+  <select name="type" required>
+    <% PUNCH_TYPES.forEach((type) => { %>
+      <option value="<%= type %>"<%= form.type === type ? " selected" : "" %>><%= PUNCH_LABELS[type] %></option>
+    <% }) %>
+  </select>
+</label>
+
+<label class="field">
+  <span>Date &amp; time</span>
+  <input type="datetime-local" name="when" value="<%= form.when %>" required>
+</label>
+
+<label class="field field-wide">
+  <span>Note <span class="muted">(optional)</span></span>
+  <input name="note" value="<%= form.note %>" maxlength="500" placeholder="e.g. Forgot to clock out">
+</label>
+
+<input type="hidden" name="from" value="<%= range.from %>">
+<input type="hidden" name="to" value="<%= range.to %>">

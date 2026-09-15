@@ -1,0 +1,61 @@
+<%# Admin account: Access tab (role and active status). %>
+<%- include("../partials/head") %>
+<%- include("../partials/nav") %>
+<%- include("../partials/account-head", { current: "access" }) %>
+
+<% if (error) { %>
+  <p class="alert alert-error"><%= error %></p>
+<% } %>
+
+<section class="card">
+  <h2>Role</h2>
+  <% if (saved === "role") { %>
+    <p class="alert alert-ok">Role saved.</p>
+  <% } %>
+
+  <% if (isSelf) { %>
+    <p><strong><%= ROLE_LABELS[target.role] %></strong></p>
+    <p class="muted small">You can't change your own role.</p>
+  <% } else { %>
+    <form method="post" action="/admin/users/<%= target.id %>/role" class="form-grid">
+      <%- include("../partials/role-field", { role }) %>
+      <div class="form-actions field-wide">
+        <button class="btn btn-primary">Save role</button>
+      </div>
+    </form>
+  <% } %>
+
+  <dl class="details role-help">
+    <dt>Employee</dt><dd>Clock and their own Portal.</dd>
+    <dt>Manager</dt><dd>Also the Manage pages, for employee accounts.</dd>
+    <dt>Admin</dt><dd>Everything, including accounts and settings.</dd>
+  </dl>
+</section>
+
+<section class="card">
+  <h2>Account status</h2>
+  <% if (saved === "deactivated") { %>
+    <p class="alert alert-ok">Account deactivated. They have been logged out everywhere.</p>
+  <% } %>
+  <% if (saved === "activated") { %>
+    <p class="alert alert-ok">Account reactivated.</p>
+  <% } %>
+
+  <p><%= target.active ? "Active: this person can log in." : "Deactivated: this person can't log in." %></p>
+
+  <% if (isSelf) { %>
+    <p class="muted small">You can't deactivate your own account.</p>
+  <% } else if (target.active) { %>
+    <form method="post" action="/admin/users/<%= target.id %>/deactivate" class="inline"
+          data-question="Deactivate this account? They will be logged out immediately."
+          onsubmit="return confirm(this.dataset.question)">
+      <button class="btn btn-danger">Deactivate account</button>
+    </form>
+  <% } else { %>
+    <form method="post" action="/admin/users/<%= target.id %>/activate" class="inline">
+      <button class="btn btn-primary">Reactivate account</button>
+    </form>
+  <% } %>
+</section>
+
+<%- include("../partials/foot") %>

@@ -1,0 +1,24 @@
+<%- include("partials/head") %>
+<%- include("partials/nav") %>
+
+<section class="card narrow-card">
+  <h1>Log in</h1>
+
+  <% if (error) { %>
+    <p class="alert alert-error"><%= error %></p>
+  <% } %>
+
+  <form method="post" action="/login" class="stack">
+    <label class="field">
+      <span>Username</span>
+      <input name="username" value="<%= username %>" autocomplete="username" autocapitalize="none" required autofocus>
+    </label>
+    <label class="field">
+      <span>Password</span>
+      <input type="password" name="password" autocomplete="current-password" required>
+    </label>
+    <button class="btn btn-primary">Log in</button>
+  </form>
+</section>
+
+<%- include("partials/foot") %>

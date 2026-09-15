@@ -1,0 +1,1153 @@
+/* =====================================================================
+   TimeApp stylesheet
+   ---------------------------------------------------------------------
+   1. Configurable defaults   <- start here
+   2. Themes: light / dark palettes and color themes
+   3. Base elements
+   4. Layout
+   5. Components (buttons, forms, tables, badges, alerts)
+   6. Punch card (employee dashboard)
+   7. Small screens
+   8. Timesheet export and printing
+   9. Styles: Minimal, Terminal, Blueprint (Modern is the defaults in section 1)
+   ===================================================================== */
+
+
+/* ---------------------------------------------------------------------
+   1. CONFIGURABLE DEFAULTS
+   These apply to both light and dark mode. They are also the Modern style: the other
+   styles override some of them in section 9. (The [data-style="modern"] selector lets a
+   Modern preview inside another style's page reset to these values.)
+   --------------------------------------------------------------------- */
+:root,
+[data-style="modern"] {
+  /* Type */
+  --font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --font-size: 16px;          /* base size; everything else scales from this */
+  --line-height: 1.5;
+
+  /* Shape and spacing */
+  --radius: 10px;             /* corner rounding for cards, buttons, inputs */
+  --space: 1rem;              /* base spacing unit */
+  --content-width: 960px;     /* max width of page content */
+  --big-button-size: 14rem;   /* diameter of the dashboard's main punch button */
+  --transition: 120ms ease;
+
+  /* Style tokens: what a theme style changes (section 9). Colors never live here. */
+  --font-heading: var(--font-family);
+  --heading-transform: none;
+  --heading-tracking: normal; /* letter-spacing for headings */
+  --border-width: 1px;
+  --edge: var(--border);      /* border color for cards, buttons, inputs, and the top bar */
+  --radius-small: calc(var(--radius) * 0.7); /* inputs and menu items */
+  --radius-pill: 999px;       /* badges */
+  --shadow-pop: 0 6px 20px rgba(0, 0, 0, 0.15); /* the account menu */
+  --shadow-big: 0 8px 24px rgba(0, 0, 0, 0.18); /* the Clock page's big button */
+  --card-pattern: none;       /* background-image drawn on cards */
+
+  /* Backgrounds (each person picks one in Settings; see "Backgrounds" after section 2) */
+  --bg-glow-strength: 16%;    /* how strongly every background is tinted with the accent color */
+  --bg-glow-dark-boost: 1.375; /* dark mode multiplies the strength by this, so backgrounds still show (16% -> 22%) */
+  --bg-glow-scale: 1;         /* set per mode below; leave it alone and tweak the two above */
+  --aurora-duration: 20s;     /* one drift of the Aurora background; bigger = slower */
+  --waves-duration: 40s;      /* how long Waves take to roll one loop */
+  --starfield-duration: 8s;   /* one shimmer of the Starfield */
+
+  /* Brand and status colors */
+  --standard-accent: #2563eb;          /* Standard theme: primary buttons, focus rings (color themes set their own) */
+  --standard-accent-contrast: #ffffff; /* text on accent-colored buttons */
+  --status-in: #16a34a;       /* clocked in / Clock In / End Break */
+  --status-break: #d97706;    /* on break / Start Break */
+  --status-out: #64748b;      /* clocked out / Clock Out */
+  --danger: #dc2626;          /* delete, deactivate, errors */
+}
+
+
+/* ---------------------------------------------------------------------
+   2. THEMES
+   Two attributes on <html> pick the look (set in views/partials/head.ejs):
+     data-theme="light" | "dark"   and   data-color="standard" | "ocean" | ...
+   The Standard palettes come first; each color theme then overrides them with a
+   light block and a dark block.
+   --------------------------------------------------------------------- */
+:root,
+[data-theme="light"] {
+  color-scheme: light;
+  --accent: var(--standard-accent);
+  --accent-contrast: var(--standard-accent-contrast);
+  --bg: #f4f5f7;
+  --surface: #ffffff;
+  --surface-2: #eceef2;
+  --text: #1a1d23;
+  --muted: #5d6470;
+  --border: #d8dce2;
+  --link: #1d4ed8;
+  --warn-bg: #fff3dc;
+  --error-bg: #fde7e7;
+  --shadow: 0 1px 2px rgba(15, 20, 30, 0.06);
+  /* For Open Props' --shadow-1..6. It picks these by the device's dark setting; ours follows data-theme. */
+  --shadow-color: 220 3% 15%;
+  --shadow-strength: 1%;
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+  --accent: var(--standard-accent);
+  --accent-contrast: var(--standard-accent-contrast);
+  --bg: #0f1115;
+  --surface: #181b21;
+  --surface-2: #232730;
+  --text: #e6e8ec;
+  --muted: #9aa1ad;
+  --border: #2d323b;
+  --link: #8ab4ff; /* lighter than --accent so links stay readable on dark backgrounds */
+  --warn-bg: #3a2c12;
+  --error-bg: #3d1a1a;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-color: 220 40% 2%;
+  --shadow-strength: 25%;
+  --bg-glow-scale: var(--bg-glow-dark-boost); /* a stronger glow, relative to --bg-glow-strength, so it shows on dark backgrounds */
+}
+
+/* Color themes. Each sets the same tokens in its light and dark block; anything they
+   don't set (status colors, warning backgrounds) comes from the Standard palettes.
+   To add one: copy a pair of blocks, then add its name to THEME_COLORS in themes.js. */
+
+/* Ocean: blue and teal */
+[data-color="ocean"] {
+  --bg: #edf5f8;
+  --surface: #ffffff;
+  --surface-2: #dfedf2;
+  --text: #0f2530;
+  --muted: #4a6572;
+  --border: #c8dce4;
+  --accent: #0e7490;
+  --accent-contrast: #ffffff;
+  --link: #0b6580;
+}
+[data-color="ocean"][data-theme="dark"] {
+  --bg: #0a1920;
+  --surface: #10242d;
+  --surface-2: #17313c;
+  --text: #e1f0f5;
+  --muted: #8fb0bd;
+  --border: #22404b;
+  --accent: #0e7490;
+  --accent-contrast: #ffffff;
+  --link: #6dd3ee;
+}
+
+/* Forest: green */
+[data-color="forest"] {
+  --bg: #eff5ee;
+  --surface: #ffffff;
+  --surface-2: #e1ecdf;
+  --text: #16261a;
+  --muted: #4d6150;
+  --border: #cddbca;
+  --accent: #2f7d45;
+  --accent-contrast: #ffffff;
+  --link: #256b39;
+}
+[data-color="forest"][data-theme="dark"] {
+  --bg: #0c1810;
+  --surface: #122217;
+  --surface-2: #1a2f20;
+  --text: #e2eee4;
+  --muted: #92ac97;
+  --border: #263f2f;
+  --accent: #2f7d45;
+  --accent-contrast: #ffffff;
+  --link: #7dd192;
+}
+
+/* Sunset: orange and coral */
+[data-color="sunset"] {
+  --bg: #fdf3ec;
+  --surface: #ffffff;
+  --surface-2: #f7e4d7;
+  --text: #2c1a12;
+  --muted: #6d5144;
+  --border: #ebd2c1;
+  --accent: #c2410c;
+  --accent-contrast: #ffffff;
+  --link: #a8380a;
+}
+[data-color="sunset"][data-theme="dark"] {
+  --bg: #1b110d;
+  --surface: #251712;
+  --surface-2: #321f18;
+  --text: #f6e6de;
+  --muted: #bb998a;
+  --border: #442e24;
+  --accent: #c2410c;
+  --accent-contrast: #ffffff;
+  --link: #fdb68a;
+}
+
+/* Grape: purple */
+[data-color="grape"] {
+  --bg: #f4f1fb;
+  --surface: #ffffff;
+  --surface-2: #e9e2f6;
+  --text: #211933;
+  --muted: #5c516f;
+  --border: #dad0ec;
+  --accent: #6d28d9;
+  --accent-contrast: #ffffff;
+  --link: #5b21b6;
+}
+[data-color="grape"][data-theme="dark"] {
+  --bg: #130e1e;
+  --surface: #1b1428;
+  --surface-2: #261c37;
+  --text: #ebe5f7;
+  --muted: #a89ac1;
+  --border: #35294b;
+  --accent: #7c3aed;
+  --accent-contrast: #ffffff;
+  --link: #c4a6ff;
+}
+
+/* Fire: red, warm backgrounds */
+[data-color="fire"] {
+  --bg: #fff0ea;
+  --surface: #fffaf8;
+  --surface-2: #fddcd1;
+  --text: #2a120e;
+  --muted: #6e4841;
+  --border: #f0cbbf;
+  --accent: #b91c1c;
+  --accent-contrast: #ffffff;
+  --link: #9f1818;
+}
+[data-color="fire"][data-theme="dark"] {
+  --bg: #1e0c0a;
+  --surface: #29120f;
+  --surface-2: #391a15;
+  --text: #fbe5df;
+  --muted: #c89a90;
+  --border: #4d231c;
+  --accent: #dc2626;
+  --accent-contrast: #ffffff;
+  --link: #ff9d88;
+}
+
+
+/* Backgrounds. data-bg on <html> (set in views/partials/head.ejs):
+     "none" | "glow" | "aurora" | "dots" | "grain" | "waves" | "starfield" | "cityscape"
+   Every one draws on a single fixed layer behind the page, body::before (body::after is the
+   Terminal style's scanlines), tinted from the theme's --accent, so each works with every
+   color and style. Moving ones animate only transform and opacity, so the browser doesn't
+   repaint, and hold still under prefers-reduced-motion. The same rules, small, are the
+   previews in Settings (.bg-swatch). To add one: a rule here and its name in THEME_BACKGROUNDS. */
+
+/* The layer. :where() keeps these weak, so each background below can change the size. */
+:where([data-bg]:not([data-bg="none"])) body::before,
+.bg-swatch:where([data-bg]:not([data-bg="none"]))::before {
+  content: "";
+  pointer-events: none;
+  /* Tint = --bg-glow-strength × --bg-glow-scale (1 in light mode, --bg-glow-dark-boost in dark).
+     Declared on the layer, not :root, so a preview's stronger --bg-glow-strength applies. */
+  --bg-tint: calc(var(--bg-glow-strength) * var(--bg-glow-scale));
+}
+:where([data-bg]:not([data-bg="none"])) body::before { position: fixed; inset: 0; z-index: -1; }
+
+/* Glow and Aurora: soft blobs. Aurora drifts them. */
+[data-bg="glow"] body::before,
+[data-bg="aurora"] body::before,
+.bg-swatch[data-bg="glow"]::before,
+.bg-swatch[data-bg="aurora"]::before {
+  /* Fallback for browsers without relative colors: every blob in the accent color. */
+  background:
+    radial-gradient(30% 26% at 30% 32%, color-mix(in srgb, var(--accent) var(--bg-tint), transparent), transparent),
+    radial-gradient(28% 30% at 72% 66%, color-mix(in srgb, var(--accent) calc(var(--bg-tint) * 0.85), transparent), transparent),
+    radial-gradient(22% 18% at 58% 22%, color-mix(in srgb, var(--accent) calc(var(--bg-tint) * 0.6), transparent), transparent);
+  /* The second and third blobs shift the accent's hue a little either way, for an aurora feel. */
+  background:
+    radial-gradient(30% 26% at 30% 32%, color-mix(in srgb, var(--accent) var(--bg-tint), transparent), transparent),
+    radial-gradient(28% 30% at 72% 66%, color-mix(in srgb, oklch(from var(--accent) l c calc(h + 45)) calc(var(--bg-tint) * 0.85), transparent), transparent),
+    radial-gradient(22% 18% at 58% 22%, color-mix(in srgb, oklch(from var(--accent) l c calc(h - 35)) calc(var(--bg-tint) * 0.6), transparent), transparent);
+}
+[data-bg="glow"] body::before,
+[data-bg="aurora"] body::before { inset: -25vmax; } /* larger than the screen, so drifting never shows an edge */
+
+[data-bg="aurora"] body::before { animation: aurora var(--aurora-duration) ease-in-out infinite alternate; }
+
+@keyframes aurora {
+  0%   { transform: translate(0, 0) rotate(0deg) scale(1); }
+  50%  { transform: translate(5%, -4%) rotate(10deg) scale(1.08); }
+  100% { transform: translate(-4%, 4%) rotate(-6deg) scale(1); }
+}
+
+/* Dots: dotted paper, fading out toward the bottom. */
+[data-bg="dots"] body::before,
+.bg-swatch[data-bg="dots"]::before {
+  --dot: color-mix(in srgb, var(--accent) min(100%, calc(var(--bg-tint) * 2.5)), transparent);
+  background: radial-gradient(circle, var(--dot) 1.2px, transparent 1.7px) 0 0 / var(--dot-gap, 22px) var(--dot-gap, 22px);
+  -webkit-mask-image: linear-gradient(to bottom, #000 30%, transparent 95%);
+  mask-image: linear-gradient(to bottom, #000 30%, transparent 95%);
+}
+
+/* Grain: a diagonal wash of the accent under film grain. The grain is a tiny SVG noise tile
+   with its transparency built in: dark specks in light mode, light specks in dark mode. */
+:root {
+  --bg-grain-texture: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='g'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 .3 -.1'/></filter><rect width='160' height='160' filter='url(%23g)'/></svg>");
+}
+[data-theme="dark"] {
+  --bg-grain-texture: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='g'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 .25 -.08'/></filter><rect width='160' height='160' filter='url(%23g)'/></svg>");
+}
+[data-bg="grain"] body::before,
+.bg-swatch[data-bg="grain"]::before {
+  background:
+    var(--bg-grain-texture) 0 0 / 160px 160px,
+    linear-gradient(135deg, color-mix(in srgb, var(--accent) min(100%, calc(var(--bg-tint) * 1.5)), transparent), transparent 70%);
+}
+
+/* Waves: three rows of rolling crests along the bottom, deeper toward the front. Each row is
+   a repeating half-ellipse (the crest) over a solid band. Sizes are in --w units (1px on the
+   page, smaller in the preview). The layer is 960 units wider than the screen and slides
+   left by exactly 960 units, a multiple of every crest width (240, 320, 480), so it loops
+   without a jump. */
+[data-bg="waves"] body::before,
+.bg-swatch[data-bg="waves"]::before {
+  --w: 1px;
+  --wave-back: color-mix(in srgb, var(--accent) min(100%, var(--bg-tint)), transparent);
+  --wave-mid: color-mix(in srgb, var(--accent) min(100%, calc(var(--bg-tint) * 1.4)), transparent);
+  --wave-front: color-mix(in srgb, var(--accent) min(100%, calc(var(--bg-tint) * 1.9)), transparent);
+  background:
+    radial-gradient(50% 100% at 50% 100%, var(--wave-front) 98%, transparent 100%) 0 calc(100% - var(--w) * 30) / calc(var(--w) * 480) calc(var(--w) * 56) repeat-x,
+    linear-gradient(var(--wave-front), var(--wave-front)) 0 100% / 100% calc(var(--w) * 30) no-repeat,
+    radial-gradient(50% 100% at 50% 100%, var(--wave-mid) 98%, transparent 100%) calc(var(--w) * 80) calc(100% - var(--w) * 70) / calc(var(--w) * 320) calc(var(--w) * 44) repeat-x,
+    linear-gradient(var(--wave-mid), var(--wave-mid)) 0 100% / 100% calc(var(--w) * 70) no-repeat,
+    radial-gradient(50% 100% at 50% 100%, var(--wave-back) 98%, transparent 100%) calc(var(--w) * 40) calc(100% - var(--w) * 110) / calc(var(--w) * 240) calc(var(--w) * 36) repeat-x,
+    linear-gradient(var(--wave-back), var(--wave-back)) 0 100% / 100% calc(var(--w) * 110) no-repeat;
+}
+[data-bg="waves"] body::before {
+  inset: auto auto 0 0;
+  width: calc(100% + 960px);
+  height: 40vh;
+  animation: waves var(--waves-duration) linear infinite;
+}
+.bg-swatch[data-bg="waves"]::before { --w: 0.15px; }
+
+@keyframes waves { to { transform: translateX(-960px); } }
+
+/* Starfield: tiny specks on three odd-sized tiles (97, 151, 223), so no grid shows.
+   They shimmer and drift slowly. Sizes are in --w units, like Waves. */
+[data-bg="starfield"] body::before,
+.bg-swatch[data-bg="starfield"]::before {
+  --w: 1px;
+  --star: color-mix(in srgb, color-mix(in srgb, var(--accent) 55%, var(--text)) min(100%, calc(var(--bg-tint) * 3.5)), transparent);
+  --star-dim: color-mix(in srgb, color-mix(in srgb, var(--accent) 55%, var(--text)) min(100%, calc(var(--bg-tint) * 2)), transparent);
+  background:
+    radial-gradient(circle at calc(var(--w) * 23) calc(var(--w) * 41), var(--star) calc(var(--w) * 1.1), transparent calc(var(--w) * 1.8)) 0 0 / calc(var(--w) * 97) calc(var(--w) * 97),
+    radial-gradient(circle at calc(var(--w) * 71) calc(var(--w) * 12), var(--star-dim) calc(var(--w) * 0.8), transparent calc(var(--w) * 1.4)) 0 0 / calc(var(--w) * 97) calc(var(--w) * 97),
+    radial-gradient(circle at calc(var(--w) * 119) calc(var(--w) * 88), var(--star) calc(var(--w) * 1.4), transparent calc(var(--w) * 2.1)) 0 0 / calc(var(--w) * 151) calc(var(--w) * 151),
+    radial-gradient(circle at calc(var(--w) * 37) calc(var(--w) * 130), var(--star-dim) calc(var(--w) * 0.9), transparent calc(var(--w) * 1.5)) 0 0 / calc(var(--w) * 151) calc(var(--w) * 151),
+    radial-gradient(circle at calc(var(--w) * 181) calc(var(--w) * 53), var(--star-dim) calc(var(--w) * 1), transparent calc(var(--w) * 1.6)) 0 0 / calc(var(--w) * 223) calc(var(--w) * 223),
+    radial-gradient(circle at calc(var(--w) * 64) calc(var(--w) * 197), var(--star) calc(var(--w) * 1.6), transparent calc(var(--w) * 2.4)) 0 0 / calc(var(--w) * 223) calc(var(--w) * 223);
+}
+[data-bg="starfield"] body::before {
+  inset: -60px; /* room to drift without showing an edge */
+  animation: starfield var(--starfield-duration) ease-in-out infinite alternate;
+}
+.bg-swatch[data-bg="starfield"]::before { --w: 0.8px; }
+
+@keyframes starfield {
+  from { opacity: 0.55; transform: translate(0, 0); }
+  to   { opacity: 1; transform: translate(-30px, 20px); }
+}
+
+/* Cityscape: a skyline along the bottom. The layer is a vertical accent gradient cut to shape
+   by an SVG mask (masking is what lets CSS color an SVG): a lighter back row of buildings,
+   and a front row with rows of windows cut out. */
+[data-bg="cityscape"] body::before,
+.bg-swatch[data-bg="cityscape"]::before {
+  --skyline: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='1200' height='320' viewBox='0 0 1200 320'><defs><pattern id='w' width='16' height='22' patternUnits='userSpaceOnUse'><rect x='5' y='6' width='6' height='9'/></pattern><mask id='m' maskUnits='userSpaceOnUse' x='0' y='0' width='1200' height='320'><rect width='1200' height='320' fill='white'/><rect width='1200' height='320' fill='url(%23w)'/></mask></defs><g fill-opacity='.45'><rect x='0' y='150' width='70' height='170'/><rect x='60' y='100' width='50' height='220'/><rect x='105' y='170' width='80' height='150'/><rect x='180' y='80' width='60' height='240'/><rect x='235' y='130' width='90' height='190'/><rect x='320' y='60' width='55' height='260'/><rect x='370' y='145' width='85' height='175'/><rect x='450' y='90' width='60' height='230'/><rect x='505' y='160' width='95' height='160'/><rect x='595' y='70' width='50' height='250'/><rect x='640' y='120' width='80' height='200'/><rect x='715' y='40' width='65' height='280'/><rect x='740' y='15' width='6' height='25'/><rect x='775' y='150' width='90' height='170'/><rect x='860' y='85' width='55' height='235'/><rect x='910' y='130' width='80' height='190'/><rect x='985' y='65' width='60' height='255'/><rect x='1040' y='140' width='95' height='180'/><rect x='1130' y='105' width='70' height='215'/></g><g mask='url(%23m)'><rect x='0' y='200' width='90' height='120'/><rect x='85' y='160' width='60' height='160'/><rect x='140' y='220' width='110' height='100'/><rect x='245' y='130' width='70' height='190'/><rect x='310' y='190' width='95' height='130'/><rect x='400' y='110' width='60' height='210'/><rect x='427' y='80' width='6' height='30'/><rect x='455' y='210' width='120' height='110'/><rect x='570' y='145' width='75' height='175'/><rect x='640' y='180' width='100' height='140'/><rect x='735' y='120' width='65' height='200'/><rect x='795' y='200' width='110' height='120'/><rect x='900' y='135' width='70' height='185'/><rect x='965' y='185' width='90' height='135'/><rect x='1050' y='150' width='60' height='170'/><rect x='1105' y='195' width='95' height='125'/></g></svg>");
+  background: linear-gradient(to top,
+    color-mix(in srgb, var(--accent) min(100%, calc(var(--bg-tint) * 3)), transparent),
+    color-mix(in srgb, var(--accent) min(100%, calc(var(--bg-tint) * 1.6)), transparent));
+  -webkit-mask: var(--skyline) left bottom / auto 100% repeat-x;
+  mask: var(--skyline) left bottom / auto 100% repeat-x;
+}
+[data-bg="cityscape"] body::before { top: auto; height: 32vh; }
+
+@media (prefers-reduced-motion: reduce) {
+  [data-bg="aurora"] body::before,
+  [data-bg="waves"] body::before,
+  [data-bg="starfield"] body::before,
+  .bg-swatch[data-bg="aurora"]::before { animation: none; }
+}
+
+
+/* ---------------------------------------------------------------------
+   3. BASE
+   --------------------------------------------------------------------- */
+*, *::before, *::after { box-sizing: border-box; }
+
+html { font-size: var(--font-size); }
+
+body {
+  margin: 0;
+  font-family: var(--font-family);
+  line-height: var(--line-height);
+  background: var(--bg);
+  color: var(--text);
+}
+
+a { color: var(--link); }
+
+h1, h2, h3 {
+  font-family: var(--font-heading);
+  text-transform: var(--heading-transform);
+  letter-spacing: var(--heading-tracking);
+  line-height: 1.2;
+  margin: 0 0 calc(var(--space) * 0.75);
+}
+h1 { font-size: 1.6rem; }
+h2 { font-size: 1.15rem; }
+p { margin: 0 0 var(--space); }
+
+code { font-family: var(--font-mono); font-size: 0.9em; }
+
+.muted { color: var(--muted); }
+.small { font-size: 0.85rem; }
+.nowrap { white-space: nowrap; }
+.inline { display: inline; }
+
+
+/* ---------------------------------------------------------------------
+   4. LAYOUT
+   --------------------------------------------------------------------- */
+.topbar {
+  background: var(--surface);
+  border-bottom: var(--border-width) solid var(--edge);
+}
+
+.topbar-inner {
+  max-width: var(--content-width);
+  margin: 0 auto;
+  padding: calc(var(--space) * 0.6) var(--space);
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: calc(var(--space) * 0.5) var(--space);
+}
+
+.brand {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--text);
+  text-decoration: none;
+}
+
+.topbar-links { display: flex; gap: 0.25rem; flex: 1; }
+
+.topbar-links a {
+  color: var(--muted);
+  text-decoration: none;
+  padding: 0.35rem 0.65rem;
+  border-radius: var(--radius);
+}
+.topbar-links a:hover,
+.topbar-links a[aria-current="page"] { color: var(--text); background: var(--surface-2); }
+
+.topbar-actions { display: flex; align-items: center; gap: 0.5rem; }
+
+/* Account menu under your name (views/partials/nav.ejs) */
+.user-menu { position: relative; }
+.user-menu > summary { list-style: none; color: var(--text); }
+.user-menu > summary::-webkit-details-marker { display: none; }
+.user-menu > summary::after { content: "▾"; font-size: 0.75em; color: var(--muted); }
+.user-menu[open] > summary { background: var(--surface-2); }
+.user-name { max-width: 14rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.user-menu-list {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 0.35rem);
+  z-index: 20;
+  min-width: 10rem;
+  display: flex;
+  flex-direction: column;
+  padding: 0.3rem;
+  background: var(--surface);
+  border: var(--border-width) solid var(--edge);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-pop);
+}
+.user-menu-list a,
+.user-menu-list button {
+  display: block;
+  width: 100%;
+  padding: 0.45rem 0.7rem;
+  font: inherit;
+  text-align: left;
+  color: var(--text);
+  text-decoration: none;
+  background: none;
+  border: 0;
+  border-radius: var(--radius-small);
+  cursor: pointer;
+}
+.user-menu-list a:hover,
+.user-menu-list button:hover,
+.user-menu-list a[aria-current="page"] { background: var(--surface-2); }
+.user-menu-list form { margin: 0; padding-top: 0.3rem; border-top: 1px solid var(--border); margin-top: 0.3rem; }
+
+.container {
+  max-width: var(--content-width);
+  margin: 0 auto;
+  padding: var(--space);
+}
+
+.footer {
+  max-width: var(--content-width);
+  margin: 0 auto;
+  padding: var(--space);
+  font-size: 0.85rem;
+}
+
+.card {
+  background: var(--surface);
+  background-image: var(--card-pattern);
+  border: var(--border-width) solid var(--edge);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: calc(var(--space) * 1.25);
+  margin-bottom: var(--space);
+}
+.card > :last-child { margin-bottom: 0; }
+
+.narrow-card { max-width: 26rem; margin: calc(var(--space) * 2) auto; }
+
+.page-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: var(--space);
+  margin-bottom: var(--space);
+}
+.page-head h1 { margin-bottom: 0.35rem; }
+.page-head p { margin: 0; }
+.page-head-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 0.5rem; }
+
+/* A card's heading with an action (e.g. Edit) on the right */
+.card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: calc(var(--space) * 0.75);
+}
+.card-head h2 { margin: 0; }
+
+.breadcrumb { margin: 0 0 0.5rem; }
+.breadcrumb a { text-decoration: none; }
+
+
+/* ---------------------------------------------------------------------
+   5. COMPONENTS
+   --------------------------------------------------------------------- */
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  font: inherit;
+  font-weight: 600;
+  line-height: 1.2;
+  padding: 0.55rem 1rem;
+  border: var(--border-width) solid var(--edge);
+  border-radius: var(--radius);
+  background: var(--surface-2);
+  color: var(--text);
+  text-decoration: none;
+  cursor: pointer;
+  transition: filter var(--transition), transform var(--transition), background var(--transition);
+}
+.btn:hover { filter: brightness(1.08); }
+.btn:active { transform: translateY(1px); }
+
+.btn:focus-visible,
+input:focus-visible,
+select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.btn-small { padding: 0.3rem 0.65rem; font-size: 0.875rem; }
+.btn-primary { background: var(--accent); border-color: var(--accent); color: var(--accent-contrast); }
+.btn-danger { background: var(--danger); border-color: var(--danger); color: #fff; }
+.btn-ghost { background: transparent; border-color: transparent; }
+.btn-ghost:hover { background: var(--surface-2); filter: none; }
+.btn-ghost-danger { background: transparent; border-color: transparent; color: var(--danger); }
+.btn-ghost-danger:hover { background: var(--error-bg); filter: none; }
+
+/* Punch buttons are colored by the status they lead to */
+.btn-clock_in,
+.btn-break_end { background: var(--status-in); border-color: var(--status-in); color: #fff; }
+.btn-break_start { background: var(--status-break); border-color: var(--status-break); color: #fff; }
+.btn-clock_out { background: var(--status-out); border-color: var(--status-out); color: #fff; }
+
+/* Forms */
+.field { display: flex; flex-direction: column; gap: 0.3rem; min-width: 0; }
+.field > span { font-size: 0.875rem; font-weight: 600; color: var(--muted); }
+
+input, select, textarea {
+  font: inherit;
+  color: var(--text);
+  background: var(--bg);
+  border: var(--border-width) solid var(--edge);
+  border-radius: var(--radius-small);
+  padding: 0.5rem 0.65rem;
+  min-width: 0;
+  width: 100%;
+}
+
+.stack { display: flex; flex-direction: column; gap: var(--space); }
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+  gap: var(--space);
+}
+.form-grid .field-wide { grid-column: 1 / -1; }
+
+.form-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 0.5rem; }
+
+.range-form {
+  display: flex;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: calc(var(--space) * 1.25);
+}
+.range-form .field { width: 11rem; }
+
+/* Tables */
+.table-wrap { overflow-x: auto; }
+
+.table { width: 100%; border-collapse: collapse; }
+.table th,
+.table td {
+  text-align: left;
+  vertical-align: middle;
+  padding: 0.55rem 0.6rem;
+  border-bottom: 1px solid var(--border);
+}
+.table th {
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+.table tbody tr:last-child td { border-bottom: 0; }
+.table .actions { text-align: right; white-space: nowrap; }
+.row-inactive td { color: var(--muted); }
+
+/* Shift tables: each shift is its own <tbody>, starting with a header row */
+.shift-head th {
+  background: var(--surface-2);
+  color: var(--text);
+  font-size: 0.9rem;
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: normal;
+}
+.shift-warn .shift-head th { background: var(--warn-bg); }
+.shift + .shift .shift-head th { border-top: 0.75rem solid var(--surface); } /* gap between shifts */
+
+.shift-head-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.shift-summary { display: flex; align-items: center; flex-wrap: wrap; gap: 0.35rem 0.75rem; }
+
+.row-break .punch-cell { padding-left: 1.75rem; } /* indent break punches under their shift */
+
+/* Badges: .badge-in / .badge-break / .badge-out pick the dot color */
+.badges { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.15rem 0.6rem;
+  border-radius: var(--radius-pill);
+  background: var(--surface-2);
+  color: var(--text);
+  font-size: 0.85rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.badge-inactive { color: var(--danger); }
+.badge-warn { background: var(--warn-bg); }
+
+.badge-in, .status-in { --status-color: var(--status-in); }
+.badge-break, .status-break { --status-color: var(--status-break); }
+.badge-out, .status-out { --status-color: var(--status-out); }
+
+.dot {
+  width: 0.6rem;
+  height: 0.6rem;
+  border-radius: 50%;
+  flex: none;
+  background: var(--status-color, var(--status-out));
+}
+
+/* Alerts */
+.alert {
+  padding: 0.65rem 0.9rem;
+  border: var(--border-width) solid var(--edge);
+  border-radius: var(--radius);
+  margin: 0 0 var(--space);
+}
+.alert-error { background: var(--error-bg); border-color: var(--danger); }
+.alert-warn { background: var(--warn-bg); border-color: var(--status-break); }
+
+
+/* Sub-navigation tabs (e.g. Admin: Accounts / Settings) */
+.subnav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: var(--space);
+}
+.subnav a {
+  padding: 0.45rem 0.8rem;
+  margin-bottom: -1px;
+  color: var(--muted);
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+}
+.subnav a:hover { color: var(--text); }
+.subnav a[aria-current="page"] { color: var(--text); font-weight: 600; border-bottom-color: var(--accent); }
+
+/* Form extras */
+fieldset { border: 0; padding: 0; margin: 0; min-width: 0; }
+legend { font-weight: 700; padding: 0; margin-bottom: 0.6rem; }
+.field .hint { font-size: 0.8rem; font-weight: 400; color: var(--muted); }
+.checkbox { display: flex; align-items: center; gap: 0.5rem; }
+.checkbox input { width: auto; }
+.alert-ok { background: color-mix(in srgb, var(--status-in) 12%, transparent); border-color: var(--status-in); }
+
+/* Label/value lists, e.g. profile details and availability */
+.details {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.3rem 1rem;
+  margin: 0 0 var(--space);
+}
+.details dt { color: var(--muted); }
+.details dd { margin: 0; }
+
+.availability-table input { max-width: 10rem; }
+
+/* Theme picker (Settings). Each swatch carries data-color/data-theme,
+   so it shows that theme's own colors whatever the page's theme is. */
+.theme-options { display: grid; grid-template-columns: repeat(auto-fill, minmax(9.5rem, 1fr)); gap: 0.6rem; }
+.theme-option {
+  position: relative;
+  display: grid;
+  gap: 0.4rem;
+  padding: 0.6rem;
+  border: var(--border-width) solid var(--edge);
+  border-radius: var(--radius);
+  font-weight: 600;
+  cursor: pointer;
+}
+.theme-option input { position: absolute; opacity: 0; pointer-events: none; }
+.theme-option:has(input:checked) { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+.theme-option:has(input:focus-visible) { outline: 2px solid var(--accent); outline-offset: 2px; }
+.theme-swatches { display: flex; gap: 0.35rem; }
+.theme-swatch {
+  flex: 1;
+  height: 2.5rem;
+  display: flex;
+  align-items: flex-end;
+  padding: 0.35rem;
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius) * 0.6);
+  background: var(--bg);
+}
+.theme-swatch-accent { width: 60%; height: 0.45rem; border-radius: 999px; background: var(--accent); }
+.theme-mode { max-width: 16rem; }
+/* Background previews: the page's own colors, drawn by the same rules as the page (see "Backgrounds"). */
+.bg-swatch {
+  --bg-glow-strength: 45%; /* stronger than the page, so the style is visible at this size */
+  position: relative;
+  display: block;
+  height: 2.5rem;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius) * 0.6);
+  background: var(--bg);
+}
+.bg-swatch:where([data-bg]:not([data-bg="none"]))::before { position: absolute; inset: 0; }
+.bg-swatch:is([data-bg="glow"], [data-bg="aurora"])::before { inset: -25%; }
+.bg-swatch[data-bg="dots"]::before { --dot-gap: 8px; }
+.bg-swatch[data-bg="aurora"]::before { animation: aurora 8s ease-in-out infinite alternate; }
+/* Style previews: a tiny card drawn only from style tokens, so data-style on it shows that style. */
+.style-swatch {
+  display: grid;
+  gap: 0.35rem;
+  padding: 0.5rem 0.55rem;
+  font-family: var(--font-family);
+  font-size: 0.8rem;
+  font-weight: 400;
+  line-height: 1.2;
+  color: var(--text);
+  background: var(--surface);
+  background-image: var(--card-pattern);
+  background-size: 0.6rem 0.6rem;
+  border: var(--border-width) solid var(--edge);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+.style-swatch-title {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  text-transform: var(--heading-transform);
+  letter-spacing: var(--heading-tracking);
+}
+.style-swatch-row { display: flex; align-items: center; gap: 0.35rem; }
+.style-swatch-bar { flex: 1; height: 0.45rem; border-radius: var(--radius-small); background: var(--accent); }
+.style-swatch-pill { padding: 0 0.4rem; border-radius: var(--radius-pill); background: var(--surface-2); font-family: var(--font-mono); font-size: 0.7rem; }
+
+/* Shift notes (a thread under each shift) */
+.table .notes-row td { padding-top: 0.2rem; }
+.notes summary { cursor: pointer; color: var(--muted); font-size: 0.875rem; }
+.note-list { list-style: none; margin: 0.5rem 0; padding: 0; display: grid; gap: 0.6rem; }
+.note { border-left: 3px solid var(--border); padding-left: 0.7rem; }
+.note-meta { display: flex; align-items: center; flex-wrap: wrap; gap: 0.5rem; }
+.note-body { margin: 0.15rem 0 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+.note-form { display: flex; align-items: flex-end; gap: 0.5rem; margin-top: 0.5rem; }
+.note-form textarea { flex: 1; resize: vertical; }
+
+/* Pending-request count on the Manage nav link */
+.nav-count {
+  display: inline-block;
+  min-width: 1.35em;
+  padding: 0 0.35em;
+  border-radius: var(--radius-pill);
+  background: var(--status-break);
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1.45;
+  text-align: center;
+}
+
+/* Edit requests */
+.request-list { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space); }
+.request { border: var(--border-width) solid var(--edge); border-radius: var(--radius); padding: 0.8rem 1rem; }
+.request > :last-child { margin-bottom: 0; }
+.request-head { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem; }
+.request-summary { margin: 0.5rem 0 0.25rem; }
+.request-reason { margin: 0 0 0.6rem; white-space: pre-wrap; overflow-wrap: anywhere; }
+.request-review { display: flex; align-items: center; flex-wrap: wrap; gap: 0.5rem; }
+.request-review input { flex: 1; min-width: 12rem; }
+.table .request-summary { margin: 0; }
+.badge-denied { --status-color: var(--danger); }
+
+/* Mandatory shifts */
+h3 { font-size: 1rem; }
+.schedule-list { list-style: none; margin: 0 0 var(--space); padding: 0; }
+.schedule-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 0.55rem 0;
+  border-bottom: 1px solid var(--border);
+}
+.schedule-item:last-child { border-bottom: 0; }
+.schedule-badges { display: flex; align-items: center; flex-wrap: wrap; gap: 0.4rem; }
+.schedule-day { margin: var(--space) 0 0.25rem; }
+.punch-card .scheduled-today { margin: calc(var(--space) * -1) 0 var(--space); }
+.alert p { margin: 0; }
+.alert ul { margin: 0.25rem 0 0; padding-left: 1.2rem; }
+
+
+/* ---------------------------------------------------------------------
+   6. PUNCH CARD
+   --------------------------------------------------------------------- */
+.punch-card { text-align: center; padding-block: calc(var(--space) * 2); }
+
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.7rem;
+  font-size: 1.75rem;
+  font-weight: 700;
+}
+.status .dot {
+  width: 1rem;
+  height: 1rem;
+  box-shadow: 0 0 0 0.3rem color-mix(in srgb, var(--status-color) 25%, transparent);
+}
+
+.status-since { margin: 0.35rem 0 calc(var(--space) * 1.5); }
+.punch-card .break-rules { margin: calc(var(--space) * -1) 0 var(--space); }
+.punch-card .alert { display: inline-block; }
+
+.punch-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space);
+}
+
+.btn-big {
+  width: min(var(--big-button-size), 100%);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  font-size: 1.6rem;
+  box-shadow: var(--shadow-big);
+}
+
+
+/* ---------------------------------------------------------------------
+   7. SMALL SCREENS
+   --------------------------------------------------------------------- */
+@media (max-width: 600px) {
+  :root { --big-button-size: 12rem; }
+  h1 { font-size: 1.35rem; }
+  .card { padding: var(--space); }
+  .user-name { max-width: 8rem; }
+  .topbar-links { order: 3; flex-basis: 100%; }
+  .range-form .field { width: 100%; }
+}
+
+
+/* ---------------------------------------------------------------------
+   8. TIMESHEET EXPORT AND PRINTING
+   The timesheet always looks like paper (dark text on white) in both themes,
+   so a printed PDF and a downloaded image look the same.
+   --------------------------------------------------------------------- */
+.export-page { max-width: 900px; }
+.export-controls { margin-bottom: var(--space); }
+.export-controls .range-form { margin-bottom: 0.75rem; }
+.export-controls p { margin: 0.5rem 0 0; }
+
+.timesheet {
+  --ts-text: #111111;
+  --ts-muted: #555555;
+  --ts-line: #cccccc;
+  background: #ffffff;
+  color: var(--ts-text);
+  padding: 2rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 0.95rem;
+  /* The same fonts in every style, so exports and printouts look alike. */
+  --font-heading: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --heading-transform: none;
+  --heading-tracking: normal;
+  font-family: var(--font-heading);
+}
+.ts-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 1rem;
+  padding-bottom: 1rem;
+  margin-bottom: 1rem;
+  border-bottom: 2px solid var(--ts-text);
+}
+.ts-header h1 { margin: 0; font-size: 1.6rem; }
+.ts-app { margin: 0; font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ts-muted); }
+.ts-period { margin: 0.2rem 0 0; font-weight: 600; }
+.ts-employee { display: grid; grid-template-columns: max-content 1fr; gap: 0.15rem 0.8rem; margin: 0; }
+.ts-employee dt { color: var(--ts-muted); }
+.ts-employee dd { margin: 0; }
+.ts-summary { display: flex; flex-wrap: wrap; gap: 2rem; margin-bottom: 1rem; }
+.ts-summary div { display: grid; }
+.ts-summary strong { font-size: 1.3rem; }
+.ts-label { font-size: 0.75rem; letter-spacing: 0.05em; text-transform: uppercase; color: var(--ts-muted); }
+.ts-note, .ts-empty { color: var(--ts-muted); }
+.ts-table { width: 100%; border-collapse: collapse; }
+.ts-table th,
+.ts-table td { text-align: left; vertical-align: top; padding: 0.4rem 0.5rem; border-bottom: 1px solid var(--ts-line); }
+.ts-table th { font-size: 0.75rem; text-transform: uppercase; color: var(--ts-muted); }
+.ts-day-total td, .ts-table tfoot td { font-weight: 700; }
+.ts-table tfoot td { border-top: 2px solid var(--ts-text); border-bottom: 0; }
+.ts-incomplete td { background: #fff3dc; }
+.ts-footer { margin-top: 1rem; font-size: 0.8rem; color: var(--ts-muted); }
+
+@media (max-width: 600px) {
+  .timesheet { padding: 1rem; }
+}
+
+@page { margin: 12mm; }
+
+@media print {
+  /* Paper is always light: dark themes set color-scheme: dark on <html>, which would
+     otherwise paint the page margins dark. */
+  html[data-theme] { color-scheme: light; }
+  html, body { background: #ffffff; }
+  .topbar, .footer, .no-print { display: none !important; }
+  body::before, body::after { display: none !important; } /* no background layer or Terminal scanlines on paper */
+  .container { max-width: none; padding: 0; }
+  .timesheet { border: 0; border-radius: 0; padding: 0; }
+  .table-wrap { overflow: visible; }
+  .ts-incomplete td { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}
+
+
+/* ---------------------------------------------------------------------
+   9. STYLES
+   data-style="modern" | "minimal" | "terminal" | "blueprint" on <html> (set in
+   views/partials/head.ejs). A style changes shape and feel by overriding the style
+   tokens from section 1, plus a few component rules below. It never sets palette colors,
+   so every style works with every color, light/dark, and background.
+   Modern is the section 1 defaults. The token blocks aren't tied to <html>, so a
+   .style-swatch carrying data-style previews its style. This section comes last so its
+   component rules win over sections 3-6.
+   --radius-1/2, --shadow-1/2, and --ease-out-3 come from Open Props (vendor/open-props).
+   To add a style: a token block and any component rules here, its name in THEME_STYLES
+   (themes.js), and a font package in server.js + head.ejs if it needs one.
+   --------------------------------------------------------------------- */
+
+/* Minimal: flat and quiet, Inter */
+[data-style="minimal"] {
+  --font-family: "Inter Variable", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --font-heading: var(--font-family);
+  --heading-transform: none;
+  --heading-tracking: -0.01em;
+  --radius: var(--radius-2);
+  --radius-small: var(--radius-2);
+  --radius-pill: 999px;
+  --border-width: 1px;
+  --edge: var(--border);
+  --shadow: none;
+  --shadow-pop: var(--shadow-2);
+  --shadow-big: none;
+  --card-pattern: none;
+  --transition: 120ms var(--ease-out-3);
+}
+[data-style="minimal"] :is(h1, h2, h3):not(.timesheet *) { font-weight: 600; }
+[data-style="minimal"] .card { padding: calc(var(--space) * 1.4); }
+[data-style="minimal"] .badge { background: transparent; box-shadow: inset 0 0 0 1px var(--edge); }
+[data-style="minimal"] .badge-warn { background: var(--warn-bg); }
+
+/* Minimal and Blueprint: plain buttons are outlines; colored ones stay filled */
+:is([data-style="minimal"], [data-style="blueprint"])
+  .btn:not(.btn-primary, .btn-danger, .btn-ghost, .btn-ghost-danger, .btn-clock_in, .btn-break_start, .btn-break_end, .btn-clock_out) {
+  background: transparent;
+}
+:is([data-style="minimal"], [data-style="blueprint"])
+  .btn:not(.btn-primary, .btn-danger, .btn-ghost, .btn-ghost-danger, .btn-clock_in, .btn-break_start, .btn-break_end, .btn-clock_out):hover {
+  background: var(--surface-2);
+  filter: none;
+}
+
+/* Terminal: monospace, square, accent-tinted lines, scanlines */
+[data-style="terminal"] {
+  --font-family: "JetBrains Mono Variable", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --font-mono: var(--font-family);
+  --font-heading: var(--font-family);
+  --heading-transform: uppercase;
+  --heading-tracking: 0.04em;
+  --radius: 0px;
+  --radius-small: 0px;
+  --radius-pill: 0px;
+  --border-width: 1px;
+  --edge: color-mix(in srgb, var(--accent) 45%, var(--border));
+  --shadow: none;
+  --shadow-pop: none;
+  --shadow-big: none;
+  --card-pattern: none;
+  --transition: 80ms var(--ease-out-3);
+  --scanline-alpha: 3%;
+}
+[data-style="terminal"][data-theme="dark"] { --scanline-alpha: 8%; }
+
+[data-style="terminal"] :is(.page-head h1, .card h2)::before { content: "> "; color: var(--accent); }
+[data-style="terminal"] .page-head h1::after {
+  content: "";
+  display: inline-block;
+  width: 0.55em;
+  height: 1em;
+  margin-left: 0.25em;
+  vertical-align: -0.12em;
+  background: var(--accent);
+  animation: terminal-cursor 1.1s steps(1) infinite;
+}
+@keyframes terminal-cursor { 50% { opacity: 0; } }
+
+[data-style="terminal"] .btn { text-transform: uppercase; letter-spacing: 0.05em; }
+[data-style="terminal"] .btn-big { border-radius: 0; }
+[data-style="terminal"][data-theme="dark"] :is(h1, h2, .brand, .status):not(.timesheet *) {
+  text-shadow: 0 0 0.45em color-mix(in srgb, var(--accent) 60%, transparent);
+}
+
+/* Scanlines over everything; clicks pass through. (Backgrounds use body::before.) */
+[data-style="terminal"] body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  pointer-events: none;
+  background: repeating-linear-gradient(to bottom, transparent 0 2px, rgb(0 0 0 / var(--scanline-alpha)) 2px 3px);
+}
+
+/* Blueprint: technical drawing. Space Grotesk, mono labels, grid cards with corner ticks */
+[data-style="blueprint"] {
+  --font-family: "Space Grotesk Variable", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "JetBrains Mono Variable", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --font-heading: var(--font-family);
+  --heading-transform: uppercase;
+  --heading-tracking: 0.06em;
+  --radius: var(--radius-1);
+  --radius-small: var(--radius-1);
+  --radius-pill: var(--radius-1);
+  --border-width: 1px;
+  --edge: color-mix(in srgb, var(--accent) 35%, var(--border));
+  --shadow: none;
+  --shadow-pop: var(--shadow-1);
+  --shadow-big: none;
+  --grid-line: color-mix(in srgb, var(--accent) 7%, transparent);
+  --card-pattern:
+    linear-gradient(var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+  --transition: 120ms var(--ease-out-3);
+}
+[data-style="blueprint"][data-theme="dark"] { --grid-line: color-mix(in srgb, var(--accent) 14%, transparent); }
+
+[data-style="blueprint"] .card { position: relative; background-size: 1.25rem 1.25rem; }
+[data-style="blueprint"] .card::before,
+[data-style="blueprint"] .card::after {
+  content: "";
+  position: absolute;
+  width: 0.75rem;
+  height: 0.75rem;
+  border: 2px solid var(--accent);
+  pointer-events: none;
+}
+[data-style="blueprint"] .card::before { top: -1px; left: -1px; border-right: 0; border-bottom: 0; }
+[data-style="blueprint"] .card::after { right: -1px; bottom: -1px; border-left: 0; border-top: 0; }
+
+[data-style="blueprint"] :is(.table thead th, legend, .field > span, .badge) {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+[data-style="blueprint"] :is(input, select, textarea) { border-style: dashed; }
+
+@media (prefers-reduced-motion: reduce) {
+  [data-style="terminal"] .page-head h1::after { animation: none; }
+}

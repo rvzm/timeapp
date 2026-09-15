@@ -1,0 +1,71 @@
+<%# Manage Employee: Details tab (profile, availability, break allowance). %>
+<%- include("../partials/head") %>
+<%- include("../partials/nav") %>
+<%- include("../partials/employee-head", { current: "details" }) %>
+
+<section class="card">
+  <h2>Profile</h2>
+  <dl class="details">
+    <dt>Username</dt><dd><code><%= target.username %></code></dd>
+    <dt>Role</dt><dd><%= ROLE_LABELS[target.role] %></dd>
+    <dt>Job title</dt><dd><%= target.job_title || "—" %></dd>
+    <dt>Employee number</dt><dd><%= target.employee_number || "—" %></dd>
+    <dt>Email</dt>
+    <dd><% if (target.email) { %><a href="mailto:<%= target.email %>"><%= target.email %></a><% } else { %>—<% } %></dd>
+    <dt>Phone</dt>
+    <dd><% if (target.phone) { %><a href="tel:<%= target.phone %>"><%= target.phone %></a><% } else { %>—<% } %></dd>
+    <dt>Account created</dt><dd><%= fmt.formatDate(target.created_at) %></dd>
+  </dl>
+</section>
+
+<section class="card">
+  <h2>Availability</h2>
+  <% if (!availability.isSet) { %>
+    <p class="muted">Not set. <%= displayName(target) %> can set it from their Profile page.</p>
+  <% } else { %>
+    <dl class="details">
+      <% availability.days.forEach((day) => { %>
+        <dt><%= day.name %></dt>
+        <dd><%= day.start ? `${fmt.formatClockTime(day.start)} – ${fmt.formatClockTime(day.end)}` : "Unavailable" %></dd>
+      <% }) %>
+    </dl>
+  <% } %>
+</section>
+
+<section class="card">
+  <h2>Break allowance</h2>
+  <% if (saved === "breaks") { %>
+    <p class="alert alert-ok">Break allowance saved.</p>
+  <% } %>
+  <p class="muted">
+    <%= policy.maxCount === null ? "Unlimited breaks" : `${policy.maxCount} break${policy.maxCount === 1 ? "" : "s"} per shift` %>,
+    <%= policy.maxMinutes === null ? "no time limit" : `up to ${policy.maxMinutes} min each` %>
+    <%= target.break_max_count === null && target.break_max_minutes === null ? "(the default)" : "(custom)" %>
+  </p>
+
+  <% if (canSchedule) { %>
+    <% if (breakError) { %>
+      <p class="alert alert-error"><%= breakError %></p>
+    <% } %>
+    <form method="post" action="/manage/employees/<%= target.id %>/breaks" class="form-grid">
+      <label class="field">
+        <span>Breaks per shift</span>
+        <input type="number" name="maxCount" min="0" max="20" value="<%= breakForm.maxCount ?? "" %>"
+               placeholder="Default: <%= breakDefaults.maxCount ?? "no limit" %>">
+      </label>
+      <label class="field">
+        <span>Minutes per break</span>
+        <input type="number" name="maxMinutes" min="1" max="480" value="<%= breakForm.maxMinutes ?? "" %>"
+               placeholder="Default: <%= breakDefaults.maxMinutes ?? "no limit" %>">
+      </label>
+      <div class="form-actions field-wide">
+        <button class="btn">Save allowance</button>
+        <span class="muted small">Leave a field blank to use the default (<a href="/manage/breaks">break rules</a>).</span>
+      </div>
+    </form>
+  <% } else { %>
+    <p class="muted small">Only an admin can change your own break allowance.</p>
+  <% } %>
+</section>
+
+<%- include("../partials/foot") %>

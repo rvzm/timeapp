@@ -1,0 +1,27 @@
+<%# A shift's note thread and the add-note form. Needs `shift` and `back` (where to return after posting). %>
+<% if (shift.notes.length) { %>
+  <ul class="note-list">
+    <% shift.notes.forEach((note) => { %>
+      <li class="note">
+        <div class="note-meta">
+          <strong><%= note.author_name %></strong>
+          <span class="muted small"><%= fmt.formatDateTime(note.created_at) %></span>
+          <% if (note.author_id === user.id || isAdmin(user)) { %>
+            <form method="post" action="/notes/<%= note.id %>/delete" class="inline"
+                  data-question="Delete this note?" onsubmit="return confirm(this.dataset.question)">
+              <input type="hidden" name="back" value="<%= back %>">
+              <button class="btn btn-small btn-ghost-danger">Delete</button>
+            </form>
+          <% } %>
+        </div>
+        <p class="note-body"><%= note.body %></p>
+      </li>
+    <% }) %>
+  </ul>
+<% } %>
+<form method="post" action="/notes" class="note-form">
+  <input type="hidden" name="punch_id" value="<%= shift.notePunchId %>">
+  <input type="hidden" name="back" value="<%= back %>">
+  <textarea name="body" rows="2" maxlength="1000" required placeholder="Add a note about this shift" aria-label="New note"></textarea>
+  <button class="btn btn-small">Add note</button>
+</form>

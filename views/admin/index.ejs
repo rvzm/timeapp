@@ -1,0 +1,64 @@
+<%- include("../partials/head") %>
+<%- include("../partials/nav") %>
+
+<div class="page-head">
+  <h1>Admin</h1>
+  <a class="btn btn-primary" href="/admin/users/new">Add account</a>
+</div>
+
+<%- include("../partials/subnav", { tabs: [
+  { href: "/admin", label: "Accounts", active: true },
+  { href: "/admin/settings", label: "Settings", active: false },
+] }) %>
+
+<section class="card">
+  <div class="table-wrap">
+    <table class="table">
+      <thead>
+        <tr><th>Name</th><th>Username</th><th>Role</th><th>Job title</th><th>Employee #</th><th>Account</th><th></th></tr>
+      </thead>
+      <tbody>
+        <% users.forEach((u) => { %>
+          <tr class="<%= u.active ? "" : "row-inactive" %>">
+            <td>
+              <a href="/admin/users/<%= u.id %>"><%= displayName(u) %></a>
+              <% if (u.email) { %><div class="muted small"><%= u.email %></div><% } %>
+            </td>
+            <td><code><%= u.username %></code></td>
+            <td><%= ROLE_LABELS[u.role] %></td>
+            <td><%= u.job_title %></td>
+            <td><%= u.employee_number %></td>
+            <td>
+              <% if (u.active) { %>
+                <span class="badge">Active</span>
+              <% } else { %>
+                <span class="badge badge-inactive">Inactive</span>
+              <% } %>
+            </td>
+            <td class="actions">
+              <a class="btn btn-small btn-ghost" href="/admin/users/<%= u.id %>">Edit</a>
+              <a class="btn btn-small btn-ghost" href="/manage/employees/<%= u.id %>">Shifts</a>
+              <% if (u.id !== user.id) { %>
+                <% if (u.active) { %>
+                  <form method="post" action="/admin/users/<%= u.id %>/deactivate" class="inline"
+                        data-question="Deactivate <%= u.username %>? They will be logged out immediately."
+                        onsubmit="return confirm(this.dataset.question)">
+                    <input type="hidden" name="back" value="list">
+                    <button class="btn btn-small btn-ghost-danger">Deactivate</button>
+                  </form>
+                <% } else { %>
+                  <form method="post" action="/admin/users/<%= u.id %>/activate" class="inline">
+                    <input type="hidden" name="back" value="list">
+                    <button class="btn btn-small btn-ghost">Reactivate</button>
+                  </form>
+                <% } %>
+              <% } %>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<%- include("../partials/foot") %>

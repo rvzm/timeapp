@@ -1,0 +1,34 @@
+<%# Manage Employee: Requests tab (edit requests to review, and past ones). %>
+<%- include("../partials/head") %>
+<%- include("../partials/nav") %>
+<%- include("../partials/employee-head", { current: "requests" }) %>
+
+<section class="card">
+  <h2>Pending requests <span class="muted">(<%= pending.length %>)</span></h2>
+  <% if (pending.length === 0) { %>
+    <p class="muted">No pending requests.</p>
+  <% } else { %>
+    <ul class="request-list">
+      <% pending.forEach((request) => { %>
+        <li class="request">
+          <%- include("../partials/request-review", { request, back: `/manage/employees/${target.id}/requests` }) %>
+        </li>
+      <% }) %>
+    </ul>
+  <% } %>
+</section>
+
+<section class="card">
+  <h2>Reviewed</h2>
+  <% if (reviewed.length === 0) { %>
+    <p class="muted">Nothing reviewed yet.</p>
+  <% } else { %>
+    <ul class="request-list">
+      <% reviewed.forEach((request) => { %>
+        <li class="request"><%- include("../partials/request-item", { request }) %></li>
+      <% }) %>
+    </ul>
+  <% } %>
+</section>
+
+<%- include("../partials/foot") %>

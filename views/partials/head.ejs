@@ -1,0 +1,30 @@
+<!doctype html>
+<% const theme = locals.theme ?? { style: "modern", color: "standard", mode: "system", background: "none" }; %>
+<html lang="en" data-style="<%= theme.style %>" data-color="<%= theme.color %>" data-mode="<%= theme.mode %>" data-theme="<%= theme.mode === "dark" ? "dark" : "light" %>" data-bg="<%= theme.background %>">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title><%= locals.title ? locals.title + " · " : "" %><%= appConfig.name %></title>
+  <% if (theme.mode === "system") { %>
+    <script>
+      // "Match my device": follow the device's light/dark setting, before the page paints
+      // and whenever the setting changes.
+      (function () {
+        var root = document.documentElement;
+        var query = window.matchMedia("(prefers-color-scheme: dark)");
+        function apply() { root.setAttribute("data-theme", query.matches ? "dark" : "light"); }
+        apply();
+        query.addEventListener("change", apply);
+      })();
+    </script>
+  <% } %>
+  <%# Open Props scales and the style fonts. A font file only downloads if the page uses it. %>
+  <link rel="stylesheet" href="/vendor/open-props/shadows.min.css">
+  <link rel="stylesheet" href="/vendor/open-props/borders.min.css">
+  <link rel="stylesheet" href="/vendor/open-props/easings.min.css">
+  <link rel="stylesheet" href="/vendor/fonts/inter/index.css">
+  <link rel="stylesheet" href="/vendor/fonts/jetbrains-mono/index.css">
+  <link rel="stylesheet" href="/vendor/fonts/space-grotesk/index.css">
+  <link rel="stylesheet" href="/timeapp.css">
+</head>
+<body>

@@ -1,0 +1,62 @@
+<%- include("../partials/head") %>
+<%- include("../partials/nav") %>
+
+<p class="breadcrumb"><a href="/portal/requests">← My requests</a></p>
+
+<section class="card">
+  <h1><%= KIND_LABELS[form.kind] %></h1>
+  <p class="muted">
+    <%= settings.requestMode === "honor"
+      ? "Your change will apply right away and be logged."
+      : "A manager will review your request before anything changes." %>
+  </p>
+
+  <% if (punch) { %>
+    <p>Punch: <strong><%= PUNCH_LABELS[punch.type] %></strong> at <strong><%= fmt.formatDateTime(punch.timestamp) %></strong></p>
+  <% } %>
+
+  <% if (error) { %>
+    <p class="alert alert-error"><%= error %></p>
+  <% } %>
+
+  <form method="post" action="/portal/requests" class="form-grid">
+    <input type="hidden" name="kind" value="<%= form.kind %>">
+    <input type="hidden" name="punch_id" value="<%= form.punch_id %>">
+
+    <% if (form.kind === "change" || form.kind === "add") { %>
+      <label class="field">
+        <span><%= form.kind === "change" ? "Should be" : "Punch" %></span>
+        <select name="type" required>
+          <% PUNCH_TYPES.forEach((type) => { %>
+            <option value="<%= type %>"<%= form.type === type ? " selected" : "" %>><%= PUNCH_LABELS[type] %></option>
+          <% }) %>
+        </select>
+      </label>
+      <label class="field">
+        <span>Date &amp; time</span>
+        <input type="datetime-local" name="when" value="<%= form.when %>" required>
+      </label>
+    <% } else if (form.kind === "add_shift") { %>
+      <label class="field">
+        <span>Clocked in</span>
+        <input type="datetime-local" name="when" value="<%= form.when %>" required>
+      </label>
+      <label class="field">
+        <span>Clocked out</span>
+        <input type="datetime-local" name="end" value="<%= form.end %>" required>
+      </label>
+    <% } %>
+
+    <label class="field field-wide">
+      <span>Reason</span>
+      <textarea name="reason" rows="3" maxlength="500" required placeholder="e.g. The badge reader was down"><%= form.reason %></textarea>
+    </label>
+
+    <div class="form-actions field-wide">
+      <button class="btn btn-primary"><%= form.kind === "delete" ? "Request deletion" : "Send request" %></button>
+      <a class="btn btn-ghost" href="/portal">Cancel</a>
+    </div>
+  </form>
+</section>
+
+<%- include("../partials/foot") %>

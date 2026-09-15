@@ -1,0 +1,126 @@
+<%- include("../partials/head") %>
+<%- include("../partials/nav") %>
+
+<div class="page-head">
+  <h1>Admin</h1>
+</div>
+
+<%- include("../partials/subnav", { tabs: [
+  { href: "/admin", label: "Accounts", active: false },
+  { href: "/admin/settings", label: "Settings", active: true },
+] }) %>
+
+<section class="card">
+  <% if (notice) { %>
+    <p class="alert alert-ok"><%= notice %></p>
+  <% } %>
+  <% if (error) { %>
+    <p class="alert alert-error"><%= error %></p>
+  <% } %>
+
+  <form method="post" action="/admin/settings" class="stack">
+    <fieldset>
+      <legend>Time display</legend>
+      <div class="form-grid">
+        <label class="field">
+          <span>Timezone</span>
+          <input name="timezone" value="<%= form.timezone %>" list="timezones" placeholder="<%= fmt.serverTimeZone %>" autocomplete="off">
+          <span class="hint">Leave blank to use the server's timezone (<%= fmt.serverTimeZone %>).</span>
+        </label>
+        <datalist id="timezones">
+          <% TIME_ZONES.forEach((zone) => { %><option value="<%= zone %>"><% }) %>
+        </datalist>
+        <label class="field">
+          <span>Clock</span>
+          <select name="hour12">
+            <option value="true"<%= form.hour12 === true ? " selected" : "" %>>12-hour (3:05 PM)</option>
+            <option value="false"<%= form.hour12 === false ? " selected" : "" %>>24-hour (15:05)</option>
+          </select>
+        </label>
+        <label class="field">
+          <span>Weeks start on</span>
+          <select name="weekStart">
+            <% fmt.WEEKDAY_NAMES.forEach((name, day) => { %>
+              <option value="<%= day %>"<%= Number(form.weekStart) === day ? " selected" : "" %>><%= name %></option>
+            <% }) %>
+          </select>
+        </label>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Appearance and logins</legend>
+      <div class="form-grid">
+        <label class="field">
+          <span>Default style</span>
+          <select name="defaultStyle">
+            <% THEME_STYLES.forEach((style) => { %>
+              <option value="<%= style %>"<%= form.defaultStyle === style ? " selected" : "" %>><%= THEME_STYLE_LABELS[style] %></option>
+            <% }) %>
+          </select>
+          <span class="hint">Fonts, corners, borders, and shadows, for anyone who hasn't picked a style in their settings.</span>
+        </label>
+        <label class="field">
+          <span>Default color theme</span>
+          <select name="defaultColor">
+            <% THEME_COLORS.forEach((color) => { %>
+              <option value="<%= color %>"<%= form.defaultColor === color ? " selected" : "" %>><%= THEME_COLOR_LABELS[color] %></option>
+            <% }) %>
+          </select>
+          <span class="hint">For the login page and anyone who hasn't picked a color theme in their settings.</span>
+        </label>
+        <label class="field">
+          <span>Default light or dark</span>
+          <select name="defaultTheme">
+            <% THEME_MODES.forEach((mode) => { %>
+              <option value="<%= mode %>"<%= form.defaultTheme === mode ? " selected" : "" %>><%= THEME_MODE_LABELS[mode] %></option>
+            <% }) %>
+          </select>
+        </label>
+        <label class="field">
+          <span>Default background</span>
+          <select name="defaultBackground">
+            <% THEME_BACKGROUNDS.forEach((background) => { %>
+              <option value="<%= background %>"<%= form.defaultBackground === background ? " selected" : "" %>><%= THEME_BACKGROUND_LABELS[background] %></option>
+            <% }) %>
+          </select>
+          <span class="hint">For the login page and anyone who hasn't picked a background in their settings. Aurora, Waves, and Starfield move slowly (and hold still for people who reduce motion); Glow is Aurora standing still.</span>
+        </label>
+        <label class="field">
+          <span>Login length (hours)</span>
+          <input type="number" name="sessionHours" value="<%= form.sessionHours %>" min="1" max="720" required>
+          <span class="hint">Applies to new logins.</span>
+        </label>
+        <label class="field">
+          <span>Grace minutes</span>
+          <input type="number" name="lateGraceMinutes" value="<%= form.lateGraceMinutes %>" min="0" max="240" required>
+          <span class="hint">Slack before a mandatory shift counts as Late or Left early.</span>
+        </label>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Punch edit requests</legend>
+      <div class="stack">
+        <label class="field">
+          <span>Mode</span>
+          <select name="requestMode">
+            <option value="disabled"<%= form.requestMode === "disabled" ? " selected" : "" %>>Disabled: employees can't request edits</option>
+            <option value="approval"<%= form.requestMode === "approval" ? " selected" : "" %>>Approval: a manager or admin approves each request</option>
+            <option value="honor"<%= form.requestMode === "honor" ? " selected" : "" %>>Honor system: requests apply immediately and are logged</option>
+          </select>
+        </label>
+        <label class="checkbox">
+          <input type="checkbox" name="managersEditSelf"<%= form.managersEditSelf ? " checked" : "" %>>
+          <span>Managers can edit their own punches and approve their own requests</span>
+        </label>
+      </div>
+    </fieldset>
+
+    <div class="form-actions">
+      <button class="btn btn-primary">Save settings</button>
+    </div>
+  </form>
+</section>
+
+<%- include("../partials/foot") %>

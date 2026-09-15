@@ -1,0 +1,121 @@
+<%# Punches grouped into shifts, one <tbody> per shift.
+    Needs `shifts` and `mode`:
+      "clock"  - read-only
+      "portal" - note threads (also needs `notesBack`: the URL to return to after a note is posted),
+                 plus request links when `requestsOn`
+      "manage" - note threads plus edit/delete buttons (also needs `notesBack`, `target`, and `range`)
+    Optional `pendingByPunch` ({ punchId: request }) badges punches with a pending edit request. %>
+<% const manage = mode === "manage"; %>
+<% const withNotes = mode === "portal" || mode === "manage"; %>
+<% const showRequests = mode === "portal" && locals.requestsOn; %>
+<% const pendingByPunch = locals.pendingByPunch ?? {}; %>
+<% const columns = manage || showRequests ? 4 : 3; %>
+<div class="table-wrap">
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Time</th><th>Punch</th><th>Note</th>
+        <% if (columns === 4) { %><th></th><% } %>
+      </tr>
+    </thead>
+
+    <% shifts.forEach((shift) => { %>
+      <%
+        // Just the time for punches on the shift's start date; date and time otherwise (overnight shifts).
+        const when = (iso) => fmt.localDate(iso) === shift.date ? fmt.formatTime(iso) : fmt.formatDateTime(iso);
+      %>
+      <tbody class="shift<%= shift.issues.length ? " shift-warn" : "" %>">
+        <tr class="shift-head">
+          <th colspan="<%= columns %>" scope="rowgroup">
+            <div class="shift-head-inner">
+              <div class="shift-summary">
+                <strong><%= fmt.formatDay(shift.date) %></strong>
+                <span>
+                  <%= shift.clockIn ? when(shift.clockIn.timestamp) : "?" %>
+                  –
+                  <%= shift.clockOut ? when(shift.clockOut.timestamp) : shift.inProgress ? "now" : "?" %>
+                </span>
+                <% if (shift.workedMs !== null) { %>
+                  <span class="muted"><%= fmt.formatDuration(shift.workedMs) %> worked</span>
+                <% } %>
+                <% if (shift.breakMs > 0) { %>
+                  <span class="muted"><%= fmt.formatDuration(shift.breakMs) %> break</span>
+                <% } %>
+                <% if (shift.inProgress) { %>
+                  <span class="badge badge-in"><span class="dot"></span>In progress</span>
+                <% } %>
+                <% shift.issues.forEach((issue) => { %>
+                  <span class="badge badge-warn"><%= issue %></span>
+                <% }) %>
+                <% shift.warnings.forEach((warning) => { %>
+                  <span class="badge badge-warn"><%= warning %></span>
+                <% }) %>
+              </div>
+              <% if (manage) { %>
+                <%- include("delete-punches-form", {
+                  ids: shift.ids,
+                  label: "Delete shift",
+                  question: `Delete this entire shift (${shift.ids.length} punch${shift.ids.length === 1 ? "" : "es"})? This cannot be undone.`,
+                }) %>
+              <% } %>
+            </div>
+          </th>
+        </tr>
+
+        <% shift.rows.forEach(({ punch: p, brk }) => { %>
+          <tr class="punch-row<%= brk ? " row-break" : "" %>">
+            <td class="nowrap"><%= when(p.timestamp) %></td>
+            <td class="nowrap punch-cell">
+              <span class="badge badge-<%= statusFromPunch(p) %>"><span class="dot"></span><%= PUNCH_LABELS[p.type] %></span>
+            </td>
+            <td>
+              <%= p.note %>
+              <% if (p.edited_by) { %><div class="muted small">Adjusted by <%= p.editor_name %></div><% } %>
+            </td>
+            <% if (showRequests) { %>
+              <td class="actions">
+                <% if (pendingByPunch[p.id]) { %>
+                  <span class="badge badge-break"><span class="dot"></span><%= pendingByPunch[p.id].kind === "delete" ? "Delete requested" : "Change requested" %></span>
+                <% } else { %>
+                  <a class="btn btn-small btn-ghost" href="/portal/requests/new?kind=change&amp;punch=<%= p.id %>">Request change</a>
+                  <a class="btn btn-small btn-ghost" href="/portal/requests/new?kind=delete&amp;punch=<%= p.id %>">Request delete</a>
+                <% } %>
+              </td>
+            <% } %>
+            <% if (manage) { %>
+              <td class="actions">
+                <% if (pendingByPunch[p.id]) { %>
+                  <span class="badge badge-break"><span class="dot"></span>Request pending</span>
+                <% } %>
+                <a class="btn btn-small btn-ghost" href="/manage/punches/<%= p.id %>/edit?from=<%= range.from %>&amp;to=<%= range.to %>">Edit</a>
+                <%- include("delete-punches-form", {
+                  ids: [p.id],
+                  label: "Delete",
+                  question: "Delete this punch? This cannot be undone.",
+                }) %>
+                <% if (brk && brk.punches[0] === p && brk.ids.length > 1) { %>
+                  <%- include("delete-punches-form", {
+                    ids: brk.ids,
+                    label: "Delete break",
+                    question: "Delete this break (start and end)? This cannot be undone.",
+                  }) %>
+                <% } %>
+              </td>
+            <% } %>
+          </tr>
+        <% }) %>
+
+        <% if (withNotes) { %>
+          <tr class="notes-row">
+            <td colspan="<%= columns %>">
+              <details class="notes"<%= shift.notes.length ? " open" : "" %>>
+                <summary><%= shift.notes.length ? `Notes (${shift.notes.length})` : "Add a note" %></summary>
+                <%- include("notes", { shift, back: notesBack }) %>
+              </details>
+            </td>
+          </tr>
+        <% } %>
+      </tbody>
+    <% }) %>
+  </table>
+</div>

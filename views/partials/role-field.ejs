@@ -1,0 +1,9 @@
+<%# The role picker, for the Add account form and an account's Access tab. Needs `role` (the selected one). %>
+<label class="field">
+  <span>Role</span>
+  <select name="role">
+    <% ROLES.forEach((option) => { %>
+      <option value="<%= option %>"<%= role === option ? " selected" : "" %>><%= ROLE_LABELS[option] %></option>
+    <% }) %>
+  </select>
+</label>

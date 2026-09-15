@@ -1,0 +1,61 @@
+<%# Manage Employee: Schedule tab (mandatory shifts). %>
+<%- include("../partials/head") %>
+<%- include("../partials/nav") %>
+<%- include("../partials/employee-head", { current: "schedule" }) %>
+
+<section class="card">
+  <h2>Mandatory shifts</h2>
+  <% if (schedule.length === 0) { %>
+    <p class="muted">No shifts assigned in the last 2 weeks or the next 4.</p>
+  <% } else { %>
+    <%- include("../partials/schedule-list", {
+      assignments: schedule,
+      canDelete: () => canSchedule,
+      back: `/manage/employees/${target.id}/schedule`,
+    }) %>
+  <% } %>
+</section>
+
+<section class="card">
+  <h2>Assign a shift</h2>
+  <% if (canSchedule) { %>
+    <% if (scheduleError) { %>
+      <p class="alert alert-error"><%= scheduleError %></p>
+    <% } %>
+    <% if (scheduleConflicts.length) { %>
+      <div class="alert alert-warn">
+        <p><strong>Check before assigning:</strong></p>
+        <ul>
+          <% scheduleConflicts.forEach((conflict) => { %><li><%= conflict %></li><% }) %>
+        </ul>
+      </div>
+    <% } %>
+    <form method="post" action="/manage/employees/<%= target.id %>/schedule" class="form-grid">
+      <label class="field">
+        <span>Starts</span>
+        <input type="datetime-local" name="start" value="<%= scheduleForm.start %>" required>
+      </label>
+      <label class="field">
+        <span>Ends</span>
+        <input type="datetime-local" name="end" value="<%= scheduleForm.end %>" required>
+      </label>
+      <label class="field field-wide">
+        <span>Note <span class="hint">(optional)</span></span>
+        <input name="note" value="<%= scheduleForm.note %>" maxlength="200" placeholder="e.g. Inventory day">
+      </label>
+      <% if (scheduleConflicts.length) { %>
+        <label class="checkbox field-wide">
+          <input type="checkbox" name="assign_anyway">
+          <span>Assign anyway</span>
+        </label>
+      <% } %>
+      <div class="form-actions field-wide">
+        <button class="btn btn-primary">Assign shift</button>
+      </div>
+    </form>
+  <% } else { %>
+    <p class="muted small">Only an admin can assign your own shifts.</p>
+  <% } %>
+</section>
+
+<%- include("../partials/foot") %>

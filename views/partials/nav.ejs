@@ -1,0 +1,51 @@
+<% const currentUser = locals.user; const currentPath = locals.path || ""; %>
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="/"><%= appConfig.name %></a>
+
+    <nav class="topbar-links">
+      <% if (currentUser) { %>
+        <a href="/clock"<%- currentPath === "/clock" ? ' aria-current="page"' : "" %>>Clock</a>
+        <a href="/portal"<%- currentPath.startsWith("/portal") ? ' aria-current="page"' : "" %>>My Portal</a>
+        <% if (isManagerOrAdmin(currentUser)) { %>
+          <a href="/manage"<%- currentPath.startsWith("/manage") ? ' aria-current="page"' : "" %>>Manage<% if (locals.pendingRequestCount) { %> <span class="nav-count" title="Pending edit requests"><%= pendingRequestCount %></span><% } %></a>
+        <% } %>
+        <% if (isAdmin(currentUser)) { %>
+          <a href="/admin"<%- currentPath.startsWith("/admin") ? ' aria-current="page"' : "" %>>Admin</a>
+        <% } %>
+      <% } %>
+    </nav>
+
+    <div class="topbar-actions">
+      <% if (currentUser) { %>
+        <%# Account menu. <details> opens and closes without JavaScript; the script below
+            just closes it on an outside click or Escape. %>
+        <details class="user-menu">
+          <summary class="btn btn-ghost btn-small"><span class="user-name"><%= displayName(currentUser) %></span></summary>
+          <div class="user-menu-list">
+            <a href="/profile"<%- currentPath.startsWith("/profile") ? ' aria-current="page"' : "" %>>Profile</a>
+            <a href="/settings"<%- currentPath.startsWith("/settings") ? ' aria-current="page"' : "" %>>Settings</a>
+            <form method="post" action="/logout">
+              <button>Log out</button>
+            </form>
+          </div>
+        </details>
+        <script>
+          (function () {
+            var menu = document.currentScript.previousElementSibling;
+            document.addEventListener("click", function (event) {
+              if (menu.open && !menu.contains(event.target)) menu.open = false;
+            });
+            document.addEventListener("keydown", function (event) {
+              if (event.key === "Escape" && menu.open) {
+                menu.open = false;
+                menu.querySelector("summary").focus();
+              }
+            });
+          })();
+        </script>
+      <% } %>
+    </div>
+  </div>
+</header>
+<main class="container">
