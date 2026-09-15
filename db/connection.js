@@ -195,7 +195,10 @@ const migrations = [
 
 function migrate() {
   const current = db.pragma("user_version", { simple: true });
-  if (current >= migrations.length) return;
+  if (current > migrations.length) {
+    throw new Error(`This database is from a newer version of TimeApp (schema ${current}; this version knows up to ${migrations.length}). Update TimeApp first.`);
+  }
+  if (current === migrations.length) return;
 
   // Rebuilding a table needs foreign key enforcement off, and that can only be
   // switched outside a transaction. foreign_key_check confirms nothing broke.
