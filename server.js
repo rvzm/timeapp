@@ -3,7 +3,7 @@ import express from "express";
 import cookieParser from "cookie-parser";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { app_config, server_config, session_config } from "./config.js";
+import { app_config, server_config, session_config, cornershot_config } from "./config.js";
 import * as db from "./db.js";
 import * as time from "./time.js";
 import { getSettings } from "./settings.js";
@@ -12,7 +12,7 @@ import { loadUser } from "./auth.js";
 import { KIND_LABELS, REQUEST_STATUS_LABELS, pendingRequestsFor } from "./requests.js";
 import {
   THEME_STYLES, THEME_STYLE_LABELS, THEME_COLORS, THEME_COLOR_LABELS, THEME_MODES, THEME_MODE_LABELS,
-  THEME_BACKGROUNDS, THEME_BACKGROUND_LABELS, themeFor,
+  THEME_BACKGROUNDS, THEME_BACKGROUND_LABELS, themeFor, cornershotStyle,
 } from "./themes.js";
 import authRoutes from "./routes/auth.js";
 import clockRoutes from "./routes/clock.js";
@@ -53,6 +53,8 @@ Object.assign(app.locals, {
   THEME_MODE_LABELS,
   THEME_BACKGROUNDS,
   THEME_BACKGROUND_LABELS,
+  // The Cornershot background's config.js settings, as CSS variables (views/partials/head.ejs).
+  cornershotStyle: cornershotStyle(cornershot_config, app_config.name),
 });
 
 app.use(express.static(path.join(__dirname, "public")));

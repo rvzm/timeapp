@@ -8,7 +8,7 @@
 // A style changes shape and feel: fonts, corners, borders, shadows (data-style on <html>;
 // section 9 of the CSS overrides the style tokens from section 1). It never sets colors.
 
-export const THEME_COLORS = ["standard", "ocean", "forest", "sunset", "grape", "fire"];
+export const THEME_COLORS = ["standard", "ocean", "forest", "sunset", "grape", "fire", "beach", "mountain", "vanilla", "obsidian"];
 
 export const THEME_COLOR_LABELS = {
   standard: "Standard",
@@ -17,6 +17,10 @@ export const THEME_COLOR_LABELS = {
   sunset: "Sunset",
   grape: "Grape",
   fire: "Fire",
+  beach: "Beach",
+  mountain: "Mountain",
+  vanilla: "Vanilla",
+  obsidian: "Obsidian",
 };
 
 export const THEME_MODES = ["system", "light", "dark"];
@@ -27,7 +31,7 @@ export const THEME_MODE_LABELS = {
   dark: "Dark",
 };
 
-export const THEME_BACKGROUNDS = ["none", "glow", "aurora", "dots", "grain", "waves", "starfield", "cityscape"];
+export const THEME_BACKGROUNDS = ["none", "glow", "aurora", "dots", "grain", "waves", "starfield", "cityscape", "farm", "cornershot"];
 
 export const THEME_BACKGROUND_LABELS = {
   none: "None",
@@ -38,13 +42,16 @@ export const THEME_BACKGROUND_LABELS = {
   waves: "Waves",
   starfield: "Starfield",
   cityscape: "Cityscape",
+  farm: "Farm",
+  cornershot: "Cornershot",
 };
 
-export const THEME_STYLES = ["modern", "minimal", "terminal", "blueprint"];
+export const THEME_STYLES = ["modern", "minimal", "boxworld", "terminal", "blueprint"];
 
 export const THEME_STYLE_LABELS = {
   modern: "Modern",
   minimal: "Minimal",
+  boxworld: "Boxworld",
   terminal: "Terminal",
   blueprint: "Blueprint",
 };
@@ -71,4 +78,48 @@ export function readThemeForm(body) {
   if (!THEME_MODES.includes(mode)) return { error: "Pick light, dark, or match my device." };
   if (!THEME_BACKGROUNDS.includes(background)) return { error: "Pick a background." };
   return { values: { style, color, mode, background } };
+}
+
+// ===================================================================
+// ===== Cornershot =====
+// ===================================================================
+
+const CORNERSHOT_DEFAULTS = { text: "", size: 140, xSeconds: 15, ySeconds: 9, nearMissSeconds: 0.5, colorShift: true, opacity: 0.4 };
+
+const gcd = (a, b) => (b ? gcd(b, a % b) : a);
+
+// The Cornershot background's settings from config.js, as CSS custom properties for a
+// <style> in the page head (the rules are in public/timeapp.css). Bad values are replaced
+// with the defaults, with a warning in the server log.
+export function cornershotStyle(config = {}, appName = "TimeApp") {
+  const pick = (key, isValid) => {
+    if (config[key] === undefined) return CORNERSHOT_DEFAULTS[key];
+    if (isValid(config[key])) return config[key];
+    console.warn(`cornershot_config.${key} (${JSON.stringify(config[key])}) isn't valid; using ${JSON.stringify(CORNERSHOT_DEFAULTS[key])}.`);
+    return CORNERSHOT_DEFAULTS[key];
+  };
+  const isNumber = (min, max) => (n) => typeof n === "number" && n >= min && n <= max;
+  const isWholeSeconds = (n) => Number.isInteger(n) && n >= 1 && n <= 600;
+
+  const text = pick("text", (v) => typeof v === "string" && v.length <= 40) || appName;
+  const size = pick("size", isNumber(20, 1000));
+  const xSeconds = pick("xSeconds", isWholeSeconds);
+  const ySeconds = pick("ySeconds", isWholeSeconds);
+  const colorShift = pick("colorShift", (v) => typeof v === "boolean");
+  const opacity = pick("opacity", isNumber(0, 1));
+  let nearMiss = pick("nearMissSeconds", isNumber(0.05, 600));
+
+  // Wall hits land on multiples of gcd(xSeconds, ySeconds). If the vertical bounce is delayed
+  // by a multiple of that too, the two can line up and it would hit a corner exactly.
+  const step = gcd(xSeconds, ySeconds);
+  if (Math.abs(nearMiss / step - Math.round(nearMiss / step)) < 1e-9) {
+    console.warn(`cornershot_config.nearMissSeconds (${nearMiss}) is a multiple of ${step}s, so it could hit a corner; using ${step / 2}.`);
+    nearMiss = step / 2;
+  }
+
+  // Escaped for a double-quoted CSS string; "<" too, so it can't close the <style> element.
+  const cssText = `"${text.replace(/[\\"]/g, "\\$&").replace(/</g, "\\3c ").replace(/[\r\n]+/g, " ")}"`;
+  const start = Math.max(1, Math.round(xSeconds * 0.3)); // begin partway across, not in a corner
+  return `:root{--cs-text:${cssText};--cs-w:${size}px;--cs-h:${size / 2}px;--cs-x:${xSeconds}s;--cs-y:${ySeconds}s;` +
+    `--cs-start:${start}s;--cs-miss:${nearMiss}s;--cs-shift:${colorShift ? 1 : 0};--cs-opacity:${opacity}}`;
 }

@@ -5,7 +5,7 @@
 
 export const app_config = {
   name: "TimeApp", // Shown in the page title, header, and footer
-  version: "0.2.3",
+  version: "0.2.5",
 };
 
 export const server_config = {
@@ -36,10 +36,23 @@ export const time_config = {
 };
 
 export const ui_config = {
-  defaultStyle: "modern",   // [setting] Theme style (fonts, corners, borders, shadows) for anyone who hasn't picked: "modern", "minimal", "terminal", or "blueprint"
-  defaultColor: "standard", // [setting] Color theme for anyone who hasn't picked one: "standard", "ocean", "forest", "sunset", "grape", or "fire"
+  defaultStyle: "modern",   // [setting] Theme style (fonts, corners, borders, shadows) for anyone who hasn't picked: "modern", "minimal", "boxworld", "terminal", or "blueprint"
+  defaultColor: "standard", // [setting] Color theme for anyone who hasn't picked one: "standard", "ocean", "forest", "sunset", "grape", "fire", "beach", "mountain", "vanilla", or "obsidian"
   defaultTheme: "system",   // [setting] Light/dark for anyone who hasn't picked: "system" (match the device), "light", or "dark"
-  defaultBackground: "aurora", // [setting] Page background for anyone who hasn't picked: "none" (plain), "glow", "aurora" (moving), "dots", "grain", "waves" (moving), "starfield" (moving), or "cityscape"
+  defaultBackground: "aurora", // [setting] Page background for anyone who hasn't picked: "none" (plain), "glow", "aurora" (moving), "dots", "grain", "waves" (moving), "starfield" (moving), "cityscape", "farm" (turning windmill), or "cornershot" (moving)
+};
+
+// The Cornershot background: a logo that bounces around the screen and almost, but never,
+// hits a corner. Restart the server after changing these.
+export const cornershot_config = {
+  text: "",             // The logo's text (up to 40 characters); empty = app_config.name
+  size: 140,            // Logo width in pixels (its height is half that)
+  xSeconds: 15,         // Seconds to cross the screen side to side (a whole number)
+  ySeconds: 9,          // Seconds to cross top to bottom (a whole number)
+  nearMissSeconds: 0.5, // How far behind the up-and-down bounce starts. It keeps the logo off exact corners, so it
+                        // must not be a multiple of the largest whole number dividing both xSeconds and ySeconds
+  colorShift: true,     // true = change color every time it hits a wall
+  opacity: 0.4,         // How visible it is, 0 to 1 (dark mode shows it a little stronger)
 };
 
 export const attendance_config = {

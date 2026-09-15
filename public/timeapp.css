@@ -53,6 +53,11 @@
   --aurora-duration: 20s;     /* one drift of the Aurora background; bigger = slower */
   --waves-duration: 40s;      /* how long Waves take to roll one loop */
   --starfield-duration: 8s;   /* one shimmer of the Starfield */
+  --farm-blades-duration: 24s; /* one turn of Farm's windmill; Cornershot's settings are in config.js */
+  /* Units the scene backgrounds are sized in: the screen on the page; the preview box in Settings. */
+  --bg-u-w: 1vw;
+  --bg-u-h: 1vh;
+  --farm-h: calc(var(--bg-u-h) * 34); /* height of Farm's scene */
 
   /* Brand and status colors */
   --standard-accent: #2563eb;          /* Standard theme: primary buttons, focus rings (color themes set their own) */
@@ -110,9 +115,17 @@
   --bg-glow-scale: var(--bg-glow-dark-boost); /* a stronger glow, relative to --bg-glow-strength, so it shows on dark backgrounds */
 }
 
+/* Lines drawn in the accent color (focus rings, the current tab, the selected option,
+   style details) use --accent-line. It's the accent itself unless a color's accent is too
+   light to see as a line, like Vanilla's. The [data-color] selector also matches the theme
+   picker's swatches, so each swatch gets its own color's line. */
+[data-color] { --accent-line: var(--accent); }
+
 /* Color themes. Each sets the same tokens in its light and dark block; anything they
    don't set (status colors, warning backgrounds) comes from the Standard palettes.
-   To add one: copy a pair of blocks, then add its name to THEME_COLORS in themes.js. */
+   A light block's --accent-line also applies in dark mode, so a dark block that should use
+   the plain accent resets it. To add one: copy a pair of blocks, then add its name to
+   THEME_COLORS in themes.js. Pick --accent-contrast (text on accent buttons) to match the accent. */
 
 /* Ocean: blue and teal */
 [data-color="ocean"] {
@@ -232,6 +245,108 @@
   --accent: #dc2626;
   --accent-contrast: #ffffff;
   --link: #ff9d88;
+}
+
+/* Beach: light-blue accents, cool sandy backgrounds */
+[data-color="beach"] {
+  --bg: #f3efe6;
+  --surface: #fffdf9;
+  --surface-2: #ebe5d8;
+  --text: #1e2a33;
+  --muted: #5c6770;
+  --border: #ddd5c5;
+  --accent: #4fb3e0;
+  --accent-contrast: #06222f;
+  --accent-line: #1f7fae; /* the light blue is too pale for lines on sand */
+  --link: #1d6f99;
+}
+[data-color="beach"][data-theme="dark"] {
+  --bg: #15191b;
+  --surface: #1d2225;
+  --surface-2: #262c30;
+  --text: #ece6da;
+  --muted: #a8a192;
+  --border: #343b3f;
+  --accent: #5cc0e8;
+  --accent-contrast: #06222f;
+  --accent-line: var(--accent);
+  --link: #91d5f2;
+}
+
+/* Mountain: slate gray and soft-white accents, off-tone gray backgrounds */
+[data-color="mountain"] {
+  --bg: #e8e7e3;
+  --surface: #f7f6f3;
+  --surface-2: #deddd8;
+  --text: #22252a;
+  --muted: #5d6168;
+  --border: #cfcdc6;
+  --accent: #5d646e;
+  --accent-contrast: #f7f6f3;
+  --link: #454b54;
+}
+[data-color="mountain"][data-theme="dark"] {
+  --bg: #1b1d20;
+  --surface: #24272b;
+  --surface-2: #2e3236;
+  --text: #ecebe7;
+  --muted: #a4a7ab;
+  --border: #3b3f44;
+  --accent: #dcdad4;
+  --accent-contrast: #1b1d20;
+  --link: #e8e6e0;
+}
+
+/* Vanilla: light gray and white accents, bright cool backgrounds */
+[data-color="vanilla"] {
+  --bg: #f7f9fc;
+  --surface: #ffffff;
+  --surface-2: #eef1f5;
+  --text: #1b2027;
+  --muted: #5a6370;
+  --border: #dde2e8;
+  --accent: #cfd6de;
+  --accent-contrast: #1b2027;
+  --accent-line: #6f7a87; /* light gray lines would vanish on white */
+  --link: #3a4552;
+}
+[data-color="vanilla"][data-theme="dark"] {
+  --bg: #15181c;
+  --surface: #1d2126;
+  --surface-2: #272c32;
+  --text: #f4f6f8;
+  --muted: #a9b1ba;
+  --border: #363c43;
+  --accent: #f4f6f8;
+  --accent-contrast: #15181c;
+  --accent-line: var(--accent);
+  --link: #dfe6ec;
+}
+
+/* Obsidian: dark purple and black accents, sharp backgrounds (near-black in dark mode) */
+[data-color="obsidian"] {
+  --bg: #efecf4;
+  --surface: #ffffff;
+  --surface-2: #e6e1ee;
+  --text: #0e0a14;
+  --muted: #52475e;
+  --border: #d3cbe0;
+  --accent: #5a2ea6;
+  --accent-contrast: #ffffff;
+  --accent-line: #0e0a14; /* black lines */
+  --link: #4a2590;
+}
+[data-color="obsidian"][data-theme="dark"] {
+  --bg: #07060a;
+  --surface: #110e17;
+  --surface-2: #1c1725;
+  --text: #efeaf7;
+  --muted: #a79cb8;
+  --border: #2d2340;
+  --accent: #7c4ae8;
+  --accent-contrast: #ffffff;
+  --accent-line: var(--accent);
+  --link: #c3a8ff;
 }
 
 
@@ -374,11 +489,113 @@
 }
 [data-bg="cityscape"] body::before { top: auto; height: 32vh; }
 
+/* Farm: a farm along the bottom, drawn like Cityscape (an accent gradient cut to shape by SVG
+   masks): hills and trees in back; a barn, silo, farmhouse, and fence in front. The windmill
+   tower is a second mask layer that doesn't repeat, so there's only ever one, and its blades
+   turn on their own layer, html::after (body::after belongs to the Terminal style). Positions
+   are in --bg-u-w/--bg-u-h and --farm-h units, so the blades sit on the tower at any size.
+   --farm-tower-x puts the tower in the open field between two trees in the first copy of the
+   scene (x 860 of its 1200), or near the right edge if the screen is narrower than that. It's
+   declared on both layers so the preview in Settings works it out from its own size. */
+[data-bg="farm"] body::before,
+.bg-swatch[data-bg="farm"]::before {
+  --farm-scene: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='1200' height='320' viewBox='0 0 1200 320'><defs><mask id='m' maskUnits='userSpaceOnUse' x='0' y='0' width='1200' height='320'><rect width='1200' height='320' fill='white'/><rect x='252' y='242' width='56' height='58' fill='black'/><path d='M252 242 L308 300 M308 242 L252 300' stroke='white' stroke-width='6'/><rect x='268' y='182' width='24' height='22' fill='black'/><rect x='400' y='190' width='50' height='3' fill='black'/><rect x='400' y='230' width='50' height='3' fill='black'/><rect x='400' y='270' width='50' height='3' fill='black'/><rect x='588' y='256' width='18' height='16' fill='black'/><rect x='644' y='256' width='18' height='16' fill='black'/><rect x='616' y='272' width='18' height='28' fill='black'/></mask></defs><g fill-opacity='.45'><path d='M0 250 Q150 195 300 240 T600 235 T900 240 T1200 250 V320 H0 Z'/><circle cx='90' cy='212' r='24'/><rect x='86' y='230' width='8' height='30'/><circle cx='480' cy='200' r='30'/><rect x='475' y='225' width='10' height='30'/><circle cx='800' cy='208' r='22'/><rect x='796' y='226' width='8' height='24'/><circle cx='1060' cy='204' r='28'/><rect x='1055' y='228' width='10' height='30'/></g><g mask='url(%23m)'><rect x='0' y='300' width='1200' height='20'/><rect x='190' y='210' width='180' height='90'/><polygon points='180,214 212,166 280,142 348,166 380,214'/><rect x='400' y='150' width='50' height='150'/><path d='M400 152 A25 25 0 0 1 450 152 Z'/><rect x='570' y='240' width='110' height='60'/><polygon points='558,244 625,198 692,244'/><rect x='650' y='204' width='12' height='26'/><circle cx='520' cy='238' r='26'/><rect x='515' y='258' width='10' height='42'/><circle cx='945' cy='236' r='24'/><rect x='940' y='254' width='10' height='46'/><rect x='0' y='274' width='170' height='4'/><rect x='0' y='287' width='170' height='4'/><rect x='10' y='266' width='5' height='34'/><rect x='45' y='266' width='5' height='34'/><rect x='80' y='266' width='5' height='34'/><rect x='115' y='266' width='5' height='34'/><rect x='150' y='266' width='5' height='34'/><rect x='700' y='274' width='500' height='4'/><rect x='700' y='287' width='500' height='4'/><rect x='705' y='266' width='5' height='34'/><rect x='740' y='266' width='5' height='34'/><rect x='775' y='266' width='5' height='34'/><rect x='810' y='266' width='5' height='34'/><rect x='845' y='266' width='5' height='34'/><rect x='880' y='266' width='5' height='34'/><rect x='915' y='266' width='5' height='34'/><rect x='985' y='266' width='5' height='34'/><rect x='1020' y='266' width='5' height='34'/><rect x='1055' y='266' width='5' height='34'/><rect x='1090' y='266' width='5' height='34'/><rect x='1125' y='266' width='5' height='34'/><rect x='1160' y='266' width='5' height='34'/><rect x='1195' y='266' width='5' height='34'/></g></svg>");
+  /* The tower: 100 wide by 260 tall, hub at (50, 20). */
+  --farm-tower: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='260' viewBox='0 0 100 260'><path d='M22 260 L45 34 M78 260 L55 34 M29 196 L71 196 M35 136 L65 136 M40 88 L60 88 M29 196 L65 136 M71 196 L35 136 M35 136 L60 88 M65 136 L40 88' stroke='black' stroke-width='5' fill='none'/><rect x='40' y='20' width='20' height='18'/><polygon points='58,24 94,14 94,36'/></svg>");
+  background: linear-gradient(to top,
+    color-mix(in srgb, var(--accent) min(100%, calc(var(--bg-tint) * 3)), transparent),
+    color-mix(in srgb, var(--accent) min(100%, calc(var(--bg-tint) * 1.6)), transparent));
+  --farm-tower-x: min(calc(var(--farm-h) * 2.5631), calc(var(--bg-u-w) * 88 - var(--farm-h) * 0.2488));
+  -webkit-mask:
+    var(--farm-scene) left bottom / auto 100% repeat-x,
+    var(--farm-tower) var(--farm-tower-x) 100% / auto calc(var(--farm-h) * 0.647) no-repeat;
+  mask:
+    var(--farm-scene) left bottom / auto 100% repeat-x,
+    var(--farm-tower) var(--farm-tower-x) 100% / auto calc(var(--farm-h) * 0.647) no-repeat;
+}
+[data-bg="farm"] body::before { top: auto; height: var(--farm-h); }
+
+/* The blades: a square as wide as 47% of the scene's height, centered on the tower's hub
+   (the tower is 64.7% of the scene tall; its hub is 20/260 down from its top). */
+html[data-bg="farm"]::after,
+.bg-swatch[data-bg="farm"]::after {
+  content: "";
+  pointer-events: none;
+  --bg-tint: calc(var(--bg-glow-strength) * var(--bg-glow-scale));
+  --farm-tower-x: min(calc(var(--farm-h) * 2.5631), calc(var(--bg-u-w) * 88 - var(--farm-h) * 0.2488));
+  width: calc(var(--farm-h) * 0.47);
+  height: calc(var(--farm-h) * 0.47);
+  left: calc(var(--farm-tower-x) - var(--farm-h) * 0.1106); /* hub = tower's left edge + half its width */
+  bottom: calc(var(--farm-h) * 0.362);
+  background: color-mix(in srgb, var(--accent) min(100%, calc(var(--bg-tint) * 2.2)), transparent);
+  -webkit-mask: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'><g transform='translate(50 50)'><path d='M-3 -6 L-7 -48 L7 -48 L3 -6 Z'/><path d='M-3 -6 L-7 -48 L7 -48 L3 -6 Z' transform='rotate(90)'/><path d='M-3 -6 L-7 -48 L7 -48 L3 -6 Z' transform='rotate(180)'/><path d='M-3 -6 L-7 -48 L7 -48 L3 -6 Z' transform='rotate(270)'/><circle r='7'/></g></svg>") center / contain no-repeat;
+  mask: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'><g transform='translate(50 50)'><path d='M-3 -6 L-7 -48 L7 -48 L3 -6 Z'/><path d='M-3 -6 L-7 -48 L7 -48 L3 -6 Z' transform='rotate(90)'/><path d='M-3 -6 L-7 -48 L7 -48 L3 -6 Z' transform='rotate(180)'/><path d='M-3 -6 L-7 -48 L7 -48 L3 -6 Z' transform='rotate(270)'/><circle r='7'/></g></svg>") center / contain no-repeat;
+  animation: farm-blades var(--farm-blades-duration) linear infinite;
+}
+html[data-bg="farm"]::after { position: fixed; z-index: -1; }
+
+@keyframes farm-blades { to { transform: rotate(1turn); } }
+
+/* Cornershot: the app name as a logo that bounces off the screen's edges, DVD style, and
+   never quite hits a corner. Its settings live in config.js (cornershot_config); themes.js
+   writes them into :root as --cs-* at startup (views/partials/head.ejs).
+   Two separate animations move it: cs-x slides `translate` across, cs-y slides `transform`
+   down. It hits a side wall every --cs-x seconds and a top/bottom wall every --cs-y seconds,
+   so wall hits only happen on multiples of their greatest common divisor. Starting cs-y
+   --cs-miss seconds behind cs-x (not a multiple of that divisor) means the two never land
+   together: close calls, never a corner. cs-hue-x/-y count the hits to step its color. */
+@property --cs-hx { syntax: "<number>"; inherits: false; initial-value: 0; }
+@property --cs-hy { syntax: "<number>"; inherits: false; initial-value: 0; }
+
+[data-bg="cornershot"] body::before,
+.bg-swatch[data-bg="cornershot"]::before {
+  content: var(--cs-text, "TimeApp");
+  width: var(--cs-w);
+  height: var(--cs-h);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  white-space: nowrap;
+  border: calc(var(--cs-w) * 0.035) solid currentColor;
+  border-radius: 50%;
+  font: 800 calc(var(--cs-w) * 0.2) / 1 "Inter Variable", system-ui, sans-serif;
+  letter-spacing: -0.02em;
+  color: var(--accent);
+  color: oklch(from var(--accent) l c calc(h + (var(--cs-hx) * 67 + var(--cs-hy) * 41) * var(--cs-shift, 1)));
+  opacity: calc(var(--cs-opacity, 0.4) * var(--bg-glow-scale));
+  animation:
+    cs-x var(--cs-x) linear calc(var(--cs-start) * -1) infinite alternate,
+    cs-y var(--cs-y) linear calc((var(--cs-start) + var(--cs-miss)) * -1) infinite alternate,
+    cs-hue-x calc(var(--cs-x) * 6) steps(6, end) calc(var(--cs-start) * -1) infinite,
+    cs-hue-y calc(var(--cs-y) * 5) steps(5, end) calc((var(--cs-start) + var(--cs-miss)) * -1) infinite;
+}
+[data-bg="cornershot"] body::before { inset: 0 auto auto 0; }
+
+@keyframes cs-x {
+  from { translate: 0 0; }
+  to   { translate: calc(var(--bg-u-w) * 100 - var(--cs-w)) 0; }
+}
+@keyframes cs-y {
+  from { transform: translateY(0); }
+  to   { transform: translateY(calc(var(--bg-u-h) * 100 - var(--cs-h))); }
+}
+@keyframes cs-hue-x { to { --cs-hx: 6; } }
+@keyframes cs-hue-y { to { --cs-hy: 5; } }
+
 @media (prefers-reduced-motion: reduce) {
   [data-bg="aurora"] body::before,
   [data-bg="waves"] body::before,
   [data-bg="starfield"] body::before,
-  .bg-swatch[data-bg="aurora"]::before { animation: none; }
+  html[data-bg="farm"]::after,
+  .bg-swatch[data-bg="aurora"]::before,
+  .bg-swatch[data-bg="farm"]::after { animation: none; }
+  /* Cornershot holds still just short of the bottom-right corner. */
+  [data-bg="cornershot"] body::before {
+    animation: none;
+    translate: calc(var(--bg-u-w) * 100 - var(--cs-w) - var(--cs-gap, 24px)) calc(var(--bg-u-h) * 100 - var(--cs-h) - var(--cs-gap, 24px));
+  }
+  /* The Settings preview's version is next to its other rules in section 5, which come later. */
 }
 
 
@@ -577,7 +794,7 @@ code { font-family: var(--font-mono); font-size: 0.9em; }
 
 .btn:focus-visible,
 input:focus-visible,
-select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+select:focus-visible { outline: 2px solid var(--accent-line); outline-offset: 2px; }
 
 .btn-small { padding: 0.3rem 0.65rem; font-size: 0.875rem; }
 .btn-primary { background: var(--accent); border-color: var(--accent); color: var(--accent-contrast); }
@@ -730,7 +947,7 @@ input, select, textarea {
   border-bottom: 2px solid transparent;
 }
 .subnav a:hover { color: var(--text); }
-.subnav a[aria-current="page"] { color: var(--text); font-weight: 600; border-bottom-color: var(--accent); }
+.subnav a[aria-current="page"] { color: var(--text); font-weight: 600; border-bottom-color: var(--accent-line); }
 
 /* Form extras */
 fieldset { border: 0; padding: 0; margin: 0; min-width: 0; }
@@ -766,8 +983,8 @@ legend { font-weight: 700; padding: 0; margin-bottom: 0.6rem; }
   cursor: pointer;
 }
 .theme-option input { position: absolute; opacity: 0; pointer-events: none; }
-.theme-option:has(input:checked) { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
-.theme-option:has(input:focus-visible) { outline: 2px solid var(--accent); outline-offset: 2px; }
+.theme-option:has(input:checked) { border-color: var(--accent-line); box-shadow: 0 0 0 1px var(--accent-line); }
+.theme-option:has(input:focus-visible) { outline: 2px solid var(--accent-line); outline-offset: 2px; }
 .theme-swatches { display: flex; gap: 0.35rem; }
 .theme-swatch {
   flex: 1;
@@ -779,7 +996,7 @@ legend { font-weight: 700; padding: 0; margin-bottom: 0.6rem; }
   border-radius: calc(var(--radius) * 0.6);
   background: var(--bg);
 }
-.theme-swatch-accent { width: 60%; height: 0.45rem; border-radius: 999px; background: var(--accent); }
+.theme-swatch-accent { width: 60%; height: 0.45rem; border-radius: 999px; background: var(--accent); box-shadow: inset 0 0 0 1px var(--accent-line); }
 .theme-mode { max-width: 16rem; }
 /* Background previews: the page's own colors, drawn by the same rules as the page (see "Backgrounds"). */
 .bg-swatch {
@@ -795,6 +1012,36 @@ legend { font-weight: 700; padding: 0; margin-bottom: 0.6rem; }
 .bg-swatch:where([data-bg]:not([data-bg="none"]))::before { position: absolute; inset: 0; }
 .bg-swatch:is([data-bg="glow"], [data-bg="aurora"])::before { inset: -25%; }
 .bg-swatch[data-bg="dots"]::before { --dot-gap: 8px; }
+/* Farm and Cornershot size themselves in --bg-u-w/--bg-u-h: here, the preview box. */
+.bg-swatch { container-type: size; --bg-u-w: 1cqw; --bg-u-h: 1cqh; }
+.bg-swatch[data-bg="farm"] { --farm-h: calc(var(--bg-u-h) * 100); }
+.bg-swatch[data-bg="farm"]::after { position: absolute; animation-duration: 6s; }
+.bg-swatch[data-bg="cornershot"]::before {
+  inset: 0 auto auto 0;
+  --cs-w: 38cqw;
+  --cs-h: 19cqw;
+  --cs-x: 3s;
+  --cs-y: 2s;
+  --cs-start: 1s;
+  --cs-miss: 0.5s;
+  --cs-gap: 3px;
+  --cs-opacity: 1;
+  /* In the little preview, bounce with left/top: a translate measured in container units
+     gets drawn outside the box by the browser's animation layer, so nothing shows. */
+  translate: none;
+  transform: none;
+  animation-name: cs-x-box, cs-y-box, cs-hue-x, cs-hue-y;
+}
+@keyframes cs-x-box { from { left: 0; } to { left: calc(100% - var(--cs-w)); } }
+@keyframes cs-y-box { from { top: 0; } to { top: calc(100% - var(--cs-h)); } }
+@media (prefers-reduced-motion: reduce) {
+  /* Holds still just short of the preview's bottom-right corner. (Here, after the rules above, so it wins.) */
+  .bg-swatch[data-bg="cornershot"]::before {
+    animation: none;
+    left: calc(100% - var(--cs-w) - var(--cs-gap));
+    top: calc(100% - var(--cs-h) - var(--cs-gap));
+  }
+}
 .bg-swatch[data-bg="aurora"]::before { animation: aurora 8s ease-in-out infinite alternate; }
 /* Style previews: a tiny card drawn only from style tokens, so data-style on it shows that style. */
 .style-swatch {
@@ -998,7 +1245,7 @@ h3 { font-size: 1rem; }
   html[data-theme] { color-scheme: light; }
   html, body { background: #ffffff; }
   .topbar, .footer, .no-print { display: none !important; }
-  body::before, body::after { display: none !important; } /* no background layer or Terminal scanlines on paper */
+  body::before, body::after, html::after { display: none !important; } /* no background layers or Terminal scanlines on paper */
   .container { max-width: none; padding: 0; }
   .timesheet { border: 0; border-radius: 0; padding: 0; }
   .table-wrap { overflow: visible; }
@@ -1043,12 +1290,12 @@ h3 { font-size: 1rem; }
 [data-style="minimal"] .badge { background: transparent; box-shadow: inset 0 0 0 1px var(--edge); }
 [data-style="minimal"] .badge-warn { background: var(--warn-bg); }
 
-/* Minimal and Blueprint: plain buttons are outlines; colored ones stay filled */
-:is([data-style="minimal"], [data-style="blueprint"])
+/* Minimal, Boxworld, and Blueprint: plain buttons are outlines; colored ones stay filled */
+:is([data-style="minimal"], [data-style="boxworld"], [data-style="blueprint"])
   .btn:not(.btn-primary, .btn-danger, .btn-ghost, .btn-ghost-danger, .btn-clock_in, .btn-break_start, .btn-break_end, .btn-clock_out) {
   background: transparent;
 }
-:is([data-style="minimal"], [data-style="blueprint"])
+:is([data-style="minimal"], [data-style="boxworld"], [data-style="blueprint"])
   .btn:not(.btn-primary, .btn-danger, .btn-ghost, .btn-ghost-danger, .btn-clock_in, .btn-break_start, .btn-break_end, .btn-clock_out):hover {
   background: var(--surface-2);
   filter: none;
@@ -1075,7 +1322,7 @@ h3 { font-size: 1rem; }
 }
 [data-style="terminal"][data-theme="dark"] { --scanline-alpha: 8%; }
 
-[data-style="terminal"] :is(.page-head h1, .card h2)::before { content: "> "; color: var(--accent); }
+[data-style="terminal"] :is(.page-head h1, .card h2)::before { content: "> "; color: var(--accent-line); }
 [data-style="terminal"] .page-head h1::after {
   content: "";
   display: inline-block;
@@ -1083,7 +1330,7 @@ h3 { font-size: 1rem; }
   height: 1em;
   margin-left: 0.25em;
   vertical-align: -0.12em;
-  background: var(--accent);
+  background: var(--accent-line);
   animation: terminal-cursor 1.1s steps(1) infinite;
 }
 @keyframes terminal-cursor { 50% { opacity: 0; } }
@@ -1134,7 +1381,7 @@ h3 { font-size: 1rem; }
   position: absolute;
   width: 0.75rem;
   height: 0.75rem;
-  border: 2px solid var(--accent);
+  border: 2px solid var(--accent-line);
   pointer-events: none;
 }
 [data-style="blueprint"] .card::before { top: -1px; left: -1px; border-right: 0; border-bottom: 0; }
@@ -1147,6 +1394,46 @@ h3 { font-size: 1rem; }
   letter-spacing: 0.06em;
 }
 [data-style="blueprint"] :is(input, select, textarea) { border-style: dashed; }
+
+/* Boxworld: like Minimal, stripped down to boxes. Square corners, 2px outlines in the text
+   color, no shadows or tinted fills. Surfaces stay solid so text reads over any background. */
+[data-style="boxworld"] {
+  --font-family: "Inter Variable", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --font-heading: var(--font-family);
+  --heading-transform: none;
+  --heading-tracking: normal;
+  --radius: 0px;
+  --radius-small: 0px;
+  --radius-pill: 0px;
+  --border-width: 2px;
+  --edge: var(--text);
+  --shadow: none;
+  --shadow-pop: none;
+  --shadow-big: none;
+  --card-pattern: none;
+  --transition: 80ms linear;
+}
+
+/* Primary buttons are inverted boxes; punch buttons keep their status colors. */
+[data-style="boxworld"] .btn-primary { background: var(--text); border-color: var(--text); color: var(--bg); }
+[data-style="boxworld"] .btn-big { border-radius: 0; }
+
+[data-style="boxworld"] .badge { background: transparent; box-shadow: inset 0 0 0 1px var(--edge); }
+[data-style="boxworld"] .badge-warn { background: var(--warn-bg); }
+
+/* Tables are boxed, with lighter lines between rows and a rule over each shift. */
+[data-style="boxworld"] .table { border: var(--border-width) solid var(--edge); }
+[data-style="boxworld"] :is(.table th, .table td) { border-bottom-color: color-mix(in srgb, var(--edge) 35%, transparent); }
+[data-style="boxworld"] .shift-head th,
+[data-style="boxworld"] .shift + .shift .shift-head th { background: transparent; border-top: var(--border-width) solid var(--edge); }
+[data-style="boxworld"] .shift-warn .shift-head th { background: var(--warn-bg); }
+
+/* Nav links and tabs: no fills or underlines; the current or hovered one gets a box. */
+[data-style="boxworld"] :is(.topbar-links a, .subnav a) { border: var(--border-width) solid transparent; }
+[data-style="boxworld"] :is(.topbar-links a, .subnav a):is(:hover, [aria-current="page"]) { background: transparent; border-color: var(--edge); }
+[data-style="boxworld"] .subnav { gap: 0.4rem; padding-bottom: 0.4rem; border-bottom: var(--border-width) solid var(--edge); }
+[data-style="boxworld"] .subnav a { margin-bottom: 0; }
 
 @media (prefers-reduced-motion: reduce) {
   [data-style="terminal"] .page-head h1::after { animation: none; }
