@@ -33,7 +33,7 @@ A style changes fonts, corners, borders and shadows, but never colors, so every 
 | Style | Look |
 |---|---|
 | **Modern** | Rounded cards, soft shadows, your device's standard font. The default. |
-| **Minimal** | Flat and quiet: the Inter font, no shadows, gentle corners, outlined buttons and badges. |
+| **Minimal** | Pared back: the Inter font, no shadows, cards and the top bar without outlines, hairline rules, plain badges, and outlined buttons. |
 | **Boxworld** | Stripped down to boxes: square corners and bold outlines in the text color, with no shadows or tinted fills. Tabs and tables are boxed, and main buttons are solid. |
 | **Terminal** | Monospace text and square boxes, uppercase headings with a `>` prompt and a blinking cursor, faint scanlines, and a soft glow in dark mode. |
 | **Blueprint** | Like a technical drawing: the Space Grotesk font, uppercase monospace labels, a faint grid on cards with corner marks, and dashed input boxes. |

@@ -1265,18 +1265,19 @@ h3 { font-size: 1rem; }
    (themes.js), and a font package in server.js + head.ejs if it needs one.
    --------------------------------------------------------------------- */
 
-/* Minimal: flat and quiet, Inter */
+/* Minimal: as little as possible. Inter, no shadows or fills, hairline edges, and space
+   instead of boxes: cards and the top bar lose their outlines, badges lose their pills. */
 [data-style="minimal"] {
   --font-family: "Inter Variable", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --font-mono: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
   --font-heading: var(--font-family);
   --heading-transform: none;
   --heading-tracking: -0.01em;
-  --radius: var(--radius-2);
-  --radius-small: var(--radius-2);
+  --radius: var(--radius-1);
+  --radius-small: var(--radius-1);
   --radius-pill: 999px;
   --border-width: 1px;
-  --edge: var(--border);
+  --edge: color-mix(in srgb, var(--border) 55%, transparent); /* hairline, not a line */
   --shadow: none;
   --shadow-pop: var(--shadow-2);
   --shadow-big: none;
@@ -1284,9 +1285,20 @@ h3 { font-size: 1rem; }
   --transition: 120ms var(--ease-out-3);
 }
 [data-style="minimal"] :is(h1, h2, h3):not(.timesheet *) { font-weight: 600; }
-[data-style="minimal"] .card { padding: calc(var(--space) * 1.4); }
-[data-style="minimal"] .badge { background: transparent; box-shadow: inset 0 0 0 1px var(--edge); }
-[data-style="minimal"] .badge-warn { background: var(--warn-bg); }
+
+/* Cards and the top bar are shapes of color, not outlined boxes. */
+[data-style="minimal"] .card { padding: calc(var(--space) * 1.5); border-color: transparent; }
+[data-style="minimal"] .topbar { background: transparent; }
+[data-style="minimal"] .subnav { border-bottom-color: transparent; }
+
+/* Quieter tables: lighter rules, and no fill behind a shift's header row. */
+[data-style="minimal"] :is(.table th, .table td) { border-bottom-color: color-mix(in srgb, var(--border) 50%, transparent); }
+[data-style="minimal"] .shift-head th { background: transparent; }
+[data-style="minimal"] .shift-warn .shift-head th { background: var(--warn-bg); }
+
+/* Badges are a dot and a word; only warnings keep a background. */
+[data-style="minimal"] .badge { background: transparent; box-shadow: none; padding-inline: 0; }
+[data-style="minimal"] .badge-warn { background: var(--warn-bg); padding-inline: 0.6rem; }
 
 /* Minimal, Boxworld, and Blueprint: plain buttons are outlines; colored ones stay filled */
 :is([data-style="minimal"], [data-style="boxworld"], [data-style="blueprint"])
