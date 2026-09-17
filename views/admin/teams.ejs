@@ -1,0 +1,59 @@
+<%# Admin: the list of teams, and the Add team form. %>
+<%- include("../partials/head") %>
+<%- include("../partials/nav") %>
+
+<div class="page-head">
+  <h1>Admin</h1>
+</div>
+
+<%- include("../partials/admin-tabs", { current: "teams" }) %>
+
+<section class="card">
+  <h2>Teams</h2>
+  <p class="muted small">
+    A manager on a team only manages that team's employees. A manager on no team manages every employee.
+    Employees can be on one team; managers can be on several.
+  </p>
+
+  <% if (teams.length === 0) { %>
+    <p class="muted">No teams yet.</p>
+  <% } else { %>
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr><th>Team</th><th>Managers</th><th>Employees</th><th></th></tr>
+        </thead>
+        <tbody>
+          <% teams.forEach((team) => { %>
+            <tr>
+              <td><a href="/admin/teams/<%= team.id %>"><%= team.name %></a></td>
+              <td><%= team.manager_count %></td>
+              <td><%= team.employee_count %></td>
+              <td class="actions">
+                <a class="btn btn-small btn-ghost" href="/admin/teams/<%= team.id %>">Edit</a>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  <% } %>
+</section>
+
+<section class="card">
+  <h2>Add team</h2>
+  <% if (error) { %>
+    <p class="alert alert-error"><%= error %></p>
+  <% } %>
+  <form method="post" action="/admin/teams" class="form-grid">
+    <label class="field">
+      <span>Team name</span>
+      <input name="name" value="<%= form.name %>" maxlength="60" required>
+    </label>
+    <div class="form-actions field-wide">
+      <button class="btn btn-primary">Add team</button>
+    </div>
+  </form>
+</section>
+
+<%- include("../partials/foot") %>

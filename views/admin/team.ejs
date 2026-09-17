@@ -1,0 +1,107 @@
+<%# Admin: one team's name and members. %>
+<%- include("../partials/head") %>
+<%- include("../partials/nav") %>
+
+<p class="breadcrumb"><a href="/admin/teams">← Teams</a></p>
+
+<div class="page-head">
+  <div>
+    <h1><%= team.name %></h1>
+    <p class="muted">Team created <%= fmt.formatDate(team.created_at) %></p>
+  </div>
+</div>
+
+<section class="card">
+  <h2>Members</h2>
+  <% if (saved === "added") { %>
+    <p class="alert alert-ok">Member added.</p>
+  <% } %>
+  <% if (saved === "removed") { %>
+    <p class="alert alert-ok">Member removed.</p>
+  <% } %>
+  <% if (memberError) { %>
+    <p class="alert alert-error"><%= memberError %></p>
+  <% } %>
+
+  <% if (members.length === 0) { %>
+    <p class="muted">Nobody is on this team yet.</p>
+  <% } else { %>
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr><th>Name</th><th>Role</th><th></th></tr>
+        </thead>
+        <tbody>
+          <% members.forEach((m) => { %>
+            <tr class="<%= m.active ? "" : "row-inactive" %>">
+              <td>
+                <a href="/admin/users/<%= m.id %>/access"><%= displayName(m) %></a>
+                <% if (m.job_title) { %><div class="muted small"><%= m.job_title %></div><% } %>
+              </td>
+              <td>
+                <%= ROLE_LABELS[m.role] %>
+                <% if (!m.active) { %><span class="badge badge-inactive">Inactive</span><% } %>
+              </td>
+              <td class="actions">
+                <form method="post" action="/admin/teams/<%= team.id %>/members/<%= m.id %>/delete" class="inline">
+                  <button class="btn btn-small btn-ghost">Remove</button>
+                </form>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  <% } %>
+
+  <% if (candidates.length) { %>
+    <form method="post" action="/admin/teams/<%= team.id %>/members" class="form-grid">
+      <label class="field">
+        <span>Add member</span>
+        <select name="user_id" required>
+          <option value="">Choose…</option>
+          <% candidates.forEach((u) => { %>
+            <option value="<%= u.id %>">
+              <%= displayName(u) %> (<%= ROLE_LABELS[u.role] %>)<%= u.movesFrom ? ` · moves from ${u.movesFrom}` : "" %>
+            </option>
+          <% }) %>
+        </select>
+        <span class="hint">Employees are on one team at a time; adding one moves them here.</span>
+      </label>
+      <div class="form-actions field-wide">
+        <button class="btn btn-primary">Add member</button>
+      </div>
+    </form>
+  <% } %>
+</section>
+
+<section class="card">
+  <h2>Team name</h2>
+  <% if (saved === "renamed") { %>
+    <p class="alert alert-ok">Team renamed.</p>
+  <% } %>
+  <% if (error) { %>
+    <p class="alert alert-error"><%= error %></p>
+  <% } %>
+  <form method="post" action="/admin/teams/<%= team.id %>" class="form-grid">
+    <label class="field">
+      <span>Team name</span>
+      <input name="name" value="<%= form.name %>" maxlength="60" required>
+    </label>
+    <div class="form-actions field-wide">
+      <button class="btn btn-primary">Rename team</button>
+    </div>
+  </form>
+</section>
+
+<section class="card">
+  <h2>Delete team</h2>
+  <p class="muted">Its managers go back to managing every employee unless they're on another team. Nobody's shifts are affected.</p>
+  <form method="post" action="/admin/teams/<%= team.id %>/delete" class="inline"
+        data-question="Delete this team? Its members will be on no team (unless they're on another)."
+        onsubmit="return confirm(this.dataset.question)">
+    <button class="btn btn-danger">Delete team</button>
+  </form>
+</section>
+
+<%- include("../partials/foot") %>

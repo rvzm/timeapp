@@ -24,7 +24,7 @@
     <div class="table-wrap">
       <table class="table">
         <thead>
-          <tr><th>Name</th><th>Role</th><th>Status</th><th>Last punch</th><th></th></tr>
+          <tr><th>Name</th><th>Role</th><% if (showTeams) { %><th>Team</th><% } %><th>Status</th><th>Last punch</th><th></th></tr>
         </thead>
         <tbody>
           <% users.forEach((u) => { %>
@@ -34,6 +34,7 @@
                 <% if (u.job_title) { %><div class="muted small"><%= u.job_title %></div><% } %>
               </td>
               <td><%= ROLE_LABELS[u.role] %></td>
+              <% if (showTeams) { %><td><%= u.team_names ?? "" %></td><% } %>
               <td>
                 <span class="badge badge-<%= u.status %>"><span class="dot"></span><%= STATUS_LABELS[u.status] %></span>
                 <% if (!u.active) { %><span class="badge badge-inactive">Inactive</span><% } %>

@@ -15,6 +15,7 @@
     </p>
   </div>
   <div class="page-head-actions">
+    <% (locals.targetTeams ?? []).forEach((team) => { %><span class="badge"><%= team.name %></span><% }) %>
     <span class="badge badge-<%= currentStatus %>"><span class="dot"></span><%= STATUS_LABELS[currentStatus] %></span>
     <% if (!target.active) { %><span class="badge badge-inactive">Inactive</span><% } %>
     <a class="btn btn-small" href="<%= base %>/export?period=week<%- locals.range ? `&amp;date=${range.from}` : "" %>">Export timesheet</a>

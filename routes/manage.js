@@ -2,13 +2,14 @@
 // Schedule, Requests, Details), the weekly schedule, the edit request queue, and the
 // default break rules.
 // Mounted at /manage. Managers only see the employees they can manage (permissions.js);
-// admins see everyone.
+// admins see everyone. Managers on several teams (and admins, once teams exist) view one
+// team at a time with ?team=<id> (admins also get "all" and "none").
 import express from "express";
 import * as db from "../db.js";
 import * as time from "../time.js";
 import { loadShifts } from "../shifts.js";
 import { requireManager } from "../auth.js";
-import { canManageShifts, canManageSchedule } from "../permissions.js";
+import { canManageShifts, canManageSchedule, isAdmin } from "../permissions.js";
 import { getSettings, saveSettings, readBreakLimitsForm, breakPolicyFor } from "../settings.js";
 import { availabilityWeek } from "../availability.js";
 import { reviewRequest, pendingByPunch, pendingRequestsFor } from "../requests.js";
@@ -20,6 +21,41 @@ const router = express.Router();
 router.use(requireManager);
 
 const NOTE_MAX = 500;
+
+// ===================================================================
+// ===== Team picker =====
+// Sets req.teamFilter: "" (no filter), a team id, or "none" (people on no team), and
+// res.locals.teamPicker / teamQuery for the tabs and links.
+// ===================================================================
+
+// The teams the user can pick between, as [{ value, label }]; empty = no picker.
+// A manager with several teams always views one of them; the teams are never mixed.
+function teamOptions(user) {
+  const toOption = (team) => ({ value: String(team.id), label: team.name });
+  if (isAdmin(user)) {
+    const teams = db.listTeams();
+    if (!teams.length) return [];
+    return [{ value: "", label: "All teams" }, ...teams.map(toOption), { value: "none", label: "No team" }];
+  }
+  const teams = db.listTeamsForUser(user.id);
+  return teams.length > 1 ? teams.map(toOption) : [];
+}
+
+router.use((req, res, next) => {
+  const options = teamOptions(req.user);
+  const picked = options.find((option) => option.value === String(req.query.team ?? "")) ?? options[0];
+  req.teamFilter = picked?.value ?? "";
+  res.locals.teamPicker = options.length ? { options, current: req.teamFilter } : null;
+  res.locals.teamQuery = req.teamFilter ? `team=${req.teamFilter}` : "";
+  next();
+});
+
+// Whether a user belongs to the team picked in the Manage Console.
+function inSelectedTeam(req, userId) {
+  if (!req.teamFilter) return true;
+  const teamIds = db.listTeamIdsForUser(userId);
+  return req.teamFilter === "none" ? teamIds.length === 0 : teamIds.includes(Number(req.teamFilter));
+}
 
 // ===================================================================
 // ===== Helpers =====
@@ -78,6 +114,7 @@ function renderEmployeeTab(res, target, view, data, statusCode = 200) {
     title: db.displayName(target),
     target,
     currentStatus: db.statusFromPunch(db.getLastPunch(target.id)),
+    targetTeams: db.listTeamsForUser(target.id),
     pendingCount: db.listPendingRequestsForUser(target.id).length,
     ...data,
   });
@@ -169,7 +206,7 @@ router.get("/employees/:id/export", (req, res) => {
 
 router.get("/", (req, res) => {
   const users = db.listUsersWithLastPunch()
-    .filter((u) => canManageShifts(req.user, u))
+    .filter((u) => canManageShifts(req.user, u) && inSelectedTeam(req, u.id))
     .map((u) => ({ ...u, status: db.statusFromPunch({ type: u.last_type }) }));
 
   const counts = { in: 0, break: 0, out: 0 };
@@ -178,7 +215,7 @@ router.get("/", (req, res) => {
   const [todayStart, todayEnd] = time.dayRangeUtc(time.localDate());
   const scheduledToday = Map.groupBy(db.listScheduledBetween(todayStart, todayEnd), (a) => a.user_id);
 
-  res.render("manage/index", { title: "Employees", users, counts, scheduledToday });
+  res.render("manage/index", { title: "Employees", users, counts, scheduledToday, showTeams: db.listTeams().length > 0 });
 });
 
 // ===================================================================
@@ -292,7 +329,7 @@ router.get("/schedule", (req, res) => {
   const [fromIso, toIso] = time.dayRangeUtc(week.from, week.to);
 
   const visible = db.listScheduledBetween(fromIso, toIso)
-    .filter((a) => canManageShifts(req.user, { id: a.user_id, role: a.user_role }));
+    .filter((a) => canManageShifts(req.user, { id: a.user_id, role: a.user_role }) && inSelectedTeam(req, a.user_id));
   // Attendance is worked out one employee at a time.
   const assignments = [...Map.groupBy(visible, (a) => a.user_id)]
     .flatMap(([userId, list]) => withAttendance(userId, list))
@@ -320,10 +357,11 @@ router.get("/schedule", (req, res) => {
 const canReview = (user, request) => canManageShifts(user, { id: request.user_id, role: request.user_role });
 
 router.get("/requests", (req, res) => {
+  const inTeam = (request) => inSelectedTeam(req, request.user_id);
   res.render("manage/requests", {
     title: "Requests",
-    pending: pendingRequestsFor(req.user),
-    recent: db.listRecentRequests().filter((request) => canReview(req.user, request)),
+    pending: pendingRequestsFor(req.user).filter(inTeam),
+    recent: db.listRecentRequests().filter((request) => canReview(req.user, request) && inTeam(request)),
   });
 });
 
@@ -352,7 +390,7 @@ router.post("/requests/:id/review", (req, res) => {
 function renderBreakRules(req, res, { form = null, error = null, notice = null, statusCode = 200 } = {}) {
   const settings = getSettings();
   const custom = db.listUsersWithLastPunch().filter((u) =>
-    canManageShifts(req.user, u) && (u.break_max_count !== null || u.break_max_minutes !== null));
+    canManageShifts(req.user, u) && inSelectedTeam(req, u.id) && (u.break_max_count !== null || u.break_max_minutes !== null));
 
   res.status(statusCode).render("manage/breaks", {
     title: "Break rules",

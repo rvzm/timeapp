@@ -6,16 +6,13 @@
   <a class="btn btn-primary" href="/admin/users/new">Add account</a>
 </div>
 
-<%- include("../partials/subnav", { tabs: [
-  { href: "/admin", label: "Accounts", active: true },
-  { href: "/admin/settings", label: "Settings", active: false },
-] }) %>
+<%- include("../partials/admin-tabs", { current: "accounts" }) %>
 
 <section class="card">
   <div class="table-wrap">
     <table class="table">
       <thead>
-        <tr><th>Name</th><th>Username</th><th>Role</th><th>Job title</th><th>Employee #</th><th>Account</th><th></th></tr>
+        <tr><th>Name</th><th>Username</th><th>Role</th><th>Team</th><th>Job title</th><th>Employee #</th><th>Account</th><th></th></tr>
       </thead>
       <tbody>
         <% users.forEach((u) => { %>
@@ -26,6 +23,7 @@
             </td>
             <td><code><%= u.username %></code></td>
             <td><%= ROLE_LABELS[u.role] %></td>
+            <td><%= u.team_names ?? "" %></td>
             <td><%= u.job_title %></td>
             <td><%= u.employee_number %></td>
             <td>

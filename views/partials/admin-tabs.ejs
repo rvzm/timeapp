@@ -1,0 +1,6 @@
+<%# The Admin Console's tabs. Needs `current`: "accounts", "teams", or "settings". %>
+<%- include("subnav", { tabs: [
+  { href: "/admin", label: "Accounts", active: current === "accounts" },
+  { href: "/admin/teams", label: "Teams", active: current === "teams" },
+  { href: "/admin/settings", label: "Settings", active: current === "settings" },
+] }) %>

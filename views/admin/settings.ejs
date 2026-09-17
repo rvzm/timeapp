@@ -5,10 +5,7 @@
   <h1>Admin</h1>
 </div>
 
-<%- include("../partials/subnav", { tabs: [
-  { href: "/admin", label: "Accounts", active: false },
-  { href: "/admin/settings", label: "Settings", active: true },
-] }) %>
+<%- include("../partials/admin-tabs", { current: "settings" }) %>
 
 <section class="card">
   <% if (notice) { %>

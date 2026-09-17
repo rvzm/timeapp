@@ -191,6 +191,25 @@ const migrations = [
       UPDATE settings SET value = '"plum"' WHERE key = 'defaultColor' AND value = '"vanilla"';
     `);
   },
+
+  // 10: teams. Managers and employees can be members; an employee is on at most one
+  // team, which the app enforces (it depends on the role, so no constraint here).
+  () => {
+    db.exec(`
+      CREATE TABLE teams (
+        id         INTEGER PRIMARY KEY AUTOINCREMENT,
+        name       TEXT NOT NULL UNIQUE COLLATE NOCASE,
+        created_at TEXT NOT NULL
+      );
+
+      CREATE TABLE team_members (
+        team_id INTEGER NOT NULL REFERENCES teams(id) ON DELETE CASCADE,
+        user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        PRIMARY KEY (team_id, user_id)
+      );
+      CREATE INDEX idx_team_members_user ON team_members(user_id);
+    `);
+  },
 ];
 
 function migrate() {

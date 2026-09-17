@@ -1,10 +1,10 @@
-// Clock Portal: clock in/out, breaks, and today's shifts.
+// Clock Portal: clock in/out, breaks, the current shift and week so far, and today's shifts.
 import express from "express";
 import * as db from "../db.js";
 import * as time from "../time.js";
 import { requireLogin } from "../auth.js";
 import { loadShifts, currentShift } from "../shifts.js";
-import { breakPolicyFor } from "../settings.js";
+import { breakPolicyFor, getSettings } from "../settings.js";
 
 const router = express.Router();
 
@@ -25,6 +25,36 @@ function breakStatus(user, status) {
   };
 }
 
+// The shift in progress, with its worked and break time, or null when clocked out.
+// Loaded from its own clock-in, so a shift that started yesterday still shows.
+function shiftSoFar(userId, status) {
+  if (status === "out") return null;
+  const clockIn = currentShift(userId)?.clockIn;
+  if (!clockIn) return null;
+  const shift = loadShifts(userId, clockIn.timestamp, time.nowIso()).find((s) => s.inProgress);
+  if (!shift) return null;
+  return {
+    startedAt: clockIn.timestamp,
+    onClockMs: Date.now() - Date.parse(clockIn.timestamp),
+    workedMs: shift.workedMs,
+    breakMs: shift.breakMs,
+  };
+}
+
+// Time worked this week (shifts counted on the day they start, as in timesheets).
+// Shifts with a missing punch aren't counted; `incompleteCount` says how many.
+function weekSoFar(userId) {
+  const week = time.weekRange(time.localDate(), getSettings().weekStart);
+  const [fromIso, toIso] = time.dayRangeUtc(week.from, week.to);
+  const shifts = loadShifts(userId, fromIso, toIso).filter((s) => s.date >= week.from && s.date <= week.to);
+  const counted = shifts.filter((s) => s.workedMs !== null);
+  return {
+    week,
+    workedMs: counted.reduce((total, s) => total + s.workedMs, 0),
+    incompleteCount: shifts.length - counted.length,
+  };
+}
+
 function renderClock(req, res, error = null, statusCode = 200) {
   const last = db.getLastPunch(req.user.id);
   const status = db.statusFromPunch(last);
@@ -38,6 +68,9 @@ function renderClock(req, res, error = null, statusCode = 200) {
     title: "Clock",
     status,
     last,
+    lastClock: db.getShiftEdgeBefore(req.user.id, "9999"),
+    shiftNow: shiftSoFar(req.user.id, status),
+    weekNow: weekSoFar(req.user.id),
     actions,
     breaks,
     shifts: loadShifts(req.user.id, todayStart, todayEnd),

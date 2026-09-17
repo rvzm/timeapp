@@ -27,9 +27,25 @@
 
   <dl class="details role-help">
     <dt>Employee</dt><dd>Clock and their own Portal.</dd>
-    <dt>Manager</dt><dd>Also the Manage pages, for employee accounts.</dd>
+    <dt>Manager</dt><dd>Also the Manage pages, for employee accounts (only their teams' employees, if they're on a team).</dd>
     <dt>Admin</dt><dd>Everything, including accounts and settings.</dd>
   </dl>
+</section>
+
+<section class="card">
+  <h2>Teams</h2>
+  <% if (target.role === "admin") { %>
+    <p class="muted">Admins manage everyone, so they aren't on teams.</p>
+  <% } else if (teams.length === 0) { %>
+    <p class="muted">Not on a team.<%= target.role === "manager" ? " As a manager, they manage every employee." : "" %></p>
+  <% } else { %>
+    <p>
+      <% teams.forEach((team, i) => { %><%= i ? ", " : "" %><a href="/admin/teams/<%= team.id %>"><%= team.name %></a><% }) %>
+    </p>
+  <% } %>
+  <% if (target.role !== "admin") { %>
+    <p class="muted small">Add or remove people on the <a href="/admin/teams">Teams</a> page.</p>
+  <% } %>
 </section>
 
 <section class="card">

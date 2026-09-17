@@ -17,6 +17,7 @@ Your own clock, shifts, requests and profile work just like an employee's; see t
 
 ## Who you can manage
 - **Managers manage employee accounts.** Other managers and admins don't appear in your lists.
+- **Teams:** if an admin has put you on a team, you only manage the employees on your team(s). If you're not on any team, you manage every employee. Only admins set up teams.
 - **Your own punches and requests** only appear in **Manage** if an admin turns on "Managers can edit their own punches and approve their own requests".
 - **Your own assigned shifts and break allowance** always need an admin.
 - **Admins** can manage everyone, including managers and themselves.
@@ -33,6 +34,10 @@ The **Employees** tab shows how many people are clocked in, on break and clocked
 - their **Status**, plus any shift scheduled for them today, e.g. "Scheduled 9:00 AM – 5:00 PM"
 - their **Last punch**
 - **Inactive** if their account has been deactivated
+
+With teams set up, the list also has a **Team** column, and an employee's page shows their team next to their status.
+
+**Several teams?** A **Team:** row above the tabs lets you pick which team you're looking at. Each team is shown on its own, and **Employees**, **Schedule**, **Requests** and **Break rules** all stick to the team you picked. (Admins also get **All teams** and **No team**.) The **Requests** count in the tabs covers all your teams.
 
 Click a name, or **Manage**, to open that person's page. The other tabs are [Schedule](#see-the-weeks-schedule), [Requests](#review-edit-requests) and [Break rules](#set-break-rules).
 

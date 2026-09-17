@@ -15,7 +15,7 @@
     <ul class="request-list">
       <% pending.forEach((request) => { %>
         <li class="request">
-          <%- include("../partials/request-review", { request, back: "/manage/requests" }) %>
+          <%- include("../partials/request-review", { request, back: teamQuery ? `/manage/requests?${teamQuery}` : "/manage/requests" }) %>
         </li>
       <% }) %>
     </ul>

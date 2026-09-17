@@ -28,7 +28,12 @@ Open the TimeApp address you were given, enter your **Username** and **Password*
 ## Clock in, take breaks, clock out
 ![The Clock page](images/clock.png)
 
-The **Clock** page shows your status (**Clocked Out**, **Clocked In** or **On Break**), your last punch and how long ago it was, and the button(s) you can press next:
+The **Clock** page shows your status (**Clocked Out**, **Clocked In** or **On Break**), then:
+- **Last clock**: your last **Clock In** or **Clock Out** and how long ago it was. On a break, it says "On break since …" and how long the break has lasted.
+- **This shift** (while you're clocked in or on break): how long since you clocked in, how much of that you've **worked**, and your **break** time so far.
+- **This week**: the hours you've worked since the start of the week, including the shift you're on. Shifts with a missing punch aren't counted, and the page says how many were left out (see [Fix a wrong or missing punch](#fix-a-wrong-or-missing-punch)).
+
+These times keep counting while the page is open. Below them are the button(s) you can press next:
 
 | When you're | You can press |
 |---|---|

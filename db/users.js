@@ -31,11 +31,13 @@ const stmt = {
   setUserRole: db.prepare("UPDATE users SET role = ? WHERE id = ?"),
   setUserTheme: db.prepare("UPDATE users SET theme_color = ?, theme_mode = ?, theme_background = ?, theme_style = ? WHERE id = ?"),
   setBreakLimits: db.prepare("UPDATE users SET break_max_count = ?, break_max_minutes = ? WHERE id = ?"),
-  // Every user plus their latest punch (if any). Active users first, then by name.
+  // Every user plus their latest punch (if any) and their teams' names. Active users first, then by name.
   listUsersWithLastPunch: db.prepare(`
     SELECT u.id, u.username, u.display_name, u.role, u.active, u.created_at,
            u.email, u.phone, u.job_title, u.employee_number, u.break_max_count, u.break_max_minutes,
-           p.type AS last_type, p.timestamp AS last_timestamp
+           p.type AS last_type, p.timestamp AS last_timestamp,
+           (SELECT GROUP_CONCAT(t.name, ', ') FROM team_members m JOIN teams t ON t.id = m.team_id
+            WHERE m.user_id = u.id) AS team_names
     FROM users u
     LEFT JOIN punches p ON p.id = (
       SELECT id FROM punches WHERE user_id = u.id ORDER BY timestamp DESC, id DESC LIMIT 1

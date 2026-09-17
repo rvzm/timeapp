@@ -78,7 +78,7 @@
                   <span class="badge badge-break"><span class="dot"></span><%= pendingByPunch[p.id].kind === "delete" ? "Delete requested" : "Change requested" %></span>
                 <% } else { %>
                   <a class="btn btn-small btn-ghost" href="/portal/requests/new?kind=change&amp;punch=<%= p.id %>">Request change</a>
-                  <a class="btn btn-small btn-ghost" href="/portal/requests/new?kind=delete&amp;punch=<%= p.id %>">Request delete</a>
+                  <a class="btn btn-small btn-ghost" href="/portal/requests/new?kind=delete&amp;punch=<%= p.id %>">Request deletion</a>
                 <% } %>
               </td>
             <% } %>

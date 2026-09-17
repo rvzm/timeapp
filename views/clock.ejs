@@ -10,14 +10,49 @@
     <span class="dot"></span><%= STATUS_LABELS[status] %>
   </div>
 
+  <%# Durations marked data-live-ms keep counting in public/clock.js while data-live-running is set. %>
+  <% const live = (ms, running) => `data-live-ms="${ms}"${running ? " data-live-running" : ""}`; %>
   <p class="muted status-since">
-    <% if (last) { %>
-      <%= PUNCH_LABELS[last.type] %> at <%= fmt.formatWhen(last.timestamp) %>
-      · <%= fmt.formatDuration(Date.now() - Date.parse(last.timestamp)) %> ago
-    <% } else { %>
+    <% if (!last) { %>
       No punches yet.
+    <% } else if (status === "break") { %>
+      On break since <%= fmt.formatWhen(last.timestamp) %>
+      · <span <%- live(Date.now() - Date.parse(last.timestamp), true) %>><%= fmt.formatDuration(Date.now() - Date.parse(last.timestamp)) %></span>
+    <% } else if (lastClock) { %>
+      Last clock: <%= PUNCH_LABELS[lastClock.type] %> at <%= fmt.formatWhen(lastClock.timestamp) %>
+      · <span <%- live(Date.now() - Date.parse(lastClock.timestamp), true) %>><%= fmt.formatDuration(Date.now() - Date.parse(lastClock.timestamp)) %></span> ago
+    <% } else { %>
+      <%= PUNCH_LABELS[last.type] %> at <%= fmt.formatWhen(last.timestamp) %>
     <% } %>
   </p>
+
+  <div class="clock-totals">
+    <% if (shiftNow) { %>
+      <div class="clock-total">
+        <span class="muted small">This shift</span>
+        <strong <%- live(shiftNow.onClockMs, true) %>><%= fmt.formatDuration(shiftNow.onClockMs) %></strong>
+        <span class="muted small">
+          since <%= fmt.formatWhen(shiftNow.startedAt) %>
+          <% if (shiftNow.workedMs !== null) { %>
+            · worked <span <%- live(shiftNow.workedMs, status === "in") %>><%= fmt.formatDuration(shiftNow.workedMs) %></span>
+            <% if (shiftNow.breakMs) { %>
+              · break <span <%- live(shiftNow.breakMs, status === "break") %>><%= fmt.formatDuration(shiftNow.breakMs) %></span>
+            <% } %>
+          <% } %>
+        </span>
+      </div>
+    <% } %>
+    <div class="clock-total">
+      <span class="muted small">This week</span>
+      <strong <%- live(weekNow.workedMs, status === "in") %>><%= fmt.formatDuration(weekNow.workedMs) %></strong>
+      <span class="muted small">
+        since <%= fmt.formatDay(weekNow.week.from) %>
+        <% if (weekNow.incompleteCount) { %>
+          · <%= weekNow.incompleteCount %> shift<%= weekNow.incompleteCount === 1 ? "" : "s" %> with missing punches not counted
+        <% } %>
+      </span>
+    </div>
+  </div>
 
   <% if (scheduledToday.length) { %>
     <p class="small scheduled-today">
@@ -59,5 +94,7 @@
     <%- include("partials/shifts", { shifts, mode: "clock" }) %>
   <% } %>
 </section>
+
+<script src="/clock.js" defer></script>
 
 <%- include("partials/foot") %>

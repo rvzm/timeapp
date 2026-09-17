@@ -1,8 +1,20 @@
-<%# The Manager Console's tabs. Needs `current`: "employees", "schedule", "requests", or "breaks". %>
+<%# The Manager Console's tabs. Needs `current`: "employees", "schedule", "requests", or "breaks".
+    With several teams to view (`teamPicker`), a team picker comes first, and the tabs keep the picked team. %>
 <% const pendingCount = locals.pendingRequestCount ?? 0; %>
+<% const page = current === "employees" ? "/manage" : `/manage/${current}`; %>
+<% const withTeam = (href, team = locals.teamQuery ? teamQuery.slice("team=".length) : "") =>
+     team ? `${href}?team=${team}` : href; %>
+<% if (locals.teamPicker) { %>
+  <nav class="subnav team-picker" aria-label="Team">
+    <span class="muted">Team:</span>
+    <% teamPicker.options.forEach((option) => { %>
+      <a href="<%= withTeam(page, option.value) %>"<%- option.value === teamPicker.current ? ' aria-current="page"' : "" %>><%= option.label %></a>
+    <% }) %>
+  </nav>
+<% } %>
 <%- include("subnav", { tabs: [
-  { href: "/manage", label: "Employees", active: current === "employees" },
-  { href: "/manage/schedule", label: "Schedule", active: current === "schedule" },
-  { href: "/manage/requests", label: pendingCount ? `Requests (${pendingCount})` : "Requests", active: current === "requests" },
-  { href: "/manage/breaks", label: "Break rules", active: current === "breaks" },
+  { href: withTeam("/manage"), label: "Employees", active: current === "employees" },
+  { href: withTeam("/manage/schedule"), label: "Schedule", active: current === "schedule" },
+  { href: withTeam("/manage/requests"), label: pendingCount ? `Requests (${pendingCount})` : "Requests", active: current === "requests" },
+  { href: withTeam("/manage/breaks"), label: "Break rules", active: current === "breaks" },
 ] }) %>

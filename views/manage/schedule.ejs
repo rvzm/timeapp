@@ -14,9 +14,10 @@
       <p class="muted small">To assign a shift, open an employee from the Employees tab.</p>
     </div>
     <div class="page-head-actions">
-      <a class="btn btn-small" href="/manage/schedule?week=<%= prevWeek %>">← Previous</a>
-      <a class="btn btn-small btn-ghost" href="/manage/schedule">This week</a>
-      <a class="btn btn-small" href="/manage/schedule?week=<%= nextWeek %>">Next →</a>
+      <% const teamParam = teamQuery ? `&${teamQuery}` : ""; %>
+      <a class="btn btn-small" href="/manage/schedule?week=<%= prevWeek %><%= teamParam %>">← Previous</a>
+      <a class="btn btn-small btn-ghost" href="/manage/schedule<%= teamQuery ? `?${teamQuery}` : "" %>">This week</a>
+      <a class="btn btn-small" href="/manage/schedule?week=<%= nextWeek %><%= teamParam %>">Next →</a>
     </div>
   </div>
 
@@ -29,7 +30,7 @@
         assignments: day.assignments,
         showName: true,
         canDelete,
-        back: `/manage/schedule?week=${week.from}`,
+        back: `/manage/schedule?week=${week.from}${teamQuery ? `&${teamQuery}` : ""}`,
       }) %>
     <% } %>
   <% }) %>

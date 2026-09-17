@@ -947,6 +947,11 @@ input, select, textarea {
 .subnav a:hover { color: var(--text); }
 .subnav a[aria-current="page"] { color: var(--text); font-weight: 600; border-bottom-color: var(--accent-line); }
 
+/* The Manage Console's team picker: a row above the tabs, not a second tab bar. */
+.subnav.team-picker { align-items: center; border-bottom: 0; margin-bottom: 0.5rem; }
+.subnav.team-picker a { padding: 0.25rem 0.7rem; margin-bottom: 0; border: var(--border-width) solid var(--border); border-radius: var(--radius-pill); }
+.subnav.team-picker a[aria-current="page"] { border-color: var(--accent-line); }
+
 /* Form extras */
 fieldset { border: 0; padding: 0; margin: 0; min-width: 0; }
 legend { font-weight: 700; padding: 0; margin-bottom: 0.6rem; }
@@ -1143,6 +1148,27 @@ h3 { font-size: 1rem; }
 }
 
 .status-since { margin: 0.35rem 0 calc(var(--space) * 1.5); }
+
+/* This shift / This week, side by side (stacked on narrow screens) */
+.clock-totals {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem;
+  margin: 0 0 calc(var(--space) * 1.5);
+}
+.clock-total {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+  min-width: 12rem;
+  padding: 0.6rem 1rem;
+  background: var(--surface-2);
+  border: var(--border-width) solid var(--border);
+  border-radius: var(--radius);
+}
+.clock-total strong { font-family: var(--font-heading); font-size: 1.5rem; font-variant-numeric: tabular-nums; }
 .punch-card .break-rules { margin: calc(var(--space) * -1) 0 var(--space); }
 .punch-card .alert { display: inline-block; }
 
