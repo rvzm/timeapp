@@ -7,6 +7,9 @@
 </div>
 
 <%- include("../partials/admin-tabs", { current: "accounts" }) %>
+<% if (teamPicker) { %>
+  <%- include("../partials/team-picker", { picker: teamPicker, page: "/admin" }) %>
+<% } %>
 
 <section class="card">
   <div class="table-wrap">
@@ -15,6 +18,9 @@
         <tr><th>Name</th><th>Username</th><th>Role</th><th>Team</th><th>Job title</th><th>Employee #</th><th>Account</th><th></th></tr>
       </thead>
       <tbody>
+        <% if (users.length === 0) { %>
+          <tr><td colspan="8" class="muted">Nobody on this team.</td></tr>
+        <% } %>
         <% users.forEach((u) => { %>
           <tr class="<%= u.active ? "" : "row-inactive" %>">
             <td>

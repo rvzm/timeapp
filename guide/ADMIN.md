@@ -34,7 +34,7 @@ On a person's page in **Manage**, admins also get an **Edit account** button, an
 ## Accounts
 ![The Accounts list](images/admin-accounts.png)
 
-**Admin** opens the **Accounts** tab: everyone, with their name and email, **Username**, **Role**, **Team**, **Job title**, **Employee #**, and whether the account is **Active** or **Inactive**. The buttons on each row:
+**Admin** opens the **Accounts** tab: everyone, with their name and email, **Username**, **Role**, **Team**, **Job title**, **Employee #**, and whether the account is **Active** or **Inactive**. Once there are teams, a **Team:** row above the list filters it to **All teams**, one team, or **No team**. The buttons on each row:
 - **Edit**: opens the account.
 - **Shifts**: opens their page in **Manage** (punches, schedule, requests, details).
 - **Deactivate** / **Reactivate**: not shown on your own row.

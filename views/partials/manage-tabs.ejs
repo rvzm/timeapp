@@ -2,15 +2,9 @@
     With several teams to view (`teamPicker`), a team picker comes first, and the tabs keep the picked team. %>
 <% const pendingCount = locals.pendingRequestCount ?? 0; %>
 <% const page = current === "employees" ? "/manage" : `/manage/${current}`; %>
-<% const withTeam = (href, team = locals.teamQuery ? teamQuery.slice("team=".length) : "") =>
-     team ? `${href}?team=${team}` : href; %>
+<% const withTeam = (href) => locals.teamQuery ? `${href}?${teamQuery}` : href; %>
 <% if (locals.teamPicker) { %>
-  <nav class="subnav team-picker" aria-label="Team">
-    <span class="muted">Team:</span>
-    <% teamPicker.options.forEach((option) => { %>
-      <a href="<%= withTeam(page, option.value) %>"<%- option.value === teamPicker.current ? ' aria-current="page"' : "" %>><%= option.label %></a>
-    <% }) %>
-  </nav>
+  <%- include("team-picker", { picker: teamPicker, page }) %>
 <% } %>
 <%- include("subnav", { tabs: [
   { href: withTeam("/manage"), label: "Employees", active: current === "employees" },

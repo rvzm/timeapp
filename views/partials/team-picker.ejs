@@ -1,0 +1,8 @@
+<%# The "Team:" filter row. Needs `picker` ({ options, current }, see teams.js) and `page`,
+    the URL each option links to (with ?team= added). %>
+<nav class="subnav team-picker" aria-label="Team">
+  <span class="muted">Team:</span>
+  <% picker.options.forEach((option) => { %>
+    <a href="<%= option.value ? `${page}?team=${option.value}` : page %>"<%- option.value === picker.current ? ' aria-current="page"' : "" %>><%= option.label %></a>
+  <% }) %>
+</nav>

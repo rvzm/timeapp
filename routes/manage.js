@@ -9,7 +9,8 @@ import * as db from "../db.js";
 import * as time from "../time.js";
 import { loadShifts } from "../shifts.js";
 import { requireManager } from "../auth.js";
-import { canManageShifts, canManageSchedule, isAdmin } from "../permissions.js";
+import { canManageShifts, canManageSchedule } from "../permissions.js";
+import { readTeamFilter, inTeamFilter } from "../teams.js";
 import { getSettings, saveSettings, readBreakLimitsForm, breakPolicyFor } from "../settings.js";
 import { availabilityWeek } from "../availability.js";
 import { reviewRequest, pendingByPunch, pendingRequestsFor } from "../requests.js";
@@ -28,34 +29,16 @@ const NOTE_MAX = 500;
 // res.locals.teamPicker / teamQuery for the tabs and links.
 // ===================================================================
 
-// The teams the user can pick between, as [{ value, label }]; empty = no picker.
-// A manager with several teams always views one of them; the teams are never mixed.
-function teamOptions(user) {
-  const toOption = (team) => ({ value: String(team.id), label: team.name });
-  if (isAdmin(user)) {
-    const teams = db.listTeams();
-    if (!teams.length) return [];
-    return [{ value: "", label: "All teams" }, ...teams.map(toOption), { value: "none", label: "No team" }];
-  }
-  const teams = db.listTeamsForUser(user.id);
-  return teams.length > 1 ? teams.map(toOption) : [];
-}
-
 router.use((req, res, next) => {
-  const options = teamOptions(req.user);
-  const picked = options.find((option) => option.value === String(req.query.team ?? "")) ?? options[0];
-  req.teamFilter = picked?.value ?? "";
-  res.locals.teamPicker = options.length ? { options, current: req.teamFilter } : null;
-  res.locals.teamQuery = req.teamFilter ? `team=${req.teamFilter}` : "";
+  const { filter, picker } = readTeamFilter(req.user, req.query.team);
+  req.teamFilter = filter;
+  res.locals.teamPicker = picker;
+  res.locals.teamQuery = filter ? `team=${filter}` : "";
   next();
 });
 
 // Whether a user belongs to the team picked in the Manage Console.
-function inSelectedTeam(req, userId) {
-  if (!req.teamFilter) return true;
-  const teamIds = db.listTeamIdsForUser(userId);
-  return req.teamFilter === "none" ? teamIds.length === 0 : teamIds.includes(Number(req.teamFilter));
-}
+const inSelectedTeam = (req, userId) => inTeamFilter(req.teamFilter, userId);
 
 // ===================================================================
 // ===== Helpers =====

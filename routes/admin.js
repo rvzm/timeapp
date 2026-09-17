@@ -7,6 +7,7 @@ import * as db from "../db.js";
 import * as time from "../time.js";
 import { requireAdmin, hashPassword, validateAccount, validatePassword } from "../auth.js";
 import { getSettings, saveSettings, readSettingsForm, REQUEST_MODES } from "../settings.js";
+import { readTeamFilter, inTeamFilter } from "../teams.js";
 import { toId, notFound } from "./helpers.js";
 
 const router = express.Router();
@@ -47,8 +48,11 @@ function renderSettings(res, { form = getSettings(), error = null, notice = null
 // ===== Accounts =====
 // ===================================================================
 
+// ?team= filters the list, as in the Manage Console.
 router.get("/", (req, res) => {
-  res.render("admin/index", { title: "Accounts", users: db.listUsersWithLastPunch() });
+  const { filter, picker } = readTeamFilter(req.user, req.query.team);
+  const users = db.listUsersWithLastPunch().filter((u) => inTeamFilter(filter, u.id));
+  res.render("admin/index", { title: "Accounts", users, teamPicker: picker });
 });
 
 router.get("/users/new", (req, res) => {
