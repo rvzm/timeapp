@@ -97,7 +97,7 @@ Teams decide which employees a manager manages:
 **Admin → Teams** lists every team with how many **Managers** and **Employees** it has.
 - **Add a team:** enter a **Team name** (1–60 characters, unique) and click **Add team**.
 - **Edit a team:** click its name, or **Edit**. There you can:
-  - **Add member**: pick an active employee or manager and click **Add member**. Adding an employee who's already on another team moves them (the list says "moves from …").
+  - **Add members**: opens a list of active employees and managers, with two tabs: **Not on this team** (everyone who could be added) and **Not on any team** (only people on no team yet). Tick as many as you like, on either tab, and click **Add selected**. Adding an employee who's already on another team moves them (the list says "moves from …").
   - **Remove** someone from the team.
   - **Rename team**.
   - **Delete team**: its members are left on no team (unless they're on another). No shifts or other history are affected.

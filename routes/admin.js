@@ -219,6 +219,7 @@ function renderTeam(req, res, team, { form = null, error = null, memberError = n
   const candidates = db.listUsersWithLastPunch()
     .filter((u) => u.active && u.role !== "admin" && !memberIds.has(u.id))
     .map((u) => ({ ...u, movesFrom: u.role === "employee" ? u.team_names : null }));
+  const addedCount = Number(req.query.count) || 1;
 
   res.status(statusCode).render("admin/team", {
     title: team.name,
@@ -228,6 +229,7 @@ function renderTeam(req, res, team, { form = null, error = null, memberError = n
     form: form ?? { name: team.name },
     error,
     memberError,
+    addedCount,
     saved: statusCode === 200 ? req.query.saved : null,
   });
 }
@@ -266,22 +268,27 @@ router.post("/teams/:id/delete", (req, res) => {
   res.redirect("/admin/teams");
 });
 
+// Adds everyone ticked in the Add members dialog (one or more user_id values).
 router.post("/teams/:id/members", (req, res) => {
   const team = loadTeam(res, req.params.id);
   if (!team) return;
 
-  const member = db.getUserById(toId(req.body.user_id));
+  const ids = [req.body.user_id ?? []].flat().map(toId);
+  const people = [...new Set(ids)].map((id) => id && db.getUserById(id));
   const memberError =
-    (!member ? "Pick someone to add." : null) ||
-    (member.role === "admin" ? "Admins manage everyone, so they aren't added to teams." : null);
+    (people.length === 0 ? "Tick at least one person to add." : null) ||
+    (people.some((person) => !person) ? "Someone you picked doesn't exist anymore. Try again." : null) ||
+    (people.some((person) => person.role === "admin") ? "Admins manage everyone, so they aren't added to teams." : null);
   if (memberError) return renderTeam(req, res, team, { memberError, statusCode: 400 });
 
   // An employee is on one team at a time, so adding them moves them here.
   db.db.transaction(() => {
-    if (member.role === "employee") db.removeUserFromAllTeams(member.id);
-    db.addTeamMember(team.id, member.id);
+    for (const person of people) {
+      if (person.role === "employee") db.removeUserFromAllTeams(person.id);
+      db.addTeamMember(team.id, person.id);
+    }
   })();
-  res.redirect(`/admin/teams/${team.id}?saved=added`);
+  res.redirect(`/admin/teams/${team.id}?saved=added${people.length > 1 ? `&count=${people.length}` : ""}`);
 });
 
 router.post("/teams/:id/members/:userId/delete", (req, res) => {

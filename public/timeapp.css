@@ -789,6 +789,7 @@ code { font-family: var(--font-mono); font-size: 0.9em; }
 }
 .btn:hover { filter: brightness(1.08); }
 .btn:active { transform: translateY(1px); }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; filter: none; transform: none; }
 
 .btn:focus-visible,
 input:focus-visible,
@@ -958,6 +959,51 @@ legend { font-weight: 700; padding: 0; margin-bottom: 0.6rem; }
 .field .hint { font-size: 0.8rem; font-weight: 400; color: var(--muted); }
 .checkbox { display: flex; align-items: center; gap: 0.5rem; }
 .checkbox input { width: auto; }
+
+/* Dialogs (e.g. the team page's Add members). `.card` gives them each style's look.
+   The padding is on the form, so a click on the dialog element itself means the backdrop. */
+.member-dialog {
+  width: min(32rem, calc(100vw - 2rem));
+  max-height: min(40rem, calc(100vh - 2rem));
+  padding: 0;
+  margin: auto;
+  color: var(--text);
+  box-shadow: var(--shadow-big);
+}
+.member-dialog::backdrop { background: rgba(0, 0, 0, 0.45); }
+.member-dialog > form { padding: calc(var(--space) * 1.25); }
+.member-dialog h2 { margin: 0; }
+
+.dialog-tabs { display: flex; flex-wrap: wrap; gap: 0.25rem; border-bottom: var(--border-width) solid var(--border); }
+.dialog-tabs button {
+  padding: 0.45rem 0.8rem;
+  margin-bottom: calc(var(--border-width) * -1);
+  font: inherit;
+  color: var(--muted);
+  background: none;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+}
+.dialog-tabs button:hover { color: var(--text); }
+.dialog-tabs button[aria-selected="true"] { color: var(--text); font-weight: 600; border-bottom-color: var(--accent-line); }
+
+.member-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 18rem;
+  overflow-y: auto;
+  border: var(--border-width) solid var(--border);
+  border-radius: var(--radius-small);
+}
+.member-list li { border-bottom: 1px solid var(--border); }
+.member-list li:last-child { border-bottom: 0; }
+.member-list li[hidden] { display: none; }
+.member-list .checkbox { padding: 0.5rem 0.75rem; cursor: pointer; }
+.member-list .checkbox:hover { background: var(--surface-2); }
+.member-list .checkbox > span { display: flex; flex-direction: column; }
+.member-dialog .hint { margin: 0; }
 .alert-ok { background: color-mix(in srgb, var(--status-in) 12%, transparent); border-color: var(--status-in); }
 
 /* Label/value lists, e.g. profile details and availability */

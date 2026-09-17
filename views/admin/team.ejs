@@ -14,7 +14,7 @@
 <section class="card">
   <h2>Members</h2>
   <% if (saved === "added") { %>
-    <p class="alert alert-ok">Member added.</p>
+    <p class="alert alert-ok"><%= addedCount > 1 ? `${addedCount} members added.` : "Member added." %></p>
   <% } %>
   <% if (saved === "removed") { %>
     <p class="alert alert-ok">Member removed.</p>
@@ -55,23 +55,45 @@
   <% } %>
 
   <% if (candidates.length) { %>
-    <form method="post" action="/admin/teams/<%= team.id %>/members" class="form-grid">
-      <label class="field">
-        <span>Add member</span>
-        <select name="user_id" required>
-          <option value="">Choose…</option>
+    <div class="form-actions">
+      <button type="button" class="btn btn-primary" data-open-dialog="add-members">Add members</button>
+    </div>
+
+    <%# Opened by public/team.js. The tabs filter one list, so ticks carry over between them. %>
+    <dialog id="add-members" class="card member-dialog" aria-labelledby="add-members-title">
+      <form method="post" action="/admin/teams/<%= team.id %>/members" class="stack">
+        <h2 id="add-members-title">Add members to <%= team.name %></h2>
+
+        <div class="dialog-tabs" role="tablist">
+          <button type="button" role="tab" aria-selected="true" data-member-filter="all">Not on this team</button>
+          <button type="button" role="tab" aria-selected="false" data-member-filter="unassigned">Not on any team</button>
+        </div>
+
+        <ul class="member-list">
           <% candidates.forEach((u) => { %>
-            <option value="<%= u.id %>">
-              <%= displayName(u) %> (<%= ROLE_LABELS[u.role] %>)<%= u.movesFrom ? ` · moves from ${u.movesFrom}` : "" %>
-            </option>
+            <li<%- u.team_names ? "" : " data-unassigned" %>>
+              <label class="checkbox">
+                <input type="checkbox" name="user_id" value="<%= u.id %>">
+                <span>
+                  <%= displayName(u) %>
+                  <span class="muted small">
+                    <%= ROLE_LABELS[u.role] %><% if (u.movesFrom) { %> · moves from <%= u.movesFrom %><% } else if (u.team_names) { %> · also on <%= u.team_names %><% } %>
+                  </span>
+                </span>
+              </label>
+            </li>
           <% }) %>
-        </select>
-        <span class="hint">Employees are on one team at a time; adding one moves them here.</span>
-      </label>
-      <div class="form-actions field-wide">
-        <button class="btn btn-primary">Add member</button>
-      </div>
-    </form>
+        </ul>
+        <p class="muted member-list-empty" hidden>Everyone is already on a team.</p>
+        <p class="hint small muted">Employees are on one team at a time; adding one moves them here.</p>
+
+        <div class="form-actions">
+          <button class="btn btn-primary" data-member-submit>Add selected</button>
+          <button type="button" class="btn btn-ghost" data-close-dialog>Cancel</button>
+        </div>
+      </form>
+    </dialog>
+    <script src="/team.js" defer></script>
   <% } %>
 </section>
 
