@@ -2,7 +2,7 @@
 NodeJS and SQLite powered Time Clock WebApp.
 
 ![buildstate-stable](https://img.shields.io/badge/build-stable-green)
-![version](https://img.shields.io/badge/version-0.3.2-green)
+![version](https://img.shields.io/badge/version-0.3.3-green)
 
 ## Dependencies
 app:
