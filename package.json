@@ -1,6 +1,6 @@
 {
   "name": "timeapp",
-  "version": "0.2.7",
+  "version": "0.2.8",
   "description": "Simple employee timeclock web app.",
   "type": "module",
   "private": true,
