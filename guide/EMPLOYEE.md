@@ -5,6 +5,7 @@ Managers and admins use everything here too, for their own time. Related: [Manag
 
 - [Log in and find your way around](#log-in-and-find-your-way-around)
 - [Clock in, take breaks, clock out](#clock-in-take-breaks-clock-out)
+- [Your Portal home](#your-portal-home)
 - [See your shifts](#see-your-shifts)
 - [Add notes to a shift](#add-notes-to-a-shift)
 - [Fix a wrong or missing punch](#fix-a-wrong-or-missing-punch)
@@ -53,10 +54,19 @@ Under the buttons, **Today** lists today's punches, grouped into shifts.
 
 ---
 
+## Your Portal home
+**My Portal** opens on **Home**, a summary of your time:
+
+- **Hours worked**: time worked **Today**, **This week**, **This month** and **Year to date**. These use the same rules as your shifts and timesheets: a shift counts on the day it starts, and a shift with a missing punch isn't counted until it's fixed (the tile says how many were left out).
+- **This week**: each day of the week with the mandatory shifts a manager assigned you, their times and hours, or **Off** if nothing is scheduled. Today's row is highlighted. **Full schedule →** opens **My Portal → Schedule**.
+- **Worked vs scheduled**: the same four periods as "**4h 00m** of 6h 00m scheduled", with a bar. Scheduled hours are every assigned shift in the whole period, including ones still ahead, so the week's number is the full week's schedule. If nothing is scheduled, the tile says **nothing scheduled**.
+
+---
+
 ## See your shifts
 ![My Portal: My shifts](images/portal-shifts.png)
 
-**My Portal** opens on **My shifts**, showing this week.
+**My Portal → My shifts** shows this week's shifts.
 - **Change the dates:** set **From** and **To** and click **Show**, or use **This week** / **Last week**.
 - **Total worked:** the sum for shifts that start in the range, not counting breaks.
 - **Each shift** shows its date, start and end times, time worked and break time. The punches are listed underneath; break punches are indented.
@@ -86,7 +96,7 @@ You can't edit punches yourself, but you can ask. Every request needs a **Reason
 |---|---|
 | Fix a punch's type or time | In **My shifts**, click **Request change** next to the punch. Pick what it **Should be** and the right **Date & time**. |
 | Remove a punch made by mistake | Click **Request delete** next to the punch. |
-| Add a punch you forgot (e.g. a clock-out) | Click **Request a missing punch** at the top of **My Portal**. Pick the **Punch** type and **Date & time**. |
+| Add a punch you forgot (e.g. a clock-out) | Click **Request a missing punch** at the top of **My Portal → My shifts**. Pick the **Punch** type and **Date & time**. |
 | Add a whole shift that never got recorded | Click **Request a missing shift**. Enter when you **Clocked in** and **Clocked out**. |
 
 ![Requesting a change](images/request-new.png)
@@ -131,7 +141,7 @@ Your **Profile** also lists your upcoming assigned shifts.
 ## Export a timesheet
 ![A weekly timesheet](images/export.png)
 
-1. On **My Portal**, click **Export timesheet**.
+1. On **My Portal → My shifts**, click **Export timesheet**.
 2. Pick a **Period** (**Day**, **Week** or **Month**), put any date in that period in **Including**, and click **Show**.
 3. Click **Save as PDF** (in the print dialog, pick "Save as PDF" as the printer) or **Download image** (a PNG).
 

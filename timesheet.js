@@ -1,5 +1,6 @@
 // Timesheet exports: one person's shifts for a day, week, or month, with totals.
 // Shifts are counted on the day they start, so an overnight shift appears once.
+import * as db from "./db.js";
 import * as time from "./time.js";
 import { loadShifts } from "./shifts.js";
 import { getSettings } from "./settings.js";
@@ -54,6 +55,65 @@ export function weekSoFar(userId, date = time.localDate()) {
 // "timesheet-jdoe-week-2026-08-09.png"
 export function exportFilename(user, sheet) {
   return `timesheet-${user.username}-${sheet.period}-${sheet.range.from}.png`;
+}
+
+// ===================================================================
+// ===== Portal home =====
+// Worked and scheduled time for today, this week, this month, and the year so far,
+// plus this week's schedule day by day. Worked time follows the timesheet rules
+// (a shift counts on the day it starts; shifts with a missing punch are left out).
+// Scheduled time is every mandatory shift in the whole period, including ones ahead.
+// ===================================================================
+
+const HOME_PERIODS = [
+  ["today", "Today"],
+  ["week", "This week"],
+  ["month", "This month"],
+  ["year", "Year to date"],
+];
+
+export function homeSummary(userId) {
+  const today = time.localDate();
+  const { weekStart } = getSettings();
+  const ranges = {
+    today: { from: today, to: today },
+    week: time.weekRange(today, weekStart),
+    month: time.periodRange("month", today, weekStart),
+    year: { from: `${today.slice(0, 4)}-01-01`, to: today },
+  };
+
+  // One load each for the widest span. In early January the week can start last year,
+  // and the week and month run past today so future assignments count as scheduled.
+  const all = Object.values(ranges);
+  const spanFrom = all.reduce((min, r) => (r.from < min ? r.from : min), today);
+  const spanTo = all.reduce((max, r) => (r.to > max ? r.to : max), today);
+  const [fromIso, toIso] = time.dayRangeUtc(spanFrom, spanTo);
+  const shifts = loadShifts(userId, fromIso, toIso);
+  const assignments = db.listScheduledForUser(userId, fromIso, toIso)
+    .map((a) => ({ ...a, date: time.localDate(a.start_at), ms: Date.parse(a.end_at) - Date.parse(a.start_at) }));
+
+  const within = (range) => (item) => item.date >= range.from && item.date <= range.to;
+
+  const periods = HOME_PERIODS.map(([key, label]) => {
+    const range = ranges[key];
+    const periodShifts = shifts.filter(within(range));
+    return {
+      key,
+      label,
+      range,
+      workedMs: sum(periodShifts, (shift) => shift.workedMs ?? 0),
+      incomplete: periodShifts.filter((shift) => shift.workedMs === null).length,
+      scheduledMs: sum(assignments.filter(within(range)), (a) => a.ms),
+    };
+  });
+
+  const days = Array.from({ length: 7 }, (_, i) => {
+    const date = time.addDays(ranges.week.from, i);
+    const dayAssignments = assignments.filter((a) => a.date === date);
+    return { date, isToday: date === today, assignments: dayAssignments, scheduledMs: sum(dayAssignments, (a) => a.ms) };
+  });
+
+  return { periods, week: { range: ranges.week, days, scheduledMs: sum(days, (day) => day.scheduledMs) } };
 }
 
 // ===================================================================

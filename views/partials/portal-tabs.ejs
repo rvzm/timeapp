@@ -1,6 +1,7 @@
-<%# The Employee Portal's tabs. Needs `current`: "shifts", "schedule", or "requests". %>
+<%# The Employee Portal's tabs. Needs `current`: "home", "shifts", "schedule", or "requests". %>
 <%- include("subnav", { tabs: [
-  { href: "/portal", label: "My shifts", active: current === "shifts" },
+  { href: "/portal", label: "Home", active: current === "home" },
+  { href: "/portal/shifts", label: "My shifts", active: current === "shifts" },
   { href: "/portal/schedule", label: "Schedule", active: current === "schedule" },
   { href: "/portal/requests", label: "Requests", active: current === "requests" },
 ] }) %>

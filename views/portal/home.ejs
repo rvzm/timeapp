@@ -1,0 +1,89 @@
+<%- include("../partials/head") %>
+<%- include("../partials/nav") %>
+
+<%# Needs `periods` and `week` from homeSummary() in timesheet.js. %>
+<% const span = (range) => range.from === range.to ? fmt.formatDay(range.from) : `${fmt.formatDay(range.from)} – ${fmt.formatDay(range.to)}`; %>
+
+<div class="page-head">
+  <h1>My Portal</h1>
+</div>
+
+<%- include("../partials/portal-tabs", { current: "home" }) %>
+
+<section class="card">
+  <h2>Hours worked</h2>
+  <div class="stat-tiles">
+    <% periods.forEach((period) => { %>
+      <div class="stat-tile">
+        <span class="muted small"><%= period.label %></span>
+        <strong><%= fmt.formatDuration(period.workedMs) %></strong>
+        <span class="muted small">
+          <%= span(period.range) %>
+          <% if (period.incomplete) { %>
+            · <%= period.incomplete %> shift<%= period.incomplete === 1 ? "" : "s" %> with missing punches not counted
+          <% } %>
+        </span>
+      </div>
+    <% }) %>
+  </div>
+</section>
+
+<section class="card">
+  <h2>This week <span class="muted">· <%= span(week.range) %></span></h2>
+  <div class="table-wrap">
+    <table class="table week-table">
+      <thead>
+        <tr><th>Day</th><th>Scheduled</th><th>Hours</th></tr>
+      </thead>
+      <tbody>
+        <% week.days.forEach((day) => { %>
+          <tr<%- day.isToday ? ' class="is-today"' : "" %>>
+            <td>
+              <%= fmt.formatDay(day.date) %>
+              <% if (day.isToday) { %><span class="badge">Today</span><% } %>
+            </td>
+            <td>
+              <% if (day.assignments.length === 0) { %>
+                <span class="muted off">Off</span>
+              <% } else { %>
+                <% day.assignments.forEach((a) => { %>
+                  <div>
+                    <%= fmt.formatTime(a.start_at) %> – <%= fmt.formatTime(a.end_at) %>
+                    <% if (a.note) { %><span class="muted small">· <%= a.note %></span><% } %>
+                  </div>
+                <% }) %>
+              <% } %>
+            </td>
+            <td><%= day.assignments.length ? fmt.formatDuration(day.scheduledMs) : "—" %></td>
+          </tr>
+        <% }) %>
+      </tbody>
+      <tfoot>
+        <tr><th colspan="2">Scheduled this week</th><th><%= fmt.formatDuration(week.scheduledMs) %></th></tr>
+      </tfoot>
+    </table>
+  </div>
+  <p class="small"><a href="/portal/schedule">Full schedule →</a></p>
+</section>
+
+<section class="card">
+  <h2>Worked vs scheduled</h2>
+  <div class="stat-tiles">
+    <% periods.forEach((period) => { %>
+      <div class="stat-tile">
+        <span class="muted small"><%= period.label %></span>
+        <% if (period.scheduledMs > 0) { %>
+          <strong><%= fmt.formatDuration(period.workedMs) %></strong>
+          <span class="small">of <%= fmt.formatDuration(period.scheduledMs) %> scheduled</span>
+          <progress max="<%= period.scheduledMs %>" value="<%= Math.min(period.workedMs, period.scheduledMs) %>"
+            aria-label="<%= period.label %>: <%= fmt.formatDuration(period.workedMs) %> of <%= fmt.formatDuration(period.scheduledMs) %> scheduled"></progress>
+        <% } else { %>
+          <strong><%= fmt.formatDuration(period.workedMs) %></strong>
+          <span class="muted small">worked · nothing scheduled</span>
+        <% } %>
+      </div>
+    <% }) %>
+  </div>
+</section>
+
+<%- include("../partials/foot") %>

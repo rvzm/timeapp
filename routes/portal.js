@@ -1,4 +1,5 @@
-// Employee Portal: your own shifts (with notes), mandatory shifts, and punch edit requests.
+// Employee Portal: a home summary, your own shifts (with notes), mandatory shifts, and
+// punch edit requests.
 // Mounted at /portal; any logged-in user. Profile and settings are in routes/account.js.
 import express from "express";
 import * as db from "../db.js";
@@ -8,17 +9,30 @@ import { loadShifts } from "../shifts.js";
 import { getSettings } from "../settings.js";
 import { KIND_LABELS, REQUEST_KINDS, readRequestForm, submitRequest, requestsEnabled, pendingByPunch } from "../requests.js";
 import { withAttendance } from "../schedule.js";
-import { buildTimesheet, readExportQuery, exportFilename } from "../timesheet.js";
+import { buildTimesheet, readExportQuery, exportFilename, homeSummary } from "../timesheet.js";
 import { readRange, toId, notFound } from "./helpers.js";
 
 const router = express.Router();
 router.use(requireLogin);
 
 // ===================================================================
-// ===== My shifts =====
+// ===== Home =====
 // ===================================================================
 
 router.get("/", (req, res) => {
+  // My shifts used to live here; old links (and saved note "back" URLs) carry ?from/?to.
+  if (req.query.from !== undefined || req.query.to !== undefined) {
+    const query = new URLSearchParams({ from: String(req.query.from ?? ""), to: String(req.query.to ?? "") });
+    return res.redirect(`/portal/shifts?${query}`);
+  }
+  res.render("portal/home", { title: "My Portal", ...homeSummary(req.user.id) });
+});
+
+// ===================================================================
+// ===== My shifts =====
+// ===================================================================
+
+router.get("/shifts", (req, res) => {
   const { weekStart } = getSettings();
   const thisWeek = time.weekRange(time.localDate(), weekStart);
   const range = time.isValidDate(req.query.from) ? readRange(req.query) : thisWeek;
@@ -28,7 +42,7 @@ router.get("/", (req, res) => {
   // Totals count shifts that start in the range (an overnight shift belongs to the day it starts).
   const counted = shifts.filter((shift) => shift.date >= range.from && shift.date <= range.to);
 
-  res.render("portal/index", {
+  res.render("portal/shifts", {
     title: "My shifts",
     shifts,
     range,
@@ -50,7 +64,7 @@ router.get("/export", (req, res) => {
     employee,
     sheet,
     exportUrl: "/portal/export",
-    backUrl: "/portal",
+    backUrl: "/portal/shifts",
     filename: exportFilename(employee, sheet),
   });
 });

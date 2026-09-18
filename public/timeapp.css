@@ -1288,15 +1288,18 @@ h3 { font-size: 1rem; }
 
 .status-since { margin: 0.35rem 0 calc(var(--space) * 1.5); }
 
-/* This shift / This week, side by side (stacked on narrow screens) */
-.clock-totals {
+/* This shift / This week, side by side (stacked on narrow screens). The Portal's Home
+   tiles (.stat-tiles) share the look. */
+.clock-totals,
+.stat-tiles {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
   gap: 0.75rem;
   margin: 0 0 calc(var(--space) * 1.5);
 }
-.clock-total {
+.clock-total,
+.stat-tile {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1307,9 +1310,34 @@ h3 { font-size: 1rem; }
   border: var(--border-width) solid var(--border);
   border-radius: var(--radius);
 }
-.clock-total strong { font-family: var(--font-heading); font-size: 1.5rem; font-variant-numeric: tabular-nums; }
+.clock-total strong,
+.stat-tile strong { font-family: var(--font-heading); font-size: 1.5rem; font-variant-numeric: tabular-nums; }
 .punch-card .break-rules { margin: calc(var(--space) * -1) 0 var(--space); }
 .punch-card .alert { display: inline-block; }
+
+/* Portal Home: four tiles across, wrapping to two and then one on narrow screens */
+.stat-tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+  margin: 0;
+}
+.stat-tile { min-width: 0; text-align: center; }
+.stat-tile progress {
+  width: 100%;
+  height: 0.5rem;
+  margin-top: 0.35rem;
+  accent-color: var(--accent);
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+}
+.week-table .is-today td {
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+}
+.week-table .is-today td:first-child { box-shadow: inset 3px 0 0 var(--accent-line); }
+.week-table .badge { margin-left: 0.35rem; }
+.week-table tfoot th { text-align: left; }
+.week-table td:last-child,
+.week-table th:last-child { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
 
 .punch-actions {
   display: flex;

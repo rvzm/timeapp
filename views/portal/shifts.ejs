@@ -17,7 +17,7 @@
 <%- include("../partials/portal-tabs", { current: "shifts" }) %>
 
 <section class="card">
-  <form method="get" action="/portal" class="range-form">
+  <form method="get" action="/portal/shifts" class="range-form">
     <label class="field">
       <span>From</span>
       <input type="date" name="from" value="<%= range.from %>">
@@ -27,8 +27,8 @@
       <input type="date" name="to" value="<%= range.to %>">
     </label>
     <button class="btn">Show</button>
-    <a class="btn btn-ghost" href="/portal">This week</a>
-    <a class="btn btn-ghost" href="/portal?from=<%= lastWeek.from %>&amp;to=<%= lastWeek.to %>">Last week</a>
+    <a class="btn btn-ghost" href="/portal/shifts">This week</a>
+    <a class="btn btn-ghost" href="/portal/shifts?from=<%= lastWeek.from %>&amp;to=<%= lastWeek.to %>">Last week</a>
   </form>
 
   <h2>
@@ -45,7 +45,7 @@
         <span class="muted">(<%= incomplete %> shift<%= incomplete === 1 ? "" : "s" %> with a missing punch not counted)</span>
       <% } %>
     </p>
-    <%- include("../partials/shifts", { shifts, mode: "portal", notesBack: `/portal?from=${range.from}&to=${range.to}` }) %>
+    <%- include("../partials/shifts", { shifts, mode: "portal", notesBack: `/portal/shifts?from=${range.from}&to=${range.to}` }) %>
   <% } %>
 </section>
 
