@@ -1251,6 +1251,9 @@ legend { font-weight: 700; padding: 0; margin-bottom: 0.6rem; }
 /* Mandatory shifts */
 h3 { font-size: 1rem; }
 .schedule-list { list-style: none; margin: 0 0 var(--space); padding: 0; }
+/* Portal → Schedule: one block per week, each with its scheduled hours */
+.schedule-week + .schedule-week { border-top: var(--border-width) solid var(--border); padding-top: var(--space); }
+.schedule-week h3 { margin: 0 0 0.5rem; }
 .schedule-item {
   display: flex;
   align-items: center;

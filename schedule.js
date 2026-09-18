@@ -63,6 +63,21 @@ function attendanceFor(assignment, worked, now, graceMs) {
   };
 }
 
+// Groups assignments by the week they start in, keeping their order:
+// [{ from, to, assignments, scheduledMs }]. Each assignment gets `ms`, its length.
+export function groupByWeek(assignments, weekStart = getSettings().weekStart) {
+  const weeks = new Map();
+  for (const assignment of assignments) {
+    const range = time.weekRange(time.localDate(assignment.start_at), weekStart);
+    if (!weeks.has(range.from)) weeks.set(range.from, { ...range, assignments: [], scheduledMs: 0 });
+    const week = weeks.get(range.from);
+    const ms = Date.parse(assignment.end_at) - Date.parse(assignment.start_at);
+    week.assignments.push({ ...assignment, ms });
+    week.scheduledMs += ms;
+  }
+  return [...weeks.values()];
+}
+
 // ===================================================================
 // ===== Assigning =====
 // ===================================================================

@@ -1,28 +1,41 @@
 <%- include("../partials/head") %>
 <%- include("../partials/nav") %>
 
+<%# Needs `upcoming` and `past`: weeks from groupByWeek() in schedule.js. %>
+<% const total = (weeks) => weeks.reduce((sum, week) => sum + week.scheduledMs, 0); %>
+
 <div class="page-head">
   <h1>My Portal</h1>
 </div>
 
 <%- include("../partials/portal-tabs", { current: "schedule" }) %>
 
-<section class="card">
-  <h2>Upcoming mandatory shifts</h2>
-  <% if (upcoming.length === 0) { %>
-    <p class="muted">No upcoming assigned shifts.</p>
-  <% } else { %>
-    <%- include("../partials/schedule-list", { assignments: upcoming }) %>
-  <% } %>
-</section>
-
-<section class="card">
-  <h2>Past 30 days</h2>
-  <% if (past.length === 0) { %>
-    <p class="muted">No assigned shifts in the past 30 days.</p>
-  <% } else { %>
-    <%- include("../partials/schedule-list", { assignments: past }) %>
-  <% } %>
-</section>
+<% [
+  { title: "Upcoming mandatory shifts", weeks: upcoming, empty: "No upcoming assigned shifts." },
+  { title: "Past 30 days", weeks: past, empty: "No assigned shifts in the past 30 days." },
+].forEach((section) => { %>
+  <section class="card">
+    <h2>
+      <%= section.title %>
+      <% if (section.weeks.length) { %>
+        <span class="muted">· <%= fmt.formatDuration(total(section.weeks)) %> scheduled</span>
+      <% } %>
+    </h2>
+    <% if (section.weeks.length === 0) { %>
+      <p class="muted"><%= section.empty %></p>
+    <% } else { %>
+      <% section.weeks.forEach((week) => { %>
+        <div class="schedule-week">
+          <h3>
+            Week of <%= fmt.formatDay(week.from) %>
+            <span class="muted small">· Scheduled hours: <strong><%= fmt.formatDuration(week.scheduledMs) %></strong>
+              (<%= week.assignments.length %> shift<%= week.assignments.length === 1 ? "" : "s" %>)</span>
+          </h3>
+          <%- include("../partials/schedule-list", { assignments: week.assignments, showHours: true }) %>
+        </div>
+      <% }) %>
+    <% } %>
+  </section>
+<% }) %>
 
 <%- include("../partials/foot") %>

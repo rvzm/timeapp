@@ -8,7 +8,7 @@ import { requireLogin } from "../auth.js";
 import { loadShifts } from "../shifts.js";
 import { getSettings } from "../settings.js";
 import { KIND_LABELS, REQUEST_KINDS, readRequestForm, submitRequest, requestsEnabled, pendingByPunch } from "../requests.js";
-import { withAttendance } from "../schedule.js";
+import { withAttendance, groupByWeek } from "../schedule.js";
 import { buildTimesheet, readExportQuery, exportFilename, homeSummary } from "../timesheet.js";
 import { readRange, toId, notFound } from "./helpers.js";
 
@@ -79,11 +79,13 @@ router.get("/schedule", (req, res) => {
   const [from] = time.dayRangeUtc(time.addDays(today, -30));
   const [, to] = time.dayRangeUtc(time.addDays(today, 60));
   const assignments = withAttendance(req.user.id, db.listScheduledForUser(req.user.id, from, to));
+  const upcoming = assignments.filter((a) => a.end_at > now); // includes one that's under way
+  const past = assignments.filter((a) => a.end_at <= now).reverse();
 
   res.render("portal/schedule", {
     title: "My schedule",
-    upcoming: assignments.filter((a) => a.end_at > now), // includes one that's under way
-    past: assignments.filter((a) => a.end_at <= now).reverse(),
+    upcoming: groupByWeek(upcoming),
+    past: groupByWeek(past),
   });
 });
 
