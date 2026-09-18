@@ -6,7 +6,10 @@ import { fileURLToPath } from "node:url";
 import { db_config } from "../config.js";
 
 const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const dbPath = path.resolve(projectRoot, db_config.file);
+// TIMEAPP_DB_FILE points the whole app at another database file. `npm run seed -- mock`
+// sets it so it can build a throwaway database without touching the real one, and it's
+// also how you run that database: env TIMEAPP_DB_FILE=data/seeded_mock.sqlite npm run serve
+const dbPath = path.resolve(projectRoot, process.env.TIMEAPP_DB_FILE || db_config.file);
 fs.mkdirSync(path.dirname(dbPath), { recursive: true });
 
 export const db = new Database(dbPath);

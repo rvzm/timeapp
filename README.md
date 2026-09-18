@@ -55,7 +55,9 @@ Then open http://localhost:3000.
 | `npm run migrate` | After updating: restore `backup/`, carry your settings into the new `config.js`, and upgrade the database (`-- --dry-run` to preview) |
  Before real use, set `session_config.secret` (and probably `time_config.timezone`) in `config.js`.
 
-Create more admins the same way: `npm run seed -- <username> [password]`. Create employees and managers from **Admin → Accounts**.
+Create more admins the same way: `npm run seed -- <username> [password]`. Create employees and managers from **Admin → Accounts**, or from the command line with `npm run seed -- user <username> --role manager` (add `--name`, `--title`, `--emp`, `--email`, `--phone` as needed).
+
+**Demo database.** `npm run seed -- mock` builds a throwaway `data/seeded_mock.sqlite` with generated employees, managers, admins, teams, two weeks of punches, mandatory shifts, and edit requests, never touching your real database. Log in as `master` / `Master123`; the other accounts and passwords are in `data/seeded_db_userlist.txt`. Run it with `env TIMEAPP_DB_FILE=data/seeded_mock.sqlite npm run serve`. `npm run seed -- --help` lists the options; the defaults and username wordlists are in `seed_config` in `config.js`.
 
 Database changes run automatically when the app starts, so updating is just pulling the new code and restarting.
 
@@ -74,7 +76,8 @@ Database changes run automatically when the app starts, so updating is just pull
 | `requests.js` | Punch edit requests: validating, approving, applying changes |
 | `schedule.js` | Mandatory shifts: attendance and conflict checks |
 | `timesheet.js` | Day / week / month timesheet exports |
-| `seed.js` | Creates admin accounts |
+| `seed.js` | `npm run seed`: creates accounts, or builds a mock database |
+| `mockseed.js` | The mock database: username wordlists and generated people and history (seed only) |
 | `daemon.js` | `npm start` / `stop` / `restart` / `status`: runs `server.js` in the background |
 | `routes/` | `auth.js` (login), `clock.js`, `portal.js`, `account.js` (Profile and Settings), `notes.js`, `manage.js`, `admin.js`, and shared `helpers.js` |
 | `views/` | EJS pages grouped by area (`portal/`, `account/`, `manage/`, `admin/`); shared pieces in `views/partials/` |

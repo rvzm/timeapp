@@ -28,6 +28,35 @@ export const account_config = {
   minPasswordLength: 8, // Minimum length for new passwords
 };
 
+// Only used by `npm run seed` (see its --help). Nothing here affects the running app.
+export const seed_config = {
+  // Username wordlists: any http/https URL serving one name per line. Blank lines, lines
+  // starting with #, and number-only names are skipped, and so is anything that isn't a
+  // valid username. A github.com/.../blob/... link works too (it's converted to its raw
+  // form). Anything missing or not an http/https URL falls back to the default shown here.
+  // Downloaded lists are cached in data/wordlists/ and reused (seed --refresh re-downloads).
+  employeeNamesUrl: "https://raw.githubusercontent.com/jeanphorn/wordlist/master/usernames/common.txt",
+  managerNamesUrl: "https://raw.githubusercontent.com/jeanphorn/wordlist/master/usernames/common.txt",
+  adminNamesUrl: "https://raw.githubusercontent.com/jeanphorn/wordlist/master/usernames/admin.txt",
+
+  // Admin-sounding names (admin, root, sysadmin...) are kept out of employee and manager
+  // usernames. These two let them back in:
+  managersUseAdminNames: false, // true = managers draw from the admin list as well
+  // Fun only, and not for anything you'll show someone: true gives EVERY account an
+  // admin-style username, so you end up with a staff directory full of "administrator2"
+  // and "root01". Leave it false on any real or demo run.
+  adminNamesForEveryone: false,
+
+  // Defaults for `npm run seed -- mock`; each one has a command-line flag that wins over it.
+  mockFile: "data/seeded_mock.sqlite", // Throwaway database it writes; the name must contain "mock"
+  mockEmployees: 24,
+  mockManagers: 4,
+  mockAdmins: 2,
+  mockTeams: 3,
+  mockWeeks: 2,                                // Weeks of punch history to generate
+  userListFile: "data/seeded_db_userlist.txt", // Where every generated account and password is written
+};
+
 // What happens when someone keeps typing the wrong password. A locked account can always
 // be unlocked early from Admin → Logins.
 export const login_config = {

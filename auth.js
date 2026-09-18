@@ -109,7 +109,8 @@ export function checkLogin(username, password) {
 // Each returns an error message, or null if everything is valid.
 // ===================================================================
 
-const USERNAME_RE = /^[A-Za-z0-9._-]{2,32}$/;
+// Exported so the seed's username generator filters wordlists by the same rule.
+export const USERNAME_RE = /^[A-Za-z0-9._-]{2,32}$/;
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PHONE_RE = /^[0-9+().\-\sxX]{3,40}$/;
 

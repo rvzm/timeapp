@@ -27,7 +27,7 @@ Using the app day to day is in the role guides: [Employee](EMPLOYEE.md) · [Mana
 npm install
 npm run seed -- admin
 ```
-`npm run seed -- <username> [password]` creates an **admin** account. If you leave out the password, a random one is printed once, so write it down. You can run it again later to add more admins.
+`npm run seed -- <username> [password]` creates an **admin** account. If you leave out the password, a random one is printed once, so write it down. You can run it again later to add more admins. To make an employee or manager instead, use `npm run seed -- user <username> [password] --role employee` (or `--role manager`); `npm run seed -- --help` lists every option.
 
 ### Configure config.js
 Open `config.js`. Restart the server after every change.
