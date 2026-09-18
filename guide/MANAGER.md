@@ -165,7 +165,12 @@ Things you might see:
 ---
 
 ## See the week's schedule
-**Manage → Schedule** shows every assigned shift for the people you manage, one day at a time, starting with the "Week of …". Use **← Previous**, **This week** and **Next →** to move between weeks. Each shift shows the person, the time, who assigned it, any note, its attendance badges, and **Remove**. To assign a new shift, open the person from the **Employees** tab.
+**Manage → Schedule** lists everyone you can schedule, for each day of the week, starting with the "Week of …". It follows the team you picked in **Team:**. Use **← Previous**, **This week** and **Next →** to move between weeks. Each day's heading says how many people are scheduled.
+
+- **Scheduled** people come first, in start-time order. Each of their shifts shows its time, any note, its attendance badges, and **Remove**.
+- **Everyone else** shows their availability for that day: the time range they gave (e.g. "Availability: 8:00 AM – 6:00 PM"), **unavailable** if they've set availability but not for that day, or **not set** if they haven't set any.
+
+Click a name to open that person's **Schedule** tab, where you assign new shifts.
 
 ---
 

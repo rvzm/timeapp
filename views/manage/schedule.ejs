@@ -21,17 +21,59 @@
     </div>
   </div>
 
+  <% const back = `/manage/schedule?week=${week.from}${teamQuery ? `&${teamQuery}` : ""}`; %>
   <% days.forEach((day) => { %>
-    <h3 class="schedule-day"><%= fmt.formatDay(day.date) %></h3>
-    <% if (day.assignments.length === 0) { %>
-      <p class="muted small">Nothing assigned.</p>
+    <h3 class="schedule-day">
+      <%= fmt.formatDay(day.date) %>
+      <span class="muted small">· <%= day.scheduledCount %> scheduled</span>
+    </h3>
+    <% if (day.rows.length === 0) { %>
+      <p class="muted small">No one to show for this team.</p>
     <% } else { %>
-      <%- include("../partials/schedule-list", {
-        assignments: day.assignments,
-        showName: true,
-        canDelete,
-        back: `/manage/schedule?week=${week.from}${teamQuery ? `&${teamQuery}` : ""}`,
-      }) %>
+      <ul class="schedule-list schedule-roster">
+        <% day.rows.forEach(({ person, assignments, availability }) => { %>
+          <li class="schedule-item<%= assignments.length ? " is-scheduled" : "" %>">
+            <div class="roster-person">
+              <a href="/manage/employees/<%= person.id %>/schedule"><strong><%= displayName(person) %></strong></a>
+              <% if (!person.active) { %><span class="badge">Inactive</span><% } %>
+            </div>
+            <div class="roster-detail">
+              <% if (assignments.length) { %>
+                <% assignments.forEach((a) => { %>
+                  <div class="roster-shift">
+                    <span>
+                      <span class="badge badge-in">Scheduled</span>
+                      <%= fmt.formatTime(a.start_at) %> – <%= fmt.formatTime(a.end_at) %>
+                      <% if (a.note) { %><span class="muted small">· <%= a.note %></span><% } %>
+                    </span>
+                    <span class="schedule-badges">
+                      <%- include("../partials/attendance", { attendance: a.attendance }) %>
+                      <% if (canDelete(a)) { %>
+                        <form method="post" action="/manage/schedule/<%= a.id %>/delete" class="inline"
+                              data-question="Remove this assigned shift?" onsubmit="return confirm(this.dataset.question)">
+                          <input type="hidden" name="back" value="<%= back %>">
+                          <button class="btn btn-small btn-ghost-danger">Remove</button>
+                        </form>
+                      <% } %>
+                    </span>
+                  </div>
+                <% }) %>
+              <% } else { %>
+                <span class="muted">
+                  Availability:
+                  <% if (!availability) { %>
+                    not set
+                  <% } else if (!availability.start) { %>
+                    unavailable
+                  <% } else { %>
+                    <%= fmt.formatClockTime(availability.start) %> – <%= fmt.formatClockTime(availability.end) %>
+                  <% } %>
+                </span>
+              <% } %>
+            </div>
+          </li>
+        <% }) %>
+      </ul>
     <% } %>
   <% }) %>
 </section>

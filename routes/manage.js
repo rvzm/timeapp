@@ -418,9 +418,35 @@ router.get("/schedule", (req, res) => {
     .flatMap(([userId, list]) => withAttendance(userId, list))
     .sort((a, b) => a.start_at.localeCompare(b.start_at));
 
+  // Everyone the viewer can schedule in the picked team (admins aren't scheduled), plus
+  // anyone with an assignment showing this week, so no assignment drops off the page.
+  const withAssignments = new Set(assignments.map((a) => a.user_id));
+  const people = db.listUsersWithLastPunch()
+    .filter((u) => withAssignments.has(u.id) || (
+      u.active && u.role !== "admin" && canManageSchedule(req.user, u) && inSelectedTeam(req, u.id)))
+    .map((u) => {
+      const { isSet, days: windows } = availabilityWeek(u.id, weekStart);
+      return { ...u, availabilitySet: isSet, windows: new Map(windows.map((w) => [w.weekday, w])) };
+    });
+
+  // Each day lists every person: their assigned shifts (scheduled people first, by start),
+  // or else their availability for that weekday.
   const days = Array.from({ length: 7 }, (_, i) => {
     const date = time.addDays(week.from, i);
-    return { date, assignments: assignments.filter((a) => time.localDate(a.start_at) === date) };
+    const weekday = time.weekdayOf(date);
+    const rows = people.map((person) => {
+      const window = person.windows.get(weekday);
+      return {
+        person,
+        assignments: assignments.filter((a) => a.user_id === person.id && time.localDate(a.start_at) === date),
+        // null = availability not set; { start: "", end: "" } = unavailable that day.
+        availability: person.availabilitySet ? { start: window.start, end: window.end } : null,
+      };
+    });
+    const scheduled = rows.filter((row) => row.assignments.length)
+      .sort((a, b) => a.assignments[0].start_at.localeCompare(b.assignments[0].start_at));
+    const unscheduled = rows.filter((row) => !row.assignments.length);
+    return { date, rows: [...scheduled, ...unscheduled], scheduledCount: scheduled.length };
   });
 
   res.render("manage/schedule", {
