@@ -107,10 +107,10 @@ Then click **Send request** (or **Request deletion**).
 
 **Rules:** times can't be in the future, and a missing shift can be at most 24 hours. A change request has to actually change something, and a punch can only have one pending request at a time. A punch with a pending request shows **Change requested** or **Delete requested**.
 
-**Track your requests** under **My Portal → Requests**. Each one shows what you asked for, your reason, and a status:
-- **Pending**: waiting for a manager. You can **Cancel request**.
+**Track your requests** under **My Portal → Requests**, laid out the way your managers see them: **Pending** first, then **Past requests**, each grouped by the week and day of the punch they're about, with the shift that punch belongs to. Each request lists its **Punch type**, the **Original punch**, the **Requested edit**, and your **Reason**, with a status:
+- **Pending**: waiting for a manager. Click **Modify** to change the times or your reason (what kind of request it is, and which punch it's about, stay the same), or **Cancel request** to withdraw it. A modified request stays pending.
 - **Approved** or **Auto-approved**: the change was made.
-- **Approved with edits**: the change was made, but the reviewer adjusted it. The request shows what you asked for and an **Applied as** line with what was actually recorded.
+- **Approved with edits**: the change was made, but the reviewer adjusted it. The request shows what you asked for and an **Applied** line with what was actually recorded.
 - **Denied**: not changed.
 - **Cancelled**: you cancelled it.
 

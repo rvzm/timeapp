@@ -52,11 +52,12 @@ export function pendingByPunch(userId) {
 // ===================================================================
 
 // Validates a new request from `user`. Returns { form } (the raw values, for showing the
-// form again) plus either { request } or { error }.
-export function readRequestForm(user, body) {
+// form again) plus either { request } or { error }. `editing` is the user's own pending
+// request when they're modifying it: its kind and punch stay as they were.
+export function readRequestForm(user, body, { editing = null } = {}) {
   const form = {
-    kind: String(body.kind ?? ""),
-    punch_id: String(body.punch_id ?? ""),
+    kind: editing ? editing.kind : String(body.kind ?? ""),
+    punch_id: editing ? String(editing.punch_id ?? "") : String(body.punch_id ?? ""),
     type: String(body.type ?? ""),
     when: String(body.when ?? ""),
     end: String(body.end ?? ""),
@@ -71,7 +72,8 @@ export function readRequestForm(user, body) {
   if (form.kind === "change" || form.kind === "delete") {
     const punch = db.getPunch(Number(form.punch_id) || null);
     if (!punch || punch.user_id !== user.id) return fail("That punch doesn't exist.");
-    if (db.getPendingRequestForPunch(punch.id)) return fail("There's already a pending request for this punch.");
+    const pending = db.getPendingRequestForPunch(punch.id);
+    if (pending && pending.id !== editing?.id) return fail("There's already a pending request for this punch.");
     Object.assign(request, { punchId: punch.id, originalType: punch.type, originalTimestamp: punch.timestamp });
   }
 
@@ -114,6 +116,18 @@ export function submitRequest(user, request) {
     db.finishRequest(id, { status: "auto_approved", reviewedAt: time.nowIso() });
     return { id, applied: true };
   })();
+}
+
+// Saves new values for one of the user's own pending requests, from readRequestForm with
+// `editing`. It stays pending even in honor mode: the change was already asked for, and
+// only a reviewer should apply it now. Returns false if it was handled in the meantime.
+export function modifyRequest(requestId, request) {
+  return db.updatePendingRequest(requestId, {
+    type: request.type ?? null,
+    timestamp: request.timestamp ?? null,
+    endTimestamp: request.endTimestamp ?? null,
+    reason: request.reason,
+  });
 }
 
 // ===================================================================

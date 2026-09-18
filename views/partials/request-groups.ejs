@@ -1,8 +1,11 @@
 <%# Edit requests grouped by employee, then week, then day, as built by groupRequests()
     in requests.js. Needs `groups`, and `back` when they're reviewable (omit for read-only).
-    `showEmployee` false drops the employee heading, for a single employee's own page. %>
+    `showEmployee` false drops the employee heading, for a single employee's own page.
+    `own` true shows them as the employee's own requests in the Portal (Modify / Cancel
+    on pending ones; `requestsOn` hides Modify when requests are turned off). %>
 <%
-  const reviewable = typeof back !== "undefined" && back !== null;
+  const own = Boolean(locals.own);
+  const reviewable = !own && typeof back !== "undefined" && back !== null;
   const withEmployee = typeof showEmployee === "undefined" ? true : showEmployee;
 %>
 <div class="request-groups">
@@ -37,7 +40,9 @@
                       <p class="request-shift request-shift-none">Not part of a recorded shift</p>
                     <% } %>
 
-                    <% if (reviewable) { %>
+                    <% if (own) { %>
+                      <%- include("request-own", { request, requestsOn: locals.requestsOn }) %>
+                    <% } else if (reviewable) { %>
                       <%- include("request-review", { request, back }) %>
                     <% } else { %>
                       <%- include("request-reviewed", { request }) %>

@@ -25,6 +25,10 @@ const stmt = {
   insertRequest: db.prepare(`
     INSERT INTO edit_requests (user_id, kind, punch_id, original_type, original_timestamp, type, timestamp, end_timestamp, reason, created_at)
     VALUES (@userId, @kind, @punchId, @originalType, @originalTimestamp, @type, @timestamp, @endTimestamp, @reason, @createdAt)`),
+  // The employee can change what a pending request asks for (never its kind or punch).
+  updatePendingRequest: db.prepare(`
+    UPDATE edit_requests SET type = @type, timestamp = @timestamp, end_timestamp = @endTimestamp, reason = @reason
+    WHERE id = @id AND status = 'pending'`),
   // Only a pending request can be finished (approved, denied, cancelled).
   // The applied_* columns stay NULL unless the reviewer approved with edits.
   finishRequest: db.prepare(`
@@ -47,6 +51,11 @@ export function insertRequest({
 }) {
   const info = stmt.insertRequest.run({ userId, kind, punchId, originalType, originalTimestamp, type, timestamp, endTimestamp, reason, createdAt });
   return Number(info.lastInsertRowid);
+}
+
+// Changes what a pending request asks for. Returns false if it isn't pending anymore.
+export function updatePendingRequest(id, { type = null, timestamp = null, endTimestamp = null, reason }) {
+  return stmt.updatePendingRequest.run({ id, type, timestamp, endTimestamp, reason }).changes > 0;
 }
 
 // Marks a pending request as finished. `applied` is what the reviewer changed it to,

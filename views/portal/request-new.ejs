@@ -3,12 +3,18 @@
 
 <p class="breadcrumb"><a href="/portal/requests">← My requests</a></p>
 
+<%# `editing` is set when modifying one of your pending requests; its kind and punch can't change. %>
+<% const editing = locals.editing ?? null; %>
 <section class="card">
-  <h1><%= KIND_LABELS[form.kind] %></h1>
+  <h1><%= editing ? `Modify request: ${KIND_LABELS[form.kind]}` : KIND_LABELS[form.kind] %></h1>
   <p class="muted">
-    <%= settings.requestMode === "honor"
-      ? "Your change will apply right away and be logged."
-      : "A manager will review your request before anything changes." %>
+    <% if (editing) { %>
+      Requested <%= fmt.formatDateTime(editing.created_at) %>. It stays pending until a manager reviews it.
+    <% } else { %>
+      <%= settings.requestMode === "honor"
+        ? "Your change will apply right away and be logged."
+        : "A manager will review your request before anything changes." %>
+    <% } %>
   </p>
 
   <% if (punch) { %>
@@ -19,7 +25,7 @@
     <p class="alert alert-error"><%= error %></p>
   <% } %>
 
-  <form method="post" action="/portal/requests" class="form-grid">
+  <form method="post" action="<%= editing ? `/portal/requests/${editing.id}` : "/portal/requests" %>" class="form-grid">
     <input type="hidden" name="kind" value="<%= form.kind %>">
     <input type="hidden" name="punch_id" value="<%= form.punch_id %>">
 
@@ -53,8 +59,8 @@
     </label>
 
     <div class="form-actions field-wide">
-      <button class="btn btn-primary"><%= form.kind === "delete" ? "Request deletion" : "Send request" %></button>
-      <a class="btn btn-ghost" href="/portal">Cancel</a>
+      <button class="btn btn-primary"><%= editing ? "Save changes" : form.kind === "delete" ? "Request deletion" : "Send request" %></button>
+      <a class="btn btn-ghost" href="<%= editing ? "/portal/requests" : "/portal/shifts" %>">Cancel</a>
     </div>
   </form>
 </section>

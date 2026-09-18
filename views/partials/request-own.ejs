@@ -1,0 +1,29 @@
+<%# One of the employee's own edit requests in the Portal: the same fields as the Manage
+    view (without the name), how it was reviewed, and Modify / Cancel while it's pending.
+    Needs `request`; `requestsOn` false hides Modify (cancelling always works). %>
+<div class="request-head">
+  <span class="muted small"><%= KIND_LABELS[request.kind] %></span>
+  <%- include("request-status", { request }) %>
+</div>
+
+<%- include("request-fields", { request, showName: false }) %>
+
+<% if (request.reviewed_at || request.reviewer_name) { %>
+  <p class="small">
+    <% if (request.reviewer_name) { %>Reviewed by <%= request.reviewer_name %><% } else { %>Reviewed<% } %>
+    <% if (request.reviewed_at) { %> · <%= fmt.formatWhen(request.reviewed_at) %><% } %>
+    <% if (request.review_note) { %><span class="muted">— <%= request.review_note %></span><% } %>
+  </p>
+<% } %>
+
+<% if (request.status === "pending") { %>
+  <div class="request-buttons">
+    <% if (locals.requestsOn !== false) { %>
+      <a class="btn btn-small" href="/portal/requests/<%= request.id %>/edit">Modify</a>
+    <% } %>
+    <form method="post" action="/portal/requests/<%= request.id %>/cancel" class="inline"
+          data-question="Cancel this request?" onsubmit="return confirm(this.dataset.question)">
+      <button class="btn btn-small btn-ghost-danger">Cancel request</button>
+    </form>
+  </div>
+<% } %>

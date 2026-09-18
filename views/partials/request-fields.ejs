@@ -1,5 +1,6 @@
 <%# The labelled fields of one edit request. Needs `request` (a row from db/requests.js,
-    with `shift` attached by groupRequests when there is one). %>
+    with `shift` attached by groupRequests when there is one). `showName` false drops the
+    Name row, for the employee's own list in the Portal. %>
 <%
   const at = (iso) => fmt.formatDateTime(iso);
   const punchText = (type, iso) => `${PUNCH_LABELS[type]} at ${at(iso)}`;
@@ -14,8 +15,10 @@
   const applied = request.applied_timestamp || request.applied_type || request.applied_end_timestamp;
 %>
 <dl class="request-fields">
-  <dt>Name</dt>
-  <dd><a href="/manage/employees/<%= request.user_id %>/requests"><%= request.user_name %></a></dd>
+  <% if (locals.showName !== false) { %>
+    <dt>Name</dt>
+    <dd><a href="/manage/employees/<%= request.user_id %>/requests"><%= request.user_name %></a></dd>
+  <% } %>
 
   <dt>Requested</dt>
   <dd><%= at(request.created_at) %></dd>

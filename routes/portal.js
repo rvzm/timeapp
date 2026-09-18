@@ -7,7 +7,9 @@ import * as time from "../time.js";
 import { requireLogin } from "../auth.js";
 import { loadShifts } from "../shifts.js";
 import { getSettings } from "../settings.js";
-import { KIND_LABELS, REQUEST_KINDS, readRequestForm, submitRequest, requestsEnabled, pendingByPunch } from "../requests.js";
+import {
+  KIND_LABELS, REQUEST_KINDS, readRequestForm, submitRequest, modifyRequest, requestsEnabled, pendingByPunch, groupRequests,
+} from "../requests.js";
 import { withAttendance, groupByWeek } from "../schedule.js";
 import { buildTimesheet, readExportQuery, exportFilename, homeSummary } from "../timesheet.js";
 import { readRange, toId, notFound } from "./helpers.js";
@@ -106,19 +108,36 @@ function ownPunch(user, id) {
   return punch?.user_id === user.id ? punch : null;
 }
 
-function renderRequestForm(req, res, { form, error = null, statusCode = 200 }) {
+// The new-request form, or (with `editing`, one of the user's pending requests) the
+// Modify form for it.
+function renderRequestForm(req, res, { form, editing = null, error = null, statusCode = 200 }) {
   res.status(statusCode).render("portal/request-new", {
-    title: KIND_LABELS[form.kind],
+    title: editing ? "Modify request" : KIND_LABELS[form.kind],
     form,
+    editing,
     punch: form.punch_id ? ownPunch(req.user, form.punch_id) : null,
     error,
   });
 }
 
+// One of the user's own requests that's still pending, or null.
+function ownPendingRequest(user, id) {
+  const request = db.getRequest(toId(id));
+  return request?.user_id === user.id && request.status === "pending" ? request : null;
+}
+
+// Same layout as Manage → Requests: pending ones (with Modify / Cancel), then the rest,
+// grouped by week and day of the punch they concern.
 router.get("/requests", (req, res) => {
+  const requests = db.listRequestsForUser(req.user.id);
+  const pending = requests.filter((request) => request.status === "pending");
+  const past = requests.filter((request) => request.status !== "pending");
   res.render("portal/requests", {
     title: "My requests",
-    requests: db.listRequestsForUser(req.user.id),
+    pending,
+    pendingGroups: groupRequests(pending),
+    past,
+    pastGroups: groupRequests(past, { newestFirst: true }),
     requestsOn: requestsEnabled(),
     submitted: req.query.submitted,
   });
@@ -159,6 +178,38 @@ router.post("/requests", (req, res) => {
   res.redirect(`/portal/requests?submitted=${applied ? "applied" : "pending"}`);
 });
 
+router.get("/requests/:id/edit", (req, res) => {
+  if (!requestsEnabled()) return requestsOff(res);
+  const request = ownPendingRequest(req.user, req.params.id);
+  if (!request) return notFound(res, "pending request");
+
+  renderRequestForm(req, res, {
+    editing: request,
+    form: {
+      kind: request.kind,
+      punch_id: request.punch_id ?? "",
+      type: request.type ?? request.original_type ?? "clock_in",
+      when: request.timestamp ? time.toDatetimeLocal(request.timestamp) : "",
+      end: request.end_timestamp ? time.toDatetimeLocal(request.end_timestamp) : "",
+      reason: request.reason,
+    },
+  });
+});
+
+router.post("/requests/:id", (req, res) => {
+  if (!requestsEnabled()) return requestsOff(res);
+  const editing = ownPendingRequest(req.user, req.params.id);
+  if (!editing) return notFound(res, "pending request");
+
+  const { form, request, error } = readRequestForm(req.user, req.body, { editing });
+  if (error) return renderRequestForm(req, res, { form, editing, error, statusCode: 400 });
+
+  if (!modifyRequest(editing.id, request)) {
+    return res.status(409).render("error", { title: "Can't modify", message: "This request has already been handled." });
+  }
+  res.redirect("/portal/requests?submitted=modified");
+});
+
 router.post("/requests/:id/cancel", (req, res) => {
   const request = db.getRequest(toId(req.params.id));
   if (!request || request.user_id !== req.user.id) return notFound(res, "request");
@@ -166,7 +217,7 @@ router.post("/requests/:id/cancel", (req, res) => {
   if (!db.finishRequest(request.id, { status: "cancelled", reviewedAt: time.nowIso() })) {
     return res.status(409).render("error", { title: "Can't cancel", message: "This request has already been handled." });
   }
-  res.redirect("/portal/requests");
+  res.redirect("/portal/requests?submitted=cancelled");
 });
 
 export default router;
