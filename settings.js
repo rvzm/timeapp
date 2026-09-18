@@ -1,7 +1,7 @@
 // App settings. Defaults come from config.js; admins can override some of them from
 // Admin → Settings (and managers the break rules), which saves to the settings table.
 // Read the current values with getSettings().
-import { time_config, ui_config, session_config, attendance_config, request_config, break_config } from "./config.js";
+import { time_config, ui_config, session_config, login_config, attendance_config, request_config, break_config } from "./config.js";
 import * as db from "./db.js";
 import { configureTime, isValidTimeZone } from "./time.js";
 import { THEME_STYLES, THEME_COLORS, THEME_MODES, THEME_BACKGROUNDS } from "./themes.js";
@@ -17,6 +17,9 @@ const DEFAULTS = {
   defaultTheme: ui_config.defaultTheme, // light/dark mode
   defaultBackground: ui_config.defaultBackground,
   sessionHours: session_config.maxAgeHours,
+  maxFailedLogins: login_config.maxFailedLogins,
+  lockoutMinutes: login_config.lockoutMinutes,
+  failureWindowMinutes: login_config.failureWindowMinutes,
   lateGraceMinutes: attendance_config.lateGraceMinutes,
   requestMode: request_config.mode,
   managersEditSelf: request_config.managersEditSelf,
@@ -73,6 +76,9 @@ export function readSettingsForm(body) {
     defaultTheme: String(body.defaultTheme ?? ""),
     defaultBackground: String(body.defaultBackground ?? ""),
     sessionHours: wholeNumberOrText(body.sessionHours),
+    maxFailedLogins: wholeNumberOrText(body.maxFailedLogins),
+    lockoutMinutes: wholeNumberOrText(body.lockoutMinutes),
+    failureWindowMinutes: wholeNumberOrText(body.failureWindowMinutes),
     lateGraceMinutes: wholeNumberOrText(body.lateGraceMinutes),
     requestMode: String(body.requestMode ?? ""),
     managersEditSelf: body.managersEditSelf === "on",
@@ -93,6 +99,12 @@ export function readSettingsForm(body) {
     error = "Pick a default background.";
   } else if (!inRange(values.sessionHours, 1, 720)) {
     error = "Login length must be a whole number of hours from 1 to 720.";
+  } else if (!inRange(values.maxFailedLogins, 0, 100)) {
+    error = "Failed attempts before locking must be a whole number from 0 to 100 (0 = never lock).";
+  } else if (!inRange(values.lockoutMinutes, 0, 10080)) {
+    error = "Lock length must be a whole number of minutes from 0 to 10080 (0 = until an admin unlocks).";
+  } else if (!inRange(values.failureWindowMinutes, 1, 10080)) {
+    error = "The attempt window must be a whole number of minutes from 1 to 10080.";
   } else if (!inRange(values.lateGraceMinutes, 0, 240)) {
     error = "Grace minutes must be a whole number from 0 to 240.";
   } else if (!REQUEST_MODES.includes(values.requestMode)) {

@@ -7,6 +7,7 @@
 import crypto from "node:crypto";
 import { session_config, account_config } from "./config.js";
 import * as db from "./db.js";
+import * as time from "./time.js";
 import { getSettings } from "./settings.js";
 import { isAdmin, isManagerOrAdmin } from "./permissions.js";
 
@@ -33,19 +34,74 @@ export function verifyPassword(password, stored) {
   return crypto.timingSafeEqual(expected, actual);
 }
 
+// ===================================================================
+// ===== Failed logins and lockouts =====
+// Wrong passwords are counted on the account (users.failed_logins). Once there are
+// `maxFailedLogins` in a row the account locks until `locked_until`; a gap of
+// `failureWindowMinutes` with no attempt starts the count over, and any successful
+// login clears it. Admin → Logins can unlock early.
+// ===================================================================
+
+// A lock with no end date. Far enough in the future that the usual "locked_until > now"
+// comparison keeps working, so nothing else needs a special case.
+export const LOCK_FOREVER = "9999-12-31T23:59:59.999Z";
+
+const minutesFrom = (iso, minutes) => new Date(Date.parse(iso) + minutes * 60_000).toISOString();
+
+// The time an account's lock lifts, or null if it isn't locked right now.
+export function lockedUntil(user, nowIso = time.nowIso()) {
+  return user.locked_until && user.locked_until > nowIso ? user.locked_until : null;
+}
+
+export const isLockedForever = (until) => until === LOCK_FOREVER;
+
+// Counts one wrong password and locks the account if that was the last straw.
+function recordFailure(user, nowIso) {
+  const { maxFailedLogins, lockoutMinutes, failureWindowMinutes } = getSettings();
+
+  // Nothing since the window opened? The old failures don't count toward this lock.
+  const stale = !user.last_failed_at || user.last_failed_at < minutesFrom(nowIso, -failureWindowMinutes);
+  if (stale) db.clearFailedLogins(user.id);
+  db.addFailedLogin(user.id, nowIso);
+
+  const count = (stale ? 0 : user.failed_logins) + 1;
+  if (maxFailedLogins > 0 && count >= maxFailedLogins) {
+    db.setLockedUntil(user.id, lockoutMinutes > 0 ? minutesFrom(nowIso, lockoutMinutes) : LOCK_FOREVER);
+  }
+}
+
 let dummyHash = null;
 
-// Returns the user if the username/password are right and the account is active, otherwise null.
+// Checks a username and password. Returns one of:
+//   { user }              the password was right and the account is active
+//   { lockedUntil }       the account is locked; nothing was checked
+//   {}                    wrong username or password, or the account is deactivated
 // Unknown usernames still pay for a hash so response time doesn't reveal which usernames exist.
 export function checkLogin(username, password) {
+  const now = time.nowIso();
   const user = username ? db.getUserByUsername(username) : null;
   if (!user) {
     dummyHash ??= hashPassword(crypto.randomBytes(16).toString("hex"));
     verifyPassword(password, dummyHash);
-    return null;
+    return {};
   }
-  if (!verifyPassword(password, user.password_hash) || !user.active) return null;
-  return user;
+
+  const until = lockedUntil(user, now);
+  if (until) return { lockedUntil: until };
+  // A lock that has run out gives the account a fresh set of attempts.
+  if (user.locked_until) {
+    db.clearFailedLogins(user.id);
+    Object.assign(user, { failed_logins: 0, last_failed_at: null, locked_until: null });
+  }
+
+  if (!verifyPassword(password, user.password_hash)) {
+    if (user.active) recordFailure(user, now); // a deactivated account can't be locked out of anything
+    return {};
+  }
+  if (!user.active) return {};
+
+  if (user.failed_logins) db.clearFailedLogins(user.id);
+  return { user };
 }
 
 // ===================================================================
@@ -101,6 +157,11 @@ export function validatePassword(password) {
 // ===== Sessions =====
 // ===================================================================
 
+const USER_AGENT_MAX = 300;
+// How stale a session's "last seen" may get before a request updates it. Without this,
+// every page view would be a write.
+const TOUCH_AFTER_MS = 60_000;
+
 function cookieOptions() {
   return { httpOnly: true, sameSite: "lax", secure: session_config.secure, path: "/" };
 }
@@ -114,7 +175,16 @@ export function startSession(req, res, userId) {
   db.purgeExpiredSessions(now.toISOString());
 
   const id = crypto.randomBytes(32).toString("hex");
-  db.insertSession({ id, userId, createdAt: now.toISOString(), expiresAt: expires.toISOString() });
+  db.insertSession({
+    id,
+    userId,
+    createdAt: now.toISOString(),
+    expiresAt: expires.toISOString(),
+    // Recorded so Admin → Logins can show where a session came from. Both are whatever the
+    // browser and network say they are, so they're a hint, not proof.
+    ip: String(req.ip ?? ""),
+    userAgent: String(req.get("user-agent") ?? "").slice(0, USER_AGENT_MAX),
+  });
   res.cookie(session_config.cookieName, id, { ...cookieOptions(), signed: true, expires });
 }
 
@@ -138,10 +208,15 @@ export function loadUser(req, res, next) {
   // cookie-parser sets this to false when the signature doesn't match.
   const sessionId = req.signedCookies[session_config.cookieName];
   if (sessionId !== undefined) {
-    const user = sessionId ? db.getSessionUser(sessionId, new Date().toISOString()) : null;
+    const nowIso = new Date().toISOString();
+    const user = sessionId ? db.getSessionUser(sessionId, nowIso) : null;
     if (user) {
       req.user = user;
       res.locals.user = user;
+      // Keeps "last active" on Admin → Logins roughly current without a write per request.
+      if (!user.last_seen_at || Date.parse(nowIso) - Date.parse(user.last_seen_at) > TOUCH_AFTER_MS) {
+        db.touchSession(sessionId, nowIso);
+      }
     } else {
       res.clearCookie(session_config.cookieName, cookieOptions());
     }

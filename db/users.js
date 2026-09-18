@@ -31,6 +31,16 @@ const stmt = {
   setUserRole: db.prepare("UPDATE users SET role = ? WHERE id = ?"),
   setUserTheme: db.prepare("UPDATE users SET theme_color = ?, theme_mode = ?, theme_background = ?, theme_style = ? WHERE id = ?"),
   setBreakLimits: db.prepare("UPDATE users SET break_max_count = ?, break_max_minutes = ? WHERE id = ?"),
+  // ----- Failed logins and lockouts -----
+  addFailedLogin: db.prepare("UPDATE users SET failed_logins = failed_logins + 1, last_failed_at = ? WHERE id = ?"),
+  setLockedUntil: db.prepare("UPDATE users SET locked_until = ? WHERE id = ?"),
+  clearFailedLogins: db.prepare("UPDATE users SET failed_logins = 0, last_failed_at = NULL, locked_until = NULL WHERE id = ?"),
+  // Accounts an admin needs to see: currently locked, or with failures since their last success.
+  listLockedUsers: db.prepare(`
+    SELECT id, username, display_name, role, active, failed_logins, last_failed_at, locked_until
+    FROM users
+    WHERE failed_logins > 0 OR locked_until IS NOT NULL
+    ORDER BY locked_until IS NULL, last_failed_at DESC`),
   // Every user plus their latest punch (if any) and their teams' names. Active users first, then by name.
   listUsersWithLastPunch: db.prepare(`
     SELECT u.id, u.username, u.display_name, u.role, u.active, u.created_at,
@@ -55,6 +65,13 @@ export const setUserRole = (id, role) => stmt.setUserRole.run(role, id);
 export const setUserTheme = (id, { color, mode, background = null, style = null }) =>
   stmt.setUserTheme.run(color, mode, background, style, id);
 export const setPasswordHash = (id, passwordHash) => stmt.setPasswordHash.run(passwordHash, id);
+
+// Counts one wrong password. `lockUntil` is an ISO time, or null to leave the account unlocked.
+export const addFailedLogin = (id, nowIso) => stmt.addFailedLogin.run(nowIso, id);
+export const setLockedUntil = (id, lockUntil) => stmt.setLockedUntil.run(lockUntil, id);
+// Wipes the failure count and any lock: on a good password, or when an admin unlocks.
+export const clearFailedLogins = (id) => stmt.clearFailedLogins.run(id);
+export const listLockedUsers = () => stmt.listLockedUsers.all();
 
 // A user's own break allowance. null = use the default break rules.
 export const setBreakLimits = (id, { maxCount, maxMinutes }) => stmt.setBreakLimits.run(maxCount, maxMinutes, id);

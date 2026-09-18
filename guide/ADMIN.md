@@ -11,6 +11,9 @@ Admins can do everything managers can, for **every** account, and also manage ac
   - [Reset a password](#reset-a-password)
 - [Teams](#teams)
 - [Site Broadcast](#site-broadcast)
+- [Logins](#logins)
+  - [Who's signed in](#whos-signed-in)
+  - [Failed logins and locked accounts](#failed-logins-and-locked-accounts)
 - [Settings](#settings)
 - [Locked out?](#locked-out)
 
@@ -27,6 +30,7 @@ Compared with a manager, an admin can:
 - **Add accounts**, edit them, change roles, deactivate people and reset passwords.
 - **Set up teams**, which limit which employees a manager manages.
 - **Send a site broadcast**, a message pinned to every page for everyone.
+- **See who's signed in and log people out**, and unlock accounts locked after failed logins.
 - **Change Admin → Settings.**
 
 On a person's page in **Manage**, admins also get an **Edit account** button, and the **Manage** page has **Add account**.
@@ -80,6 +84,10 @@ Use the **Access** tab.
   - **Reactivate account** lets them log in again.
   - You can't deactivate your own account.
 
+- **Logins:** shows their failed logins and whether the account is locked.
+  - **Unlock account** (or **Clear failed logins**) lets them try again right away and resets the count.
+  - **Log out everywhere** ends every session they have open. On your own account the button reads **Log out other devices** and spares the one you're using.
+
 You can also deactivate or reactivate people straight from the **Accounts** list.
 
 ### Reset a password
@@ -125,6 +133,34 @@ Once a broadcast is up, the button reads **Dismiss Broadcast**. Click it to take
 
 ---
 
+## Logins
+![The Logins page](images/admin-logins.png)
+
+**Admin → Logins** shows who is signed in right now and which accounts are locked out.
+
+### Who's signed in
+One row per browser someone is logged in on, most recently active first. Somebody signed in on a laptop and a phone has two rows.
+
+- **Last active** is roughly when that browser last loaded a page (it's updated at most once a minute), and **Signed in** is when they logged in.
+- **Device** and **Address** are read from the browser's request. Browsers can report anything, so treat them as a hint about the device, not proof of who it is. Behind a reverse proxy every address may look the same unless the proxy is set up to pass the real one.
+- **End** ends that one session. **All devices** ends every session that account has. Either way the person is logged out the next time they load a page, and their punches and other data are untouched.
+- **Log everyone else out** ends every session but the one you're using — useful after a password leak. Everyone has to log in again.
+- Your own row is marked **This device**. Ending it just logs you out.
+
+Logins also expire on their own after the **Login length** set in [Settings](#settings), and deactivating an account or resetting a password logs that person out everywhere.
+
+### Failed logins and locked accounts
+The lower table lists accounts with wrong passwords behind them, locked ones first. An account locks itself after too many wrong passwords in a row; the limits are under [Settings](#settings).
+
+- While an account is locked, **even the right password is refused**. The person sees "This account is locked after too many failed logins." with the time it lifts, or "Ask an admin to unlock it." when there's no set time.
+- **Unlock** lets them straight back in and clears the count. **Clear** does the same for an account that isn't locked but has failures against it.
+- **Reset password** opens their **Password** tab, for when they're locked out because they've forgotten it.
+- A successful login clears the count on its own, as does a quiet stretch as long as the **Attempt window**.
+
+Locking protects against someone guessing passwords, so it counts attempts per account. Somebody who keeps getting their own password wrong locks their own account, which is why unlocking is one click.
+
+---
+
 ## Settings
 ![Admin settings](images/admin-settings.png)
 
@@ -140,6 +176,13 @@ Once a broadcast is up, the button reads **Dismiss Broadcast**. Click it to take
 - **Login length (hours)**: 1–720. How long someone stays logged in before logging in again. It applies to new logins.
 - **Grace minutes**: 0–240. How much slack people get before an assigned shift counts as **Late** or **Left early**.
 
+### Failed logins
+How an account locks itself after repeated wrong passwords. Unlock accounts on the [Logins](#logins) page.
+
+- **Failed attempts before locking**: 0–100. Wrong passwords in a row before the account locks. **0** turns locking off, and no account is ever locked however many passwords are tried.
+- **Lock length (minutes)**: 0–10080 (a week). How long the lock lasts. **0** keeps the account locked until an admin unlocks it.
+- **Attempt window (minutes)**: 1–10080. A gap this long with no attempt starts the count over, so a wrong password today doesn't add to one from last month. A successful login clears the count too.
+
 ### Punch edit requests
 - **Mode**:
   - **Disabled**: employees can't request changes. Managers fix punches directly.
@@ -152,10 +195,12 @@ Break rules are set separately under [Manage → Break rules](MANAGER.md#set-bre
 ---
 
 ## Locked out?
-If no admin can log in, for example because the only admin forgot their password, create a new admin on the server:
+If an account is locked after too many wrong passwords, any admin can clear it on the [Logins](#logins) page.
+
+If **no** admin can log in, for example because the only admin forgot their password or locked themselves out, create a new admin on the server:
 
 ```sh
 npm run seed -- <new-username> [password]
 ```
 
-Then log in with it and reset the other account's password on its **Password** tab. The seed command won't reuse a username that already exists. More in the [Quickstart](QUICKSTART.md#install-and-create-the-first-admin).
+Then log in with it, unlock the other account on the **Logins** page if it's locked, and reset its password on its **Password** tab. The seed command won't reuse a username that already exists. More in the [Quickstart](QUICKSTART.md#install-and-create-the-first-admin).

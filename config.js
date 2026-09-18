@@ -28,6 +28,14 @@ export const account_config = {
   minPasswordLength: 8, // Minimum length for new passwords
 };
 
+// What happens when someone keeps typing the wrong password. A locked account can always
+// be unlocked early from Admin → Logins.
+export const login_config = {
+  maxFailedLogins: 5,        // [setting] Wrong passwords in a row before the account locks; 0 = never lock
+  lockoutMinutes: 15,        // [setting] How long the lock lasts; 0 = until an admin unlocks it
+  failureWindowMinutes: 15,  // [setting] A gap this long with no attempt starts the count over
+};
+
 export const time_config = {
   timezone: "",    // [setting] IANA timezone like "America/Chicago"; empty = the server's local timezone
   locale: "en-US", // Controls how dates and times are formatted

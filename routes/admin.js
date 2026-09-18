@@ -5,7 +5,7 @@
 import express from "express";
 import * as db from "../db.js";
 import * as time from "../time.js";
-import { requireAdmin, hashPassword, validateAccount, validatePassword } from "../auth.js";
+import { requireAdmin, hashPassword, validateAccount, validatePassword, lockedUntil, isLockedForever } from "../auth.js";
 import { getSettings, saveSettings, readSettingsForm, REQUEST_MODES } from "../settings.js";
 import { readTeamFilter, inTeamFilter } from "../teams.js";
 import { toId, notFound } from "./helpers.js";
@@ -117,9 +117,11 @@ router.post("/users/:id", (req, res) => {
 // ----- Access: role and active status -----
 
 function renderAccessTab(req, res, target, { role = null, error = null, statusCode = 200 } = {}) {
+  const until = lockedUntil(target);
   renderAccountTab(req, res, target, "user-access", {
     role: role ?? target.role,
     teams: db.listTeamsForUser(target.id),
+    lock: { until, forever: isLockedForever(until), failedLogins: target.failed_logins },
     error,
   }, statusCode);
 }
@@ -301,6 +303,98 @@ router.post("/teams/:id/members/:userId/delete", (req, res) => {
 
   db.removeTeamMember(team.id, toId(req.params.userId));
   res.redirect(`/admin/teams/${team.id}?saved=removed`);
+});
+
+// ===================================================================
+// ===== Logins =====
+// Who's signed in right now, and which accounts are locked out. Ending a session row
+// logs that browser out on its next request (see auth.js).
+// ===================================================================
+
+// A short "Chrome on Windows" from a user agent string, for the sessions table.
+// Browsers lie in these, so it's a hint about the device, never an identity check.
+function describeDevice(userAgent) {
+  const ua = String(userAgent ?? "");
+  if (!ua) return "Unknown";
+
+  const browser =
+    /\bEdg\//.test(ua) ? "Edge" :
+    /\b(OPR|Opera)\//.test(ua) ? "Opera" :
+    /\bFirefox\//.test(ua) ? "Firefox" :
+    /\bChrome\//.test(ua) ? "Chrome" :
+    /\bSafari\//.test(ua) ? "Safari" : null;
+
+  const system =
+    /\biPhone|\biPad/.test(ua) ? "iOS" :
+    /\bAndroid\b/.test(ua) ? "Android" :
+    /\bWindows\b/.test(ua) ? "Windows" :
+    /\bMac OS X\b/.test(ua) ? "macOS" :
+    /\bCrOS\b/.test(ua) ? "ChromeOS" :
+    /\bLinux\b/.test(ua) ? "Linux" : null;
+
+  if (!browser) return system ?? "Unknown";
+  return system ? `${browser} on ${system}` : browser;
+}
+
+router.get("/logins", (req, res) => {
+  const now = time.nowIso();
+  db.purgeExpiredSessions(now); // so the page only ever shows live logins
+
+  const sessions = db.listActiveSessions(now).map((s) => ({
+    ...s,
+    device: describeDevice(s.user_agent),
+    isCurrent: s.id === req.user.session_id,
+  }));
+  // Accounts with failures behind them: locked ones first (see listLockedUsers).
+  const locked = db.listLockedUsers().map((u) => {
+    const until = lockedUntil(u, now);
+    return { ...u, until, forever: isLockedForever(until) };
+  });
+
+  res.render("admin/logins", {
+    title: "Logins",
+    sessions,
+    locked,
+    people: new Set(sessions.map((s) => s.user_id)).size,
+    saved: req.query.saved ?? null,
+  });
+});
+
+// Ends one browser's session.
+router.post("/logins/:sid/delete", (req, res) => {
+  const sid = String(req.params.sid ?? "");
+  const self = sid === req.user.session_id;
+  db.deleteSession(sid);
+  // Admins can end their own session here; that's just a logout.
+  res.redirect(self ? "/login" : "/admin/logins?saved=ended");
+});
+
+// Logs one account out on every device.
+router.post("/users/:id/sessions/delete", (req, res) => {
+  const target = loadAccount(res, req.params.id);
+  if (!target) return;
+
+  // Your own account: keep the session you're using, or you'd log yourself out mid-click.
+  if (target.id === req.user.id) db.deleteOtherSessions(target.id, req.user.session_id);
+  else db.deleteUserSessions(target.id);
+
+  const back = req.body.back === "access" ? `/admin/users/${target.id}/access?saved=logged-out` : "/admin/logins?saved=user";
+  res.redirect(back);
+});
+
+// Logs everyone out except the admin doing it.
+router.post("/logins/all", (req, res) => {
+  db.deleteAllSessions(req.user.session_id);
+  res.redirect("/admin/logins?saved=all");
+});
+
+// Clears a lockout and its failed-attempt count.
+router.post("/users/:id/unlock", (req, res) => {
+  const target = loadAccount(res, req.params.id);
+  if (!target) return;
+
+  db.clearFailedLogins(target.id);
+  res.redirect(req.body.back === "access" ? `/admin/users/${target.id}/access?saved=unlocked` : "/admin/logins?saved=unlocked");
 });
 
 // ===================================================================

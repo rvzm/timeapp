@@ -167,7 +167,8 @@ Open **Settings** from the menu under your name.
 
 ## Troubleshooting
 - **"Invalid username or password."** Check the spelling. If it still fails, ask an admin: they can reset your password, and it's also what you see if your account has been deactivated.
-- **I was logged out.** Logins expire after a while (12 hours unless your admin changed it), and changing or resetting a password logs other devices out.
+- **"This account is locked after too many failed logins."** Too many wrong passwords in a row locked the account. Wait until the time it gives and try again, or ask an admin to unlock it now (they can also reset your password). While it's locked, even the right password is refused.
+- **I was logged out.** Logins expire after a while (12 hours unless your admin changed it), changing or resetting a password logs other devices out, and an admin can log people out from **Admin → Logins**.
 - **There's no Start Break button.** You've used all the breaks allowed for this shift. Ask a manager if you need another.
 - **A shift says "Missing clock out" and isn't counted.** Request the missing punch (see [Fix a wrong or missing punch](#fix-a-wrong-or-missing-punch)), or ask a manager to add it.
 - **The page looks wrong after an update.** Hard reload: **Ctrl+Shift+R**, or **Cmd+Shift+R** on a Mac.

@@ -210,6 +210,21 @@ const migrations = [
       CREATE INDEX idx_team_members_user ON team_members(user_id);
     `);
   },
+
+  // 11: login security. Failed password attempts are counted per account so the app can
+  // lock one out; sessions record where they were started so admins can see who's on.
+  () => {
+    db.exec(`
+      ALTER TABLE users ADD COLUMN failed_logins INTEGER NOT NULL DEFAULT 0;
+      ALTER TABLE users ADD COLUMN last_failed_at TEXT;  -- NULL = no failure since the last success
+      ALTER TABLE users ADD COLUMN locked_until TEXT;    -- ISO time the lock lifts (year 9999 = until an admin clears it)
+
+      ALTER TABLE sessions ADD COLUMN last_seen_at TEXT;
+      ALTER TABLE sessions ADD COLUMN ip TEXT NOT NULL DEFAULT '';
+      ALTER TABLE sessions ADD COLUMN user_agent TEXT NOT NULL DEFAULT '';
+      UPDATE sessions SET last_seen_at = created_at;
+    `);
+  },
 ];
 
 function migrate() {

@@ -41,7 +41,7 @@ Open `config.js`. Restart the server after every change.
 | `time_config.locale` | How dates and times are written (default `"en-US"`). |
 | `account_config.minPasswordLength` | Shortest allowed password (default 8). |
 
-Settings marked `[setting]` in the file are only **starting defaults**: timezone, clock format, week start, appearance, login length, grace minutes, edit requests and break rules. Once an admin saves **Admin → Settings** or **Manage → Break rules**, the saved values win, and changing `config.js` no longer affects them.
+Settings marked `[setting]` in the file are only **starting defaults**: timezone, clock format, week start, appearance, login length, failed-login locking, grace minutes, edit requests and break rules. Once an admin saves **Admin → Settings** or **Manage → Break rules**, the saved values win, and changing `config.js` no longer affects them.
 
 ### Run it
 | Command | What it does |
@@ -90,6 +90,8 @@ server {
 
 Then set `session_config.secure: true` in `config.js` and restart.
 
+Behind a proxy, the **Address** column on **Admin → Logins** shows the proxy's address for everyone, because the app records the address it is connected from and doesn't trust forwarded headers (anyone can send those). The rest of the page — who's signed in, when, and on what — works the same.
+
 > **Styles look old after an update?** Pages are never cached, but the stylesheet can be. Cloudflare's default browser cache keeps files like `/timeapp.css` for 4 hours, so people can get new pages with old styles for a while (for example, new backgrounds that don't show). A hard reload (**Ctrl+Shift+R**, or **Cmd+Shift+R** on a Mac) fixes it for one browser. **Caching → Purge Cache** in Cloudflare fixes it for everyone.
 
 ### Updating
@@ -131,6 +133,7 @@ To restore, stop the server and run `npm run migrate`. You can point it at anoth
    - **Timezone**: every time in the app uses it.
    - **Weeks start on**: affects weekly views and exports.
    - **Mode** under **Punch edit requests**: whether employees can ask for punch fixes, and whether a manager has to approve them.
+   - **Failed logins**: how many wrong passwords in a row lock an account, and for how long. Locked accounts are unlocked under **Admin → Logins**, which also shows who's signed in.
 
    Every field is explained in the [Admin guide](ADMIN.md#settings).
 3. **Set break rules** under **Manage → Break rules**: how many breaks per shift, and how long each can be before it's flagged. Leave a field blank for no limit.

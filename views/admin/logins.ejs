@@ -1,0 +1,133 @@
+<%# Admin: who's logged in right now, and accounts locked out after failed logins. %>
+<%- include("../partials/head") %>
+<%- include("../partials/nav") %>
+
+<div class="page-head">
+  <h1>Admin</h1>
+</div>
+
+<%- include("../partials/admin-tabs", { current: "logins" }) %>
+
+<section class="card">
+  <h2>Signed in now</h2>
+  <p class="muted small">
+    One row per browser someone is logged in on. Ending a session logs that browser out the next time it loads a page.
+    Logins also end on their own after <%= settings.sessionHours %> hours.
+  </p>
+
+  <% if (saved === "ended") { %>
+    <p class="alert alert-ok">Session ended.</p>
+  <% } else if (saved === "user") { %>
+    <p class="alert alert-ok">Logged out everywhere.</p>
+  <% } else if (saved === "all") { %>
+    <p class="alert alert-ok">Everyone else has been logged out.</p>
+  <% } else if (saved === "unlocked") { %>
+    <p class="alert alert-ok">Account unlocked.</p>
+  <% } %>
+
+  <% if (sessions.length === 0) { %>
+    <p class="muted">Nobody is logged in.</p>
+  <% } else { %>
+    <p><%= sessions.length %> session<%= sessions.length === 1 ? "" : "s" %> across <%= people %> <%= people === 1 ? "person" : "people" %>.</p>
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr><th>Name</th><th>Role</th><th>Last active</th><th>Signed in</th><th>Device</th><th>Address</th><th></th></tr>
+        </thead>
+        <tbody>
+          <% sessions.forEach((s) => { %>
+            <tr>
+              <td>
+                <a href="/admin/users/<%= s.user_id %>"><%= displayName(s) %></a>
+                <% if (s.isCurrent) { %><span class="badge">This device</span><% } %>
+                <div class="muted small"><code><%= s.username %></code></div>
+              </td>
+              <td><%= ROLE_LABELS[s.role] %></td>
+              <td><%= fmt.formatWhen(s.last_seen_at ?? s.created_at) %></td>
+              <td><%= fmt.formatWhen(s.created_at) %></td>
+              <td><%= s.device %></td>
+              <td><%= s.ip || "—" %></td>
+              <td class="actions">
+                <form method="post" action="/admin/logins/<%= s.id %>/delete" class="inline"
+                      data-question="<%= s.isCurrent ? "End this session? You'll be logged out." : `End ${s.username}'s session on this device?` %>"
+                      onsubmit="return confirm(this.dataset.question)">
+                  <button class="btn btn-small btn-ghost-danger">End</button>
+                </form>
+                <% if (!s.isCurrent) { %>
+                  <form method="post" action="/admin/users/<%= s.user_id %>/sessions/delete" class="inline"
+                        data-question="Log <%= s.username %> out on every device?"
+                        onsubmit="return confirm(this.dataset.question)">
+                    <button class="btn btn-small btn-ghost-danger">All devices</button>
+                  </form>
+                <% } %>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="form-actions">
+      <form method="post" action="/admin/logins/all" class="inline"
+            data-question="Log everyone out? You'll stay logged in on this device; everyone else has to log in again."
+            onsubmit="return confirm(this.dataset.question)">
+        <button class="btn btn-danger">Log everyone else out</button>
+      </form>
+    </div>
+  <% } %>
+</section>
+
+<section class="card">
+  <h2>Failed logins</h2>
+  <p class="muted small">
+    <% if (settings.maxFailedLogins > 0) { %>
+      An account locks after <%= settings.maxFailedLogins %> wrong password<%= settings.maxFailedLogins === 1 ? "" : "s" %> in a row<%
+        %><%= settings.lockoutMinutes > 0 ? `, for ${settings.lockoutMinutes} minutes` : ", until you unlock it here" %>.
+      The count starts over after <%= settings.failureWindowMinutes %> minutes with no attempt, or after a successful login.
+    <% } else { %>
+      Locking is off: accounts are never locked, however many passwords are tried.
+    <% } %>
+    Change this in <a href="/admin/settings">Settings</a>.
+  </p>
+
+  <% if (locked.length === 0) { %>
+    <p class="muted">No failed logins.</p>
+  <% } else { %>
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr><th>Name</th><th>Status</th><th>Attempts</th><th>Last attempt</th><th></th></tr>
+        </thead>
+        <tbody>
+          <% locked.forEach((u) => { %>
+            <tr class="<%= u.active ? "" : "row-inactive" %>">
+              <td>
+                <a href="/admin/users/<%= u.id %>"><%= displayName(u) %></a>
+                <div class="muted small"><code><%= u.username %></code></div>
+              </td>
+              <td>
+                <% if (u.forever) { %>
+                  <span class="badge badge-inactive">Locked</span>
+                <% } else if (u.until) { %>
+                  <span class="badge badge-inactive">Locked until <%= fmt.formatTime(u.until) %></span>
+                <% } else { %>
+                  <span class="badge">Not locked</span>
+                <% } %>
+              </td>
+              <td><%= u.failed_logins %></td>
+              <td><%= u.last_failed_at ? fmt.formatWhen(u.last_failed_at) : "—" %></td>
+              <td class="actions">
+                <form method="post" action="/admin/users/<%= u.id %>/unlock" class="inline">
+                  <button class="btn btn-small btn-ghost"><%= u.until ? "Unlock" : "Clear" %></button>
+                </form>
+                <a class="btn btn-small btn-ghost" href="/admin/users/<%= u.id %>/password">Reset password</a>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  <% } %>
+</section>
+
+<%- include("../partials/foot") %>

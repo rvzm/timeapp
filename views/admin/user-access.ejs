@@ -74,4 +74,40 @@
   <% } %>
 </section>
 
+<section class="card">
+  <h2>Logins</h2>
+  <% if (saved === "logged-out") { %>
+    <p class="alert alert-ok"><%= isSelf ? "Your other devices have been logged out." : "Logged out on every device." %></p>
+  <% } %>
+  <% if (saved === "unlocked") { %>
+    <p class="alert alert-ok">Account unlocked.</p>
+  <% } %>
+
+  <% if (lock.forever) { %>
+    <p><strong>Locked</strong> after <%= lock.failedLogins %> failed logins. It stays locked until you unlock it.</p>
+  <% } else if (lock.until) { %>
+    <p><strong>Locked</strong> after <%= lock.failedLogins %> failed logins, until <%= fmt.formatWhen(lock.until) %>.</p>
+  <% } else if (lock.failedLogins) { %>
+    <p><%= lock.failedLogins %> failed login<%= lock.failedLogins === 1 ? "" : "s" %> so far. Not locked.</p>
+  <% } else { %>
+    <p>No failed logins.</p>
+  <% } %>
+
+  <div class="form-actions">
+    <% if (lock.until || lock.failedLogins) { %>
+      <form method="post" action="/admin/users/<%= target.id %>/unlock" class="inline">
+        <input type="hidden" name="back" value="access">
+        <button class="btn btn-primary"><%= lock.until ? "Unlock account" : "Clear failed logins" %></button>
+      </form>
+    <% } %>
+    <form method="post" action="/admin/users/<%= target.id %>/sessions/delete" class="inline"
+          data-question="<%= isSelf ? "Log out your other devices?" : "Log this person out on every device?" %>"
+          onsubmit="return confirm(this.dataset.question)">
+      <input type="hidden" name="back" value="access">
+      <button class="btn btn-ghost-danger"><%= isSelf ? "Log out other devices" : "Log out everywhere" %></button>
+    </form>
+  </div>
+  <p class="muted small">Every device that's signed in is listed on the <a href="/admin/logins">Logins</a> page.</p>
+</section>
+
 <%- include("../partials/foot") %>

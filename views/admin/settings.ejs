@@ -97,6 +97,28 @@
     </fieldset>
 
     <fieldset>
+      <legend>Failed logins</legend>
+      <div class="form-grid">
+        <label class="field">
+          <span>Failed attempts before locking</span>
+          <input type="number" name="maxFailedLogins" value="<%= form.maxFailedLogins %>" min="0" max="100" required>
+          <span class="hint">Wrong passwords in a row before the account is locked. 0 = never lock.</span>
+        </label>
+        <label class="field">
+          <span>Lock length (minutes)</span>
+          <input type="number" name="lockoutMinutes" value="<%= form.lockoutMinutes %>" min="0" max="10080" required>
+          <span class="hint">0 = the account stays locked until an admin unlocks it on the Logins page.</span>
+        </label>
+        <label class="field">
+          <span>Attempt window (minutes)</span>
+          <input type="number" name="failureWindowMinutes" value="<%= form.failureWindowMinutes %>" min="1" max="10080" required>
+          <span class="hint">A gap this long with no attempt starts the count over. A successful login clears it too.</span>
+        </label>
+      </div>
+      <p class="muted small">Unlock accounts and see who's signed in on the <a href="/admin/logins">Logins</a> page.</p>
+    </fieldset>
+
+    <fieldset>
       <legend>Punch edit requests</legend>
       <div class="stack">
         <label class="field">

@@ -1,6 +1,7 @@
 // Login, logout, and the "/" redirect.
 import express from "express";
-import { checkLogin, startSession, endSession, homePath } from "../auth.js";
+import * as time from "../time.js";
+import { checkLogin, startSession, endSession, homePath, isLockedForever } from "../auth.js";
 
 const router = express.Router();
 
@@ -17,9 +18,15 @@ router.post("/login", (req, res) => {
   const username = String(req.body.username || "").trim();
   const password = String(req.body.password || "");
 
-  const user = checkLogin(username, password);
+  const { user, lockedUntil } = checkLogin(username, password);
   if (!user) {
-    return res.status(401).render("login", { title: "Log in", error: "Invalid username or password.", username });
+    // A locked account says so: the person needs to know waiting (or an admin) is the way in.
+    const error = lockedUntil
+      ? isLockedForever(lockedUntil)
+        ? "This account is locked after too many failed logins. Ask an admin to unlock it."
+        : `This account is locked after too many failed logins. Try again after ${time.formatTime(lockedUntil)}.`
+      : "Invalid username or password.";
+    return res.status(lockedUntil ? 429 : 401).render("login", { title: "Log in", error, username });
   }
 
   startSession(req, res, user.id);
