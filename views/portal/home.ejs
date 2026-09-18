@@ -47,14 +47,15 @@
                 <span class="muted off">Off</span>
               <% } else { %>
                 <% day.assignments.forEach((a) => { %>
-                  <div>
+                  <div<%- a.off ? ' class="is-off"' : "" %>>
                     <%= fmt.formatTime(a.start_at) %> – <%= fmt.formatTime(a.end_at) %>
+                    <% if (a.off) { %><span class="badge badge-off">Approved OFF</span><% } %>
                     <% if (a.note) { %><span class="muted small">· <%= a.note %></span><% } %>
                   </div>
                 <% }) %>
               <% } %>
             </td>
-            <td><%= day.assignments.length ? fmt.formatDuration(day.scheduledMs) : "—" %></td>
+            <td><%= day.scheduledMs ? fmt.formatDuration(day.scheduledMs) : "—" %></td>
           </tr>
         <% }) %>
       </tbody>

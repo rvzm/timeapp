@@ -162,6 +162,14 @@ Things you might see:
 - **Approval**: requests wait for you.
 - **Honor system**: requests apply immediately, and appear here as **Auto-approved**.
 
+### Requests off
+Employees can ask to be let off an assigned shift that hasn't started yet, with a reason. These appear in the **Time off** card on **Manage → Requests**, which shows the **Name**, the **Shift**, when it was **Requested**, and the **Reason**. They're counted in the **Requests** badge too. You see the ones for people whose schedule you can change (never your own), filtered by the team you picked.
+
+- **Approve OFF**: the shift stays on the schedule, marked **Approved OFF**. It no longer counts toward scheduled hours and is never marked Late or Missed.
+- **Deny**: nothing changes; they're still expected. The employee sees **Denied** and your note.
+
+Add a note in the box before choosing either. Under **Recently reviewed** in the same card are past decisions, with who made them. Requests off follow the same **Mode** setting: with **Disabled** they can't be made, and with **Honor system** they're approved immediately and show as **Approved OFF**.
+
 ---
 
 ## See the week's schedule

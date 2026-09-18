@@ -20,6 +20,66 @@
 </section>
 
 <section class="card">
+  <h2>Time off <span class="muted">(<%= timeOffPending.length %> pending)</span></h2>
+  <% const offBack = teamQuery ? `/manage/requests?${teamQuery}` : "/manage/requests"; %>
+  <% if (timeOffPending.length === 0) { %>
+    <p class="muted">No pending requests off.</p>
+  <% } else { %>
+    <ul class="request-list">
+      <% timeOffPending.forEach((request) => { %>
+        <li class="request">
+          <div class="request-head">
+            <span class="muted small">Request off</span>
+            <span class="badge badge-break"><span class="dot"></span>Pending</span>
+          </div>
+          <dl class="request-fields">
+            <dt>Name</dt>
+            <dd><a href="/manage/employees/<%= request.user_id %>/schedule"><%= request.user_name %></a></dd>
+            <dt>Shift</dt>
+            <dd><strong><%= fmt.formatRange(request.start_at, request.end_at) %></strong><% if (request.shift_note) { %> <span class="muted">· <%= request.shift_note %></span><% } %></dd>
+            <dt>Requested</dt>
+            <dd><%= fmt.formatDateTime(request.created_at) %></dd>
+            <dt>Reason</dt>
+            <dd class="request-reason"><%= request.reason %></dd>
+          </dl>
+          <form method="post" action="/manage/time-off/<%= request.id %>/review" class="request-decide">
+            <input type="hidden" name="back" value="<%= offBack %>">
+            <input name="note" maxlength="500" placeholder="Note to the employee (optional)" aria-label="Review note">
+            <div class="request-buttons">
+              <button class="btn btn-small btn-primary" name="decision" value="approve">Approve OFF</button>
+              <button class="btn btn-small btn-ghost-danger" name="decision" value="deny">Deny</button>
+            </div>
+          </form>
+        </li>
+      <% }) %>
+    </ul>
+  <% } %>
+
+  <% if (timeOffRecent.length) { %>
+    <h3>Recently reviewed</h3>
+    <ul class="request-list">
+      <% timeOffRecent.forEach((request) => { %>
+        <li class="request">
+          <div class="request-head">
+            <span>
+              <a href="/manage/employees/<%= request.user_id %>/schedule"><%= request.user_name %></a>
+              <span class="muted">· <%= fmt.formatRange(request.start_at, request.end_at) %></span>
+            </span>
+            <span class="badge badge-<%= request.status === "denied" ? "denied" : "in" %>"><span class="dot"></span><%= TIME_OFF_STATUS_LABELS[request.status] %></span>
+          </div>
+          <p class="request-reason muted small">Reason: <%= request.reason %></p>
+          <p class="small">
+            <% if (request.reviewer_name) { %>Reviewed by <%= request.reviewer_name %><% } else { %>Auto-approved<% } %>
+            <% if (request.reviewed_at) { %> · <%= fmt.formatWhen(request.reviewed_at) %><% } %>
+            <% if (request.review_note) { %><span class="muted">— <%= request.review_note %></span><% } %>
+          </p>
+        </li>
+      <% }) %>
+    </ul>
+  <% } %>
+</section>
+
+<section class="card">
   <h2>Recently reviewed</h2>
   <% if (recent.length === 0) { %>
     <p class="muted">Nothing reviewed yet.</p>

@@ -15,6 +15,7 @@ import { getSettings, saveSettings, readBreakLimitsForm, breakPolicyFor } from "
 import { availabilityWeek } from "../availability.js";
 import { reviewRequest, pendingByPunch, pendingRequestsFor, groupRequests, readReviewEdits } from "../requests.js";
 import { withAttendance, readAssignmentForm, readWeeklyForm, findConflicts } from "../schedule.js";
+import { pendingTimeOffFor, canReviewTimeOff, reviewTimeOff } from "../timeoff.js";
 import { buildTimesheet, readExportQuery, exportFilename, weekSoFar } from "../timesheet.js";
 import { toId, notFound, readRange, rangeIncluding, safeRedirect } from "./helpers.js";
 
@@ -128,7 +129,7 @@ function scheduleWeeks(assignments) {
     from: weekFrom,
     to: time.addDays(weekFrom, 6),
     assignments: list,
-    totalMs: list.reduce((total, a) => total + (Date.parse(a.end_at) - Date.parse(a.start_at)), 0),
+    totalMs: list.reduce((total, a) => total + (a.off ? 0 : Date.parse(a.end_at) - Date.parse(a.start_at)), 0),
   })).sort((a, b) => a.from.localeCompare(b.from));
 }
 
@@ -226,7 +227,7 @@ router.get("/", (req, res) => {
   for (const u of users) if (u.active) counts[u.status]++;
 
   const [todayStart, todayEnd] = time.dayRangeUtc(time.localDate());
-  const scheduledToday = Map.groupBy(db.listScheduledBetween(todayStart, todayEnd), (a) => a.user_id);
+  const scheduledToday = Map.groupBy(db.listScheduledBetween(todayStart, todayEnd).filter((a) => !a.off), (a) => a.user_id);
 
   res.render("manage/index", { title: "Employees", users, counts, scheduledToday, showTeams: db.listTeams().length > 0 });
 });
@@ -446,7 +447,8 @@ router.get("/schedule", (req, res) => {
     const scheduled = rows.filter((row) => row.assignments.length)
       .sort((a, b) => a.assignments[0].start_at.localeCompare(b.assignments[0].start_at));
     const unscheduled = rows.filter((row) => !row.assignments.length);
-    return { date, rows: [...scheduled, ...unscheduled], scheduledCount: scheduled.length };
+    const scheduledCount = scheduled.filter((row) => row.assignments.some((a) => !a.off)).length;
+    return { date, rows: [...scheduled, ...unscheduled], scheduledCount };
   });
 
   res.render("manage/schedule", {
@@ -475,7 +477,24 @@ router.get("/requests", (req, res) => {
     pendingGroups: groupRequests(pending),
     recent,
     recentGroups: groupRequests(recent, { newestFirst: true }),
+    timeOffPending: pendingTimeOffFor(req.user).filter(inTeam),
+    timeOffRecent: db.listRecentTimeOff().filter((request) => canReviewTimeOff(req.user, request) && inTeam(request)).slice(0, 20),
   });
+});
+
+// decision=approve|deny for a request off an assigned shift, with an optional note.
+router.post("/time-off/:id/review", (req, res) => {
+  const request = db.getTimeOff(toId(req.params.id));
+  if (!request || !canReviewTimeOff(req.user, request)) return notFound(res, "request");
+
+  const decision = String(req.body.decision ?? "");
+  if (!["approve", "deny"].includes(decision)) {
+    return res.status(400).render("error", { title: "Not reviewed", message: "Choose Approve or Deny." });
+  }
+  const error = reviewTimeOff(req.user, request.id, { approve: decision === "approve", note: req.body.note ?? "" });
+  if (error) return res.status(409).render("error", { title: "Couldn't review the request", message: error });
+
+  res.redirect(safeRedirect(req.body.back, "/manage/requests"));
 });
 
 // decision=approve|deny|approve_edits, with an optional note for the employee.

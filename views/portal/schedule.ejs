@@ -10,6 +10,15 @@
 
 <%- include("../partials/portal-tabs", { current: "schedule" }) %>
 
+<% const offMessages = {
+  sent: "Request off sent. A manager will review it.",
+  approved: "You're off that shift.",
+  cancelled: "Request off cancelled.",
+}; %>
+<% if (offMessages[off]) { %>
+  <p class="alert alert-ok"><%= offMessages[off] %></p>
+<% } %>
+
 <% [
   { title: "Upcoming mandatory shifts", weeks: upcoming, empty: "No upcoming assigned shifts." },
   { title: "Past 30 days", weeks: past, empty: "No assigned shifts in the past 30 days." },
@@ -31,7 +40,7 @@
             <span class="muted small">· Scheduled hours: <strong><%= fmt.formatDuration(week.scheduledMs) %></strong>
               (<%= week.assignments.length %> shift<%= week.assignments.length === 1 ? "" : "s" %>)</span>
           </h3>
-          <%- include("../partials/schedule-list", { assignments: week.assignments, showHours: true }) %>
+          <%- include("../partials/schedule-list", { assignments: week.assignments, showHours: true, timeOff: true, requestsOn }) %>
         </div>
       <% }) %>
     <% } %>

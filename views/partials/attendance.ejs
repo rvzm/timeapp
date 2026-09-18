@@ -1,4 +1,9 @@
 <%# Attendance badges for one assigned shift. Needs `attendance` (from schedule.js). %>
+<%# A shift approved off shows just that: nobody was expected, so nothing else applies.
+    `hideOff` leaves even that out, where a request-off box already says it. %>
+<% if (attendance.off) { %>
+  <% if (!locals.hideOff) { %><span class="badge badge-off">Approved OFF</span><% } %>
+<% } else { %>
 <% if (attendance.state === "upcoming") { %>
   <span class="badge">Upcoming</span>
 <% } %>
@@ -17,4 +22,5 @@
 <% } %>
 <% if (attendance.onTime) { %>
   <span class="badge badge-in"><span class="dot"></span>On time</span>
+<% } %>
 <% } %>

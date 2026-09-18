@@ -1,14 +1,22 @@
 // Mandatory (assigned) shifts. See schedule.js for attendance and conflict checks.
 import { db } from "./connection.js";
 
-// Every query returns the assignment plus the employee's name/role and who assigned it.
+// Every query returns the assignment plus the employee's name/role, who assigned it, and
+// its latest request off that wasn't cancelled (time_off_*; NULL if none). `off` is 1 when
+// that request was approved: the shift stays listed but isn't expected or counted.
 const SELECT_SCHEDULED = `
   SELECT s.*,
          COALESCE(NULLIF(u.display_name, ''), u.username) AS user_name, u.role AS user_role,
-         COALESCE(NULLIF(a.display_name, ''), a.username) AS assigned_by_name
+         COALESCE(NULLIF(a.display_name, ''), a.username) AS assigned_by_name,
+         o.id AS time_off_id, o.status AS time_off_status, o.reason AS time_off_reason,
+         o.review_note AS time_off_note,
+         COALESCE(o.status IN ('approved', 'auto_approved'), 0) AS off
   FROM scheduled_shifts s
   JOIN users u ON u.id = s.user_id
-  JOIN users a ON a.id = s.assigned_by`;
+  JOIN users a ON a.id = s.assigned_by
+  LEFT JOIN time_off_requests o ON o.id = (
+    SELECT id FROM time_off_requests WHERE shift_id = s.id AND status != 'cancelled' ORDER BY id DESC LIMIT 1
+  )`;
 
 const stmt = {
   getScheduledShift: db.prepare(`${SELECT_SCHEDULED} WHERE s.id = ?`),

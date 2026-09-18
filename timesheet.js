@@ -89,8 +89,12 @@ export function homeSummary(userId) {
   const spanTo = all.reduce((max, r) => (r.to > max ? r.to : max), today);
   const [fromIso, toIso] = time.dayRangeUtc(spanFrom, spanTo);
   const shifts = loadShifts(userId, fromIso, toIso);
-  const assignments = db.listScheduledForUser(userId, fromIso, toIso)
-    .map((a) => ({ ...a, date: time.localDate(a.start_at), ms: Date.parse(a.end_at) - Date.parse(a.start_at) }));
+  // A shift approved off stays in the week table, but counts for nothing.
+  const assignments = db.listScheduledForUser(userId, fromIso, toIso).map((a) => ({
+    ...a,
+    date: time.localDate(a.start_at),
+    ms: a.off ? 0 : Date.parse(a.end_at) - Date.parse(a.start_at),
+  }));
 
   const within = (range) => (item) => item.date >= range.from && item.date <= range.to;
 

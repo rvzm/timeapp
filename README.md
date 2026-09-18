@@ -75,6 +75,7 @@ Database changes run automatically when the app starts, so updating is just pull
 | `availability.js` | Weekly availability |
 | `requests.js` | Punch edit requests: validating, approving, applying changes |
 | `schedule.js` | Mandatory shifts: attendance and conflict checks |
+| `timeoff.js` | Requests off an assigned shift: validating, approving, and which shifts are off |
 | `timesheet.js` | Day / week / month timesheet exports |
 | `seed.js` | `npm run seed`: creates accounts, or builds a mock database |
 | `mockseed.js` | The mock database: username wordlists and generated people and history (seed only) |

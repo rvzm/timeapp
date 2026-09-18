@@ -239,6 +239,27 @@ const migrations = [
       ALTER TABLE edit_requests ADD COLUMN applied_end_timestamp TEXT;
     `);
   },
+
+  // 13: requests off. An employee asks to be let off one assigned shift. Whether a shift
+  // is off is never stored on the shift: it's off while its latest request is approved.
+  () => {
+    db.exec(`
+      CREATE TABLE time_off_requests (
+        id          INTEGER PRIMARY KEY AUTOINCREMENT,
+        shift_id    INTEGER NOT NULL REFERENCES scheduled_shifts(id) ON DELETE CASCADE,
+        user_id     INTEGER NOT NULL REFERENCES users(id),
+        reason      TEXT NOT NULL,
+        status      TEXT NOT NULL DEFAULT 'pending'
+                    CHECK (status IN ('pending', 'approved', 'auto_approved', 'denied', 'cancelled')),
+        reviewed_by INTEGER REFERENCES users(id),
+        reviewed_at TEXT,
+        review_note TEXT NOT NULL DEFAULT '',
+        created_at  TEXT NOT NULL
+      );
+      CREATE INDEX idx_time_off_shift ON time_off_requests(shift_id, id);
+      CREATE INDEX idx_time_off_status ON time_off_requests(status, created_at);
+    `);
+  },
 ];
 
 function migrate() {

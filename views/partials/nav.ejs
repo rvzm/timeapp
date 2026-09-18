@@ -14,7 +14,7 @@
         <a href="/clock"<%- currentPath === "/clock" ? ' aria-current="page"' : "" %>>Clock</a>
         <a href="/portal"<%- currentPath.startsWith("/portal") ? ' aria-current="page"' : "" %>>My Portal</a>
         <% if (isManagerOrAdmin(currentUser)) { %>
-          <a href="/manage"<%- currentPath.startsWith("/manage") ? ' aria-current="page"' : "" %>>Manage<% if (locals.pendingRequestCount) { %> <span class="nav-count" title="Pending edit requests"><%= pendingRequestCount %></span><% } %></a>
+          <a href="/manage"<%- currentPath.startsWith("/manage") ? ' aria-current="page"' : "" %>>Manage<% if (locals.pendingRequestCount) { %> <span class="nav-count" title="Pending requests"><%= pendingRequestCount %></span><% } %></a>
         <% } %>
         <% if (isAdmin(currentUser)) { %>
           <a href="/admin"<%- currentPath.startsWith("/admin") ? ' aria-current="page"' : "" %>>Admin</a>

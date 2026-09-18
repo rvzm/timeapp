@@ -134,6 +134,13 @@ How assigned shifts are marked:
 | **Missed** | It ended and you never clocked in during it. |
 | **On time** | You were there for it. |
 
+**Ask for a shift off.** Next to an upcoming shift, click **Request off**, say why in **Reason**, and click **Send request**. The button is replaced by where your request stands:
+- **Pending**: waiting for a manager, and you're still expected until it's approved. Click **Cancel** to withdraw it (the **Request off** button comes back).
+- **Approved OFF**: you're off. The shift stays on your schedule marked **Approved OFF**, and it isn't counted in your scheduled hours (on **Home** too).
+- **Denied**: you're still expected. Your manager's note, if any, is shown next to it.
+
+You can only ask for shifts that haven't started. If requests are turned off, **Request off** doesn't appear. If your workplace uses the honor system, you're off right away.
+
 Your **Profile** also lists your upcoming assigned shifts.
 
 ---

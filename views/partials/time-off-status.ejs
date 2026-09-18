@@ -1,0 +1,21 @@
+<%# The employee's own request off for one assigned shift: a Request off button while
+    they can still ask, or a box with where the request stands. Needs `a` (an assignment
+    with time_off_* from db/schedule.js) and `requestsOn`. %>
+<% const status = a.time_off_status; %>
+<% if (status === "pending") { %>
+  <span class="time-off-box time-off-pending">
+    <strong>Pending</strong> <span class="muted small">· request off</span>
+    <form method="post" action="/portal/time-off/<%= a.time_off_id %>/cancel" class="inline"
+          data-question="Cancel your request off?" onsubmit="return confirm(this.dataset.question)">
+      <button class="btn btn-small btn-ghost">Cancel</button>
+    </form>
+  </span>
+<% } else if (status === "approved" || status === "auto_approved") { %>
+  <span class="time-off-box time-off-approved"><strong>Approved OFF</strong></span>
+<% } else if (status === "denied") { %>
+  <span class="time-off-box time-off-denied">
+    <strong>Denied</strong><% if (a.time_off_note) { %> <span class="small">— <%= a.time_off_note %></span><% } %>
+  </span>
+<% } else if (requestsOn && a.attendance.state === "upcoming") { %>
+  <a class="btn btn-small" href="/portal/schedule/<%= a.id %>/off">Request off</a>
+<% } %>

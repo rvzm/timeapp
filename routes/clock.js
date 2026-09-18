@@ -61,7 +61,7 @@ function renderClock(req, res, error = null, statusCode = 200) {
     actions,
     breaks,
     shifts: loadShifts(req.user.id, todayStart, todayEnd),
-    scheduledToday: db.listScheduledForUser(req.user.id, todayStart, todayEnd),
+    scheduledToday: db.listScheduledForUser(req.user.id, todayStart, todayEnd).filter((a) => !a.off),
     today: time.localDate(),
     error,
   });

@@ -11,6 +11,7 @@ import { getBroadcast } from "./broadcast.js";
 import * as permissions from "./permissions.js";
 import { loadUser } from "./auth.js";
 import { KIND_LABELS, REQUEST_STATUS_LABELS, pendingRequestsFor } from "./requests.js";
+import { TIME_OFF_STATUS_LABELS, pendingTimeOffFor } from "./timeoff.js";
 import {
   THEME_STYLES, THEME_STYLE_LABELS, THEME_COLORS, THEME_COLOR_LABELS, THEME_MODES, THEME_MODE_LABELS,
   THEME_BACKGROUNDS, THEME_BACKGROUND_LABELS, themeFor, cornershotStyle,
@@ -47,6 +48,7 @@ Object.assign(app.locals, {
   STATUS_LABELS: db.STATUS_LABELS,
   KIND_LABELS,
   REQUEST_STATUS_LABELS,
+  TIME_OFF_STATUS_LABELS,
   THEME_STYLES,
   THEME_STYLE_LABELS,
   THEME_COLORS,
@@ -84,8 +86,10 @@ app.use(loadUser);
 app.use((req, res, next) => {
   // The page's theme: the user's own, or the app default (also used when logged out).
   res.locals.theme = themeFor(req.user, getSettings());
-  // For the badge on the Manage link.
-  res.locals.pendingRequestCount = permissions.isManagerOrAdmin(req.user) ? pendingRequestsFor(req.user).length : 0;
+  // For the badge on the Manage link: punch edit requests and requests off.
+  res.locals.pendingRequestCount = permissions.isManagerOrAdmin(req.user)
+    ? pendingRequestsFor(req.user).length + pendingTimeOffFor(req.user).length
+    : 0;
   // The site broadcast, if an admin has one up. Everyone sees it, logged in or not.
   res.locals.broadcast = getBroadcast();
   next();

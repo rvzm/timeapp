@@ -2,7 +2,9 @@
     Needs `assignments` (with .attendance). Optional:
       `showName`  - show and link each employee's name
       `showHours` - show each shift's length
-      `canDelete` - function(assignment) -> true to show a Remove button, which returns to `back` %>
+      `canDelete` - function(assignment) -> true to show a Remove button, which returns to `back`
+      `timeOff`   - the employee's own schedule: a Request off button, or the request's status
+                    (needs `requestsOn`) %>
 <ul class="schedule-list">
   <% assignments.forEach((a) => { %>
     <li class="schedule-item">
@@ -19,7 +21,10 @@
         </div>
       </div>
       <div class="schedule-badges">
-        <%- include("attendance", { attendance: a.attendance }) %>
+        <%- include("attendance", { attendance: a.attendance, hideOff: Boolean(locals.timeOff) }) %>
+        <% if (locals.timeOff) { %>
+          <%- include("time-off-status", { a, requestsOn }) %>
+        <% } %>
         <% if (locals.canDelete && canDelete(a)) { %>
           <form method="post" action="/manage/schedule/<%= a.id %>/delete" class="inline"
                 data-question="Remove this assigned shift?" onsubmit="return confirm(this.dataset.question)">

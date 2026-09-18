@@ -1247,6 +1247,24 @@ legend { font-weight: 700; padding: 0; margin-bottom: 0.6rem; }
   .request-fields dt { margin-top: 0.4rem; }
 }
 .badge-denied { --status-color: var(--danger); }
+.badge-off { background: color-mix(in srgb, var(--accent) 14%, transparent); border: var(--border-width) solid var(--accent-line); }
+
+/* Portal → Schedule: where a request off stands, in place of the Request off button */
+.time-off-box {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  padding: 0.2rem 0.6rem;
+  border: var(--border-width) solid var(--status-color, var(--border));
+  border-radius: var(--radius-small);
+  background: color-mix(in srgb, var(--status-color, var(--border)) 10%, transparent);
+  font-size: 0.9rem;
+}
+.time-off-pending { --status-color: var(--status-break); }
+.time-off-approved { --status-color: var(--status-in); }
+.time-off-denied { --status-color: var(--danger); }
+.week-table .is-off { color: var(--muted); }
 
 /* Mandatory shifts */
 h3 { font-size: 1rem; }

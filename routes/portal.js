@@ -11,6 +11,7 @@ import {
   KIND_LABELS, REQUEST_KINDS, readRequestForm, submitRequest, modifyRequest, requestsEnabled, pendingByPunch, groupRequests,
 } from "../requests.js";
 import { withAttendance, groupByWeek } from "../schedule.js";
+import { readTimeOffForm, submitTimeOff, timeOffProblem } from "../timeoff.js";
 import { buildTimesheet, readExportQuery, exportFilename, homeSummary } from "../timesheet.js";
 import { readRange, toId, notFound } from "./helpers.js";
 
@@ -88,7 +89,44 @@ router.get("/schedule", (req, res) => {
     title: "My schedule",
     upcoming: groupByWeek(upcoming),
     past: groupByWeek(past),
+    requestsOn: requestsEnabled(),
+    off: req.query.off,
   });
+});
+
+// ----- Requests off -----
+
+function renderTimeOffForm(res, { assignment, form, error = null, statusCode = 200 }) {
+  res.status(statusCode).render("portal/time-off", { title: "Request off", assignment, form, error });
+}
+
+router.get("/schedule/:id/off", (req, res) => {
+  if (!requestsEnabled()) return requestsOff(res);
+  const assignment = db.getScheduledShift(toId(req.params.id));
+  if (!assignment || assignment.user_id !== req.user.id) return notFound(res, "shift");
+  // Already started or already asked for: say so on the form rather than offering it.
+  const error = timeOffProblem(req.user, assignment);
+  renderTimeOffForm(res, { assignment, form: { reason: "" }, error, statusCode: error ? 409 : 200 });
+});
+
+router.post("/schedule/:id/off", (req, res) => {
+  if (!requestsEnabled()) return requestsOff(res);
+  const { form, assignment, request, error } = readTimeOffForm(req.user, toId(req.params.id), req.body);
+  if (!assignment) return notFound(res, "shift");
+  if (error) return renderTimeOffForm(res, { assignment, form, error, statusCode: 400 });
+
+  const { approved } = submitTimeOff(request);
+  res.redirect(`/portal/schedule?off=${approved ? "approved" : "sent"}`);
+});
+
+router.post("/time-off/:id/cancel", (req, res) => {
+  const request = db.getTimeOff(toId(req.params.id));
+  if (!request || request.user_id !== req.user.id) return notFound(res, "request");
+
+  if (!db.finishTimeOff(request.id, { status: "cancelled", reviewedAt: time.nowIso() })) {
+    return res.status(409).render("error", { title: "Can't cancel", message: "This request has already been handled." });
+  }
+  res.redirect("/portal/schedule?off=cancelled");
 });
 
 // ===================================================================

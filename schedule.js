@@ -16,7 +16,8 @@ const TIME_RE = /^([01]\d|2[0-3]):([0-5]\d)$/;
 // ===================================================================
 
 // Adds `attendance` to each of one user's assignments:
-//   { state: "upcoming" | "in_progress" | "done", clockedIn, missed, late, lateMs, leftEarly, earlyMs, onTime }
+//   { state: "upcoming" | "in_progress" | "done", off, clockedIn, missed, late, lateMs, leftEarly, earlyMs, onTime }
+// A shift approved off (`off`) is never late, missed, or on time: nobody was expected.
 export function withAttendance(userId, assignments, now = Date.now()) {
   if (assignments.length === 0) return assignments;
 
@@ -40,6 +41,9 @@ function attendanceFor(assignment, worked, now, graceMs) {
   const end = Date.parse(assignment.end_at);
   const overlapping = worked.filter((shift) => shift.start < end && shift.end > start);
   const state = now < start ? "upcoming" : now < end ? "in_progress" : "done";
+  if (assignment.off) {
+    return { state, off: true, clockedIn: overlapping.length > 0, missed: false, late: false, lateMs: 0, leftEarly: false, earlyMs: 0, onTime: false };
+  }
   const clockedIn = overlapping.length > 0;
 
   const missed = state === "done" && !clockedIn;
@@ -53,6 +57,7 @@ function attendanceFor(assignment, worked, now, graceMs) {
 
   return {
     state,
+    off: false,
     clockedIn,
     missed,
     late,
@@ -65,6 +70,7 @@ function attendanceFor(assignment, worked, now, graceMs) {
 
 // Groups assignments by the week they start in, keeping their order:
 // [{ from, to, assignments, scheduledMs }]. Each assignment gets `ms`, its length.
+// Shifts approved off are listed but left out of scheduledMs.
 export function groupByWeek(assignments, weekStart = getSettings().weekStart) {
   const weeks = new Map();
   for (const assignment of assignments) {
@@ -73,7 +79,7 @@ export function groupByWeek(assignments, weekStart = getSettings().weekStart) {
     const week = weeks.get(range.from);
     const ms = Date.parse(assignment.end_at) - Date.parse(assignment.start_at);
     week.assignments.push({ ...assignment, ms });
-    week.scheduledMs += ms;
+    if (!assignment.off) week.scheduledMs += ms; // approved off: listed, not counted
   }
   return [...weeks.values()];
 }
