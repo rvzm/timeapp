@@ -3,13 +3,15 @@
 
 <div class="page-head">
   <h1>My Portal</h1>
+  <% if (requestsOn) { %>
   <div class="page-head-actions">
-    <% if (requestsOn) { %>
-      <a class="btn" href="/portal/requests/new?kind=add">Request a missing punch</a>
-      <a class="btn" href="/portal/requests/new?kind=add_shift">Request a missing shift</a>
-    <% } %>
-    <a class="btn btn-primary" href="/portal/export?period=week&amp;date=<%= range.from %>">Export timesheet</a>
+      Request Missing:
+      <a class="btn" href="/portal/requests/new?kind=add">punch</a>
+      <a class="btn" href="/portal/requests/new?kind=add_shift">shift</a>
+      |
+      <a class="btn btn-primary" href="/portal/export?period=week&amp;date=<%= range.from %>">Export timesheet</a>
   </div>
+  <% } %>
 </div>
 
 <%- include("../partials/portal-tabs", { current: "shifts" }) %>

@@ -4,10 +4,11 @@
 <div class="page-head">
   <h1>My Portal</h1>
   <% if (requestsOn) { %>
-    <div class="page-head-actions">
-      <a class="btn" href="/portal/requests/new?kind=add">Request a missing punch</a>
-      <a class="btn btn-primary" href="/portal/requests/new?kind=add_shift">Request a missing shift</a>
-    </div>
+  <div class="page-head-actions">
+      Request Missing:
+      <a class="btn" href="/portal/requests/new?kind=add">punch</a>
+      <a class="btn" href="/portal/requests/new?kind=add_shift">shift</a>
+  </div>
   <% } %>
 </div>
 
