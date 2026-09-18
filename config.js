@@ -5,7 +5,7 @@
 
 export const app_config = {
   name: "TimeApp", // Shown in the page title, header, and footer
-  version: "0.2.9",
+  version: "0.3.0",
 };
 
 export const server_config = {
