@@ -17,12 +17,11 @@
       <div class="stat-tile">
         <span class="muted small"><%= period.label %></span>
         <strong><%= fmt.formatDuration(period.workedMs) %></strong>
-        <span class="muted small">
-          <%= span(period.range) %>
-          <% if (period.incomplete) { %>
-            · <%= period.incomplete %> shift<%= period.incomplete === 1 ? "" : "s" %> with missing punches not counted
-          <% } %>
-        </span>
+        <% if (period.incomplete) { %>
+          <span class="muted small" title="Shifts with a missing punch aren't counted until they're fixed">
+            <%= period.incomplete %> shift<%= period.incomplete === 1 ? "" : "s" %> not counted
+          </span>
+        <% } %>
       </div>
     <% }) %>
   </div>
@@ -60,7 +59,7 @@
         <% }) %>
       </tbody>
       <tfoot>
-        <tr><th colspan="2">Scheduled this week</th><th><%= fmt.formatDuration(week.scheduledMs) %></th></tr>
+        <tr><td colspan="2"><strong>Scheduled this week</strong></td><td><strong><%= fmt.formatDuration(week.scheduledMs) %></strong></td></tr>
       </tfoot>
     </table>
   </div>
