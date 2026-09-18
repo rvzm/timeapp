@@ -44,6 +44,13 @@ export function buildTimesheet(userId, { period, date }) {
   };
 }
 
+// Time worked so far in the week containing `date`, for the Clock page and the
+// Manage employee list: { week, workedMs, incompleteCount } (see buildTimesheet).
+export function weekSoFar(userId, date = time.localDate()) {
+  const sheet = buildTimesheet(userId, { period: "week", date });
+  return { week: sheet.range, workedMs: sheet.totalMs, incompleteCount: sheet.incompleteCount };
+}
+
 // "timesheet-jdoe-week-2026-08-09.png"
 export function exportFilename(user, sheet) {
   return `timesheet-${user.username}-${sheet.period}-${sheet.range.from}.png`;

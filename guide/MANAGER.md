@@ -32,6 +32,7 @@ Click **Manage** in the top bar. When edit requests are waiting, the tabs show a
 The **Employees** tab shows how many people are clocked in, on break and clocked out, then everyone you manage:
 - their **Name** and job title, and **Role**
 - their **Status**, plus any shift scheduled for them today, e.g. "Scheduled 9:00 AM – 5:00 PM"
+- **Hours this week**: what they've worked since the start of the week, including a shift in progress. Shifts with a missing punch aren't counted, and "2 not counted" says how many were left out
 - their **Last punch**
 - **Inactive** if their account has been deactivated
 

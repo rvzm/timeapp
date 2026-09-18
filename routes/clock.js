@@ -4,7 +4,8 @@ import * as db from "../db.js";
 import * as time from "../time.js";
 import { requireLogin } from "../auth.js";
 import { loadShifts, currentShift } from "../shifts.js";
-import { breakPolicyFor, getSettings } from "../settings.js";
+import { breakPolicyFor } from "../settings.js";
+import { weekSoFar } from "../timesheet.js";
 
 const router = express.Router();
 
@@ -38,20 +39,6 @@ function shiftSoFar(userId, status) {
     onClockMs: Date.now() - Date.parse(clockIn.timestamp),
     workedMs: shift.workedMs,
     breakMs: shift.breakMs,
-  };
-}
-
-// Time worked this week (shifts counted on the day they start, as in timesheets).
-// Shifts with a missing punch aren't counted; `incompleteCount` says how many.
-function weekSoFar(userId) {
-  const week = time.weekRange(time.localDate(), getSettings().weekStart);
-  const [fromIso, toIso] = time.dayRangeUtc(week.from, week.to);
-  const shifts = loadShifts(userId, fromIso, toIso).filter((s) => s.date >= week.from && s.date <= week.to);
-  const counted = shifts.filter((s) => s.workedMs !== null);
-  return {
-    week,
-    workedMs: counted.reduce((total, s) => total + s.workedMs, 0),
-    incompleteCount: shifts.length - counted.length,
   };
 }
 

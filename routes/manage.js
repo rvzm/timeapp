@@ -15,7 +15,7 @@ import { getSettings, saveSettings, readBreakLimitsForm, breakPolicyFor } from "
 import { availabilityWeek } from "../availability.js";
 import { reviewRequest, pendingByPunch, pendingRequestsFor } from "../requests.js";
 import { withAttendance, readAssignmentForm, findConflicts } from "../schedule.js";
-import { buildTimesheet, readExportQuery, exportFilename } from "../timesheet.js";
+import { buildTimesheet, readExportQuery, exportFilename, weekSoFar } from "../timesheet.js";
 import { toId, notFound, readRange, rangeIncluding, safeRedirect } from "./helpers.js";
 
 const router = express.Router();
@@ -190,7 +190,7 @@ router.get("/employees/:id/export", (req, res) => {
 router.get("/", (req, res) => {
   const users = db.listUsersWithLastPunch()
     .filter((u) => canManageShifts(req.user, u) && inSelectedTeam(req, u.id))
-    .map((u) => ({ ...u, status: db.statusFromPunch({ type: u.last_type }) }));
+    .map((u) => ({ ...u, status: db.statusFromPunch({ type: u.last_type }), week: weekSoFar(u.id) }));
 
   const counts = { in: 0, break: 0, out: 0 };
   for (const u of users) if (u.active) counts[u.status]++;

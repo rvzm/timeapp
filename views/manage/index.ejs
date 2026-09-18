@@ -24,7 +24,7 @@
     <div class="table-wrap">
       <table class="table">
         <thead>
-          <tr><th>Name</th><th>Role</th><% if (showTeams) { %><th>Team</th><% } %><th>Status</th><th>Last punch</th><th></th></tr>
+          <tr><th>Name</th><th>Role</th><% if (showTeams) { %><th>Team</th><% } %><th>Status</th><th>Hours this week</th><th>Last punch</th><th></th></tr>
         </thead>
         <tbody>
           <% users.forEach((u) => { %>
@@ -41,6 +41,12 @@
                 <% (scheduledToday.get(u.id) ?? []).forEach((a) => { %>
                   <div class="muted small">Scheduled <%= fmt.formatTime(a.start_at) %> – <%= fmt.formatTime(a.end_at) %></div>
                 <% }) %>
+              </td>
+              <td class="nowrap">
+                <%= fmt.formatDuration(u.week.workedMs) %>
+                <% if (u.week.incompleteCount) { %>
+                  <div class="muted small"><%= u.week.incompleteCount %> not counted</div>
+                <% } %>
               </td>
               <td class="nowrap">
                 <% if (u.last_timestamp) { %>
