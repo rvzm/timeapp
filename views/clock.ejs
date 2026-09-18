@@ -85,16 +85,6 @@
   </form>
 </section>
 
-<section class="card">
-  <h2>Today <span class="muted">· <%= fmt.formatDay(today) %></span></h2>
-
-  <% if (shifts.length === 0) { %>
-    <p class="muted">No punches today.</p>
-  <% } else { %>
-    <%- include("partials/shifts", { shifts, mode: "clock" }) %>
-  <% } %>
-</section>
-
 <script src="/clock.js" defer></script>
 
 <%- include("partials/foot") %>
