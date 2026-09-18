@@ -12,7 +12,10 @@
       (function () {
         var root = document.documentElement;
         var query = window.matchMedia("(prefers-color-scheme: dark)");
-        function apply() { root.setAttribute("data-theme", query.matches ? "dark" : "light"); }
+        // Stops following the device once the top-bar button picks light or dark.
+        function apply() {
+          if (root.getAttribute("data-mode") === "system") root.setAttribute("data-theme", query.matches ? "dark" : "light");
+        }
         apply();
         query.addEventListener("change", apply);
       })();

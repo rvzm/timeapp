@@ -80,14 +80,9 @@
       </div>
     </fieldset>
 
-    <label class="field theme-mode">
-      <span>Light or dark</span>
-      <select name="mode">
-        <% THEME_MODES.forEach((mode) => { %>
-          <option value="<%= mode %>"<%= themeForm.mode === mode ? " selected" : "" %>><%= THEME_MODE_LABELS[mode] %></option>
-        <% }) %>
-      </select>
-    </label>
+    <% if (settings.showModeToggle) { %>
+      <p class="muted small">Switch between light and dark with the sun/moon button in the top bar.</p>
+    <% } %>
 
     <fieldset>
       <legend>Background</legend>

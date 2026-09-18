@@ -73,6 +73,15 @@
               <option value="<%= mode %>"<%= form.defaultTheme === mode ? " selected" : "" %>><%= THEME_MODE_LABELS[mode] %></option>
             <% }) %>
           </select>
+          <span class="hint">For the login page and anyone who hasn't switched with the light/dark button in the top bar.</span>
+        </label>
+        <label class="checkbox field-wide">
+          <input type="checkbox" name="showModeToggle"<%= form.showModeToggle ? " checked" : "" %>>
+          <span>Show the light/dark button in the top bar (off = everyone gets the default above)</span>
+        </label>
+        <label class="checkbox field-wide">
+          <input type="checkbox" name="rememberGuestMode"<%= form.rememberGuestMode ? " checked" : "" %>>
+          <span>Let people switch light/dark on the login page too (remembered in their browser)</span>
         </label>
         <label class="field">
           <span>Default background</span>

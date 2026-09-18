@@ -1,14 +1,17 @@
 // Your account, reached from the menu under your name in the header:
 //   /profile   your details (view, plus an Edit page), availability, and upcoming mandatory shifts
 //   /settings  password, appearance, and exporting all your shift data
-// Any logged-in user. Mounted at the root, so each route checks the login itself.
+//   /theme-mode  the top-bar light/dark button (works logged out too)
+// Mounted at the root, so each route checks the login itself.
 import express from "express";
 import * as db from "../db.js";
 import * as time from "../time.js";
 import { requireLogin, verifyPassword, hashPassword, validateProfileFields, validatePassword } from "../auth.js";
 import { getSettings } from "../settings.js";
 import { availabilityWeek, readAvailabilityForm } from "../availability.js";
-import { themeFor, readThemeForm } from "../themes.js";
+import { themeFor, readThemeForm, MODE_COOKIE, PICKABLE_MODES } from "../themes.js";
+import { session_config } from "../config.js";
+import { safePath } from "./helpers.js";
 import { withAttendance } from "../schedule.js";
 import { allShiftsCsv, allShiftsFilename } from "../timesheet.js";
 
@@ -86,7 +89,7 @@ function renderSettings(req, res, { errors = {}, statusCode = 200 } = {}) {
     title: "Settings",
     themeForm: {
       ...themeFor(account, getSettings()),
-      usingDefault: [account.theme_style, account.theme_color, account.theme_mode, account.theme_background].every((value) => value === null),
+      usingDefault: [account.theme_style, account.theme_color, account.theme_background].every((value) => value === null),
     },
     errors,
     saved: statusCode === 200 ? req.query.saved : null,
@@ -122,8 +125,28 @@ router.post("/settings/theme", requireLogin, (req, res) => {
   const { values, error } = readThemeForm(req.body);
   if (error) return renderSettings(req, res, { errors: { theme: error }, statusCode: 400 });
 
-  db.setUserTheme(req.user.id, values);
+  // Light/dark belongs to the top-bar button, so keep whatever that last saved.
+  db.setUserTheme(req.user.id, { ...values, mode: db.getUserById(req.user.id).theme_mode });
   res.redirect("/settings?saved=theme");
+});
+
+// The top-bar light/dark button. Saved on the account, or in a cookie for someone logged
+// out. public/mode-toggle.js sends it in the background and flips the page itself;
+// without JavaScript it's a normal form and comes back to `back`.
+router.post("/theme-mode", (req, res) => {
+  const settings = getSettings();
+  const mode = String(req.body.mode ?? "");
+  const back = safePath(req.body.back, "/");
+  if (!PICKABLE_MODES.includes(mode) || !settings.showModeToggle) return res.redirect(back);
+
+  if (req.user) {
+    db.setUserThemeMode(req.user.id, mode);
+  } else if (settings.rememberGuestMode) {
+    res.cookie(MODE_COOKIE, mode, {
+      httpOnly: true, sameSite: "lax", secure: session_config.secure, path: "/", maxAge: 365 * 24 * 60 * 60 * 1000,
+    });
+  }
+  res.redirect(back);
 });
 
 // Every shift you've ever worked, as a CSV download.
