@@ -13,7 +13,7 @@ import { canManageShifts, canManageSchedule } from "../permissions.js";
 import { readTeamFilter, inTeamFilter } from "../teams.js";
 import { getSettings, saveSettings, readBreakLimitsForm, breakPolicyFor } from "../settings.js";
 import { availabilityWeek } from "../availability.js";
-import { reviewRequest, pendingByPunch, pendingRequestsFor } from "../requests.js";
+import { reviewRequest, pendingByPunch, pendingRequestsFor, groupRequests, readReviewEdits } from "../requests.js";
 import { withAttendance, readAssignmentForm, readWeeklyForm, findConflicts } from "../schedule.js";
 import { buildTimesheet, readExportQuery, exportFilename, weekSoFar } from "../timesheet.js";
 import { toId, notFound, readRange, rangeIncluding, safeRedirect } from "./helpers.js";
@@ -161,9 +161,13 @@ function renderScheduleTab(req, res, target, {
 
 // Requests: pending ones to review, and the employee's past requests.
 function renderRequestsTab(req, res, target) {
+  const pending = db.listPendingRequestsForUser(target.id);
+  const reviewed = db.listRequestsForUser(target.id).filter((request) => request.status !== "pending").slice(0, 50);
   renderEmployeeTab(res, target, "employee-requests", {
-    pending: db.listPendingRequestsForUser(target.id),
-    reviewed: db.listRequestsForUser(target.id).filter((request) => request.status !== "pending").slice(0, 50),
+    pending,
+    pendingGroups: groupRequests(pending),
+    reviewed,
+    reviewedGroups: groupRequests(reviewed, { newestFirst: true }),
   });
 }
 
@@ -437,25 +441,38 @@ const canReview = (user, request) => canManageShifts(user, { id: request.user_id
 
 router.get("/requests", (req, res) => {
   const inTeam = (request) => inSelectedTeam(req, request.user_id);
+  const pending = pendingRequestsFor(req.user).filter(inTeam);
+  const recent = db.listRecentRequests().filter((request) => canReview(req.user, request) && inTeam(request));
   res.render("manage/requests", {
     title: "Requests",
-    pending: pendingRequestsFor(req.user).filter(inTeam),
-    recent: db.listRecentRequests().filter((request) => canReview(req.user, request) && inTeam(request)),
+    pending,
+    pendingGroups: groupRequests(pending),
+    recent,
+    recentGroups: groupRequests(recent, { newestFirst: true }),
   });
 });
 
-// decision=approve|deny, with an optional note for the employee.
+// decision=approve|deny|approve_edits, with an optional note for the employee.
+// approve_edits also carries edit_type/edit_when (and edit_end for a missing shift).
 router.post("/requests/:id/review", (req, res) => {
   const request = db.getRequest(toId(req.params.id));
   if (!request || !canReview(req.user, request)) return notFound(res, "request");
 
   const decision = String(req.body.decision ?? "");
-  if (decision !== "approve" && decision !== "deny") {
-    return res.status(400).render("error", { title: "Not reviewed", message: "Choose Approve or Deny." });
+  if (!["approve", "deny", "approve_edits"].includes(decision)) {
+    return res.status(400).render("error", { title: "Not reviewed", message: "Choose Approve, Deny, or Approve with edits." });
+  }
+
+  let edits = null;
+  if (decision === "approve_edits") {
+    const read = readReviewEdits(request, req.body);
+    // Bad edit values: say what's wrong rather than applying something unintended.
+    if (read.error) return res.status(400).render("error", { title: "Couldn't apply the edits", message: read.error });
+    edits = read.edits;
   }
 
   const note = String(req.body.note ?? "").trim().slice(0, 500);
-  const error = reviewRequest(req.user, request.id, { approve: decision === "approve", note });
+  const error = reviewRequest(req.user, request.id, { approve: decision !== "deny", note, edits });
   if (error) return res.status(409).render("error", { title: "Couldn't review the request", message: error });
 
   res.redirect(safeRedirect(req.body.back, "/manage/requests"));

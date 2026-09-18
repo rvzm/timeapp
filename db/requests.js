@@ -26,9 +26,11 @@ const stmt = {
     INSERT INTO edit_requests (user_id, kind, punch_id, original_type, original_timestamp, type, timestamp, end_timestamp, reason, created_at)
     VALUES (@userId, @kind, @punchId, @originalType, @originalTimestamp, @type, @timestamp, @endTimestamp, @reason, @createdAt)`),
   // Only a pending request can be finished (approved, denied, cancelled).
+  // The applied_* columns stay NULL unless the reviewer approved with edits.
   finishRequest: db.prepare(`
     UPDATE edit_requests
-    SET status = @status, reviewed_by = @reviewedBy, reviewed_at = @reviewedAt, review_note = @reviewNote
+    SET status = @status, reviewed_by = @reviewedBy, reviewed_at = @reviewedAt, review_note = @reviewNote,
+        applied_type = @appliedType, applied_timestamp = @appliedTimestamp, applied_end_timestamp = @appliedEndTimestamp
     WHERE id = @id AND status = 'pending'`),
 };
 
@@ -47,7 +49,13 @@ export function insertRequest({
   return Number(info.lastInsertRowid);
 }
 
-// Marks a pending request as finished. Returns false if it wasn't pending anymore.
-export function finishRequest(id, { status, reviewedBy = null, reviewedAt, reviewNote = "" }) {
-  return stmt.finishRequest.run({ id, status, reviewedBy, reviewedAt, reviewNote }).changes > 0;
+// Marks a pending request as finished. `applied` is what the reviewer changed it to,
+// or null when it was applied exactly as asked. Returns false if it wasn't pending anymore.
+export function finishRequest(id, { status, reviewedBy = null, reviewedAt, reviewNote = "", applied = null }) {
+  return stmt.finishRequest.run({
+    id, status, reviewedBy, reviewedAt, reviewNote,
+    appliedType: applied?.type ?? null,
+    appliedTimestamp: applied?.timestamp ?? null,
+    appliedEndTimestamp: applied?.endTimestamp ?? null,
+  }).changes > 0;
 }

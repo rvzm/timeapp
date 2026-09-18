@@ -1,3 +1,5 @@
 <%# A status badge for an edit request. Needs `request`. %>
 <% const dotClass = { pending: "break", approved: "in", auto_approved: "in", denied: "denied", cancelled: "out" }[request.status]; %>
-<span class="badge badge-<%= dotClass %>"><span class="dot"></span><%= REQUEST_STATUS_LABELS[request.status] %></span>
+<%# Approved with something other than what was asked for (see applied_* in db/requests.js). %>
+<% const edited = request.status === "approved" && (request.applied_timestamp || request.applied_type || request.applied_end_timestamp); %>
+<span class="badge badge-<%= dotClass %>"><span class="dot"></span><%= edited ? "Approved with edits" : REQUEST_STATUS_LABELS[request.status] %></span>

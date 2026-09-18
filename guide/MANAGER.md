@@ -123,15 +123,32 @@ The grace period is **Grace minutes** in **Admin → Settings**, 5 by default.
 
 Employees ask for punch fixes through requests. Find them under **Manage → Requests**, which lists everyone's, or on a person's **Requests** tab.
 
-Each pending request shows who sent it and when, what they're asking for (e.g. "Change Clock Out at … to Clock Out at …"), and their **Reason**.
-1. Optionally type a **Note to the employee**. They see it on their Requests tab.
-2. Click **Approve** or **Deny**.
+Requests are grouped by **employee**, then by **week**, then by **day** — the day of the punch they're about, not the day they were sent. Each request is labelled with the shift that punch falls in (**Shift 9:00 AM – 5:00 PM**), or **Not part of a recorded shift** when there isn't one, as with a missing shift.
 
-**Approve** makes the change right away. Punches it adds or changes are marked as adjusted by you, with the request number and reason as their note:
+Each request lists:
+
+| Field | What it is |
+|---|---|
+| **Name** | Who sent it; links to their Requests tab. |
+| **Requested** | When they sent it. |
+| **Punch type** | The punch in question. A change that also switches the type reads **Clock In → Clock Out**. |
+| **Original punch** | The punch as it is now, or **None** when the punch or shift is missing. |
+| **Requested edit** | What they're asking for. |
+| **Applied** | Only after **Approve with edits**: what you actually applied. |
+| **Reason** | Why they asked. |
+
+1. Optionally type a **Note to the employee**. They see it on their Requests tab.
+2. Click **Approve**, **Deny**, or **Approve with edits**.
+
+**Approve** makes the change right away, exactly as asked. Punches it adds or changes are marked as adjusted by you, with the request number and reason as their note:
 - **Change a punch**: updates the punch.
 - **Delete a punch**: removes it.
 - **Add a missing punch**: adds it.
 - **Add a missing shift**: adds a Clock In and a Clock Out.
+
+**Approve with edits** approves the request but applies your values instead of theirs — for when the idea is right but the time is a few minutes off. Open it to reveal the **Punch type** and **When** boxes (**Clock in** and **Clock out** for a missing shift), already filled in with what was asked for. Change them and click **Apply and approve**. Your values must pass the same checks the employee's did: a real date and time, nothing in the future, and a shift under 24 hours that ends after it starts.
+
+The request keeps both numbers: **Requested edit** stays as the employee wrote it and **Applied** shows what you granted, so the record still shows what they originally asked for. It's listed as **Approved with edits**, and the employee sees both on their Requests tab. A **Delete a punch** request has nothing to adjust, so it has no **Approve with edits** option.
 
 **Deny** changes nothing.
 
@@ -140,7 +157,7 @@ Things you might see:
 - **"This request has already been handled."**: another manager or admin got there first.
 - **"The punch in this request no longer exists…"**: deny it instead.
 
-**Recently reviewed** lists past decisions, with who reviewed them and any note. What employees can request depends on the admin's **Mode** setting:
+**Recently reviewed** lists past decisions the same way, grouped and most recent first, with who reviewed them and any note. What employees can request depends on the admin's **Mode** setting:
 - **Disabled**: no requests.
 - **Approval**: requests wait for you.
 - **Honor system**: requests apply immediately, and appear here as **Auto-approved**.

@@ -1,16 +1,58 @@
-<%# A pending edit request with Approve/Deny. Needs `request` and `back` (where to return afterwards). %>
+<%# A pending edit request with its fields, a note box, and Approve / Deny / Approve with edits.
+    Needs `request` and `back` (where to return afterwards). %>
+<%
+  // A delete request has nothing to adjust, so it gets no edit form.
+  const canEdit = request.kind !== "delete";
+  const editEnd = request.kind === "add_shift";
+%>
 <div class="request-head">
-  <span>
-    <a href="/manage/employees/<%= request.user_id %>/requests"><strong><%= request.user_name %></strong></a>
-    <span class="muted small">· <%= KIND_LABELS[request.kind] %> · <%= fmt.formatDateTime(request.created_at) %></span>
-  </span>
+  <span class="muted small"><%= KIND_LABELS[request.kind] %></span>
   <%- include("request-status", { request }) %>
 </div>
-<%- include("request-summary", { request }) %>
-<p class="request-reason">Reason: <%= request.reason %></p>
-<form method="post" action="/manage/requests/<%= request.id %>/review" class="request-review">
+
+<%- include("request-fields", { request }) %>
+
+<form method="post" action="/manage/requests/<%= request.id %>/review" class="request-decide">
   <input type="hidden" name="back" value="<%= back %>">
   <input name="note" maxlength="500" placeholder="Note to the employee (optional)" aria-label="Review note">
-  <button class="btn btn-small btn-primary" name="decision" value="approve">Approve</button>
-  <button class="btn btn-small btn-ghost-danger" name="decision" value="deny">Deny</button>
+
+  <div class="request-buttons">
+    <button class="btn btn-small btn-primary" name="decision" value="approve">Approve</button>
+    <button class="btn btn-small btn-ghost-danger" name="decision" value="deny">Deny</button>
+  </div>
+
+  <% if (canEdit) { %>
+    <details class="request-edits">
+      <summary>Approve with edits</summary>
+      <p class="muted small">Approve this request, but apply these values instead of the ones asked for.</p>
+      <div class="form-grid">
+        <% if (editEnd) { %>
+          <label class="field">
+            <span>Clock in</span>
+            <input type="datetime-local" name="edit_when" value="<%= fmt.toDatetimeLocal(request.timestamp) %>">
+          </label>
+          <label class="field">
+            <span>Clock out</span>
+            <input type="datetime-local" name="edit_end" value="<%= fmt.toDatetimeLocal(request.end_timestamp) %>">
+          </label>
+        <% } else { %>
+          <label class="field">
+            <span>Punch type</span>
+            <select name="edit_type">
+              <% PUNCH_TYPES.forEach((type) => { %>
+                <option value="<%= type %>"<%= request.type === type ? " selected" : "" %>><%= PUNCH_LABELS[type] %></option>
+              <% }) %>
+            </select>
+          </label>
+          <label class="field">
+            <span>When</span>
+            <input type="datetime-local" name="edit_when" value="<%= fmt.toDatetimeLocal(request.timestamp) %>">
+          </label>
+        <% } %>
+      </div>
+      <div class="form-actions">
+        <button class="btn btn-small btn-primary" name="decision" value="approve_edits">Apply and approve</button>
+      </div>
+    </details>
+  <% } %>
 </form>

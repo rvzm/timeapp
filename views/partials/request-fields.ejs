@@ -1,0 +1,64 @@
+<%# The labelled fields of one edit request. Needs `request` (a row from db/requests.js,
+    with `shift` attached by groupRequests when there is one). %>
+<%
+  const at = (iso) => fmt.formatDateTime(iso);
+  const punchText = (type, iso) => `${PUNCH_LABELS[type]} at ${at(iso)}`;
+  // A change can move the punch to a different type; show both when it does.
+  const typeText = request.kind === "add_shift"
+    ? "Clock in and clock out"
+    : request.kind === "delete"
+      ? PUNCH_LABELS[request.original_type]
+      : request.original_type && request.original_type !== request.type
+        ? `${PUNCH_LABELS[request.original_type]} → ${PUNCH_LABELS[request.type]}`
+        : PUNCH_LABELS[request.type];
+  const applied = request.applied_timestamp || request.applied_type || request.applied_end_timestamp;
+%>
+<dl class="request-fields">
+  <dt>Name</dt>
+  <dd><a href="/manage/employees/<%= request.user_id %>/requests"><%= request.user_name %></a></dd>
+
+  <dt>Requested</dt>
+  <dd><%= at(request.created_at) %></dd>
+
+  <dt>Punch type</dt>
+  <dd><%= typeText %></dd>
+
+  <dt>Original punch</dt>
+  <dd>
+    <% if (request.kind === "change" || request.kind === "delete") { %>
+      <%= punchText(request.original_type, request.original_timestamp) %>
+    <% } else if (request.kind === "add") { %>
+      <span class="muted">None — the punch is missing</span>
+    <% } else { %>
+      <span class="muted">None — the whole shift is missing</span>
+    <% } %>
+  </dd>
+
+  <dt>Requested edit</dt>
+  <dd>
+    <% if (request.kind === "delete") { %>
+      <strong>Delete this punch</strong>
+    <% } else if (request.kind === "add_shift") { %>
+      <strong><%= at(request.timestamp) %></strong> to <strong><%= at(request.end_timestamp) %></strong>
+    <% } else { %>
+      <strong><%= punchText(request.type, request.timestamp) %></strong>
+    <% } %>
+  </dd>
+
+  <% if (applied) { %>
+    <dt>Applied</dt>
+    <dd>
+      <% if (request.kind === "add_shift") { %>
+        <strong><%= at(request.applied_timestamp ?? request.timestamp) %></strong>
+        to <strong><%= at(request.applied_end_timestamp ?? request.end_timestamp) %></strong>
+      <% } else { %>
+        <strong><%= punchText(request.applied_type ?? request.type, request.applied_timestamp ?? request.timestamp) %></strong>
+      <% } %>
+      <span class="muted small">(edited by the reviewer)</span>
+    </dd>
+  <% } %>
+
+  <dt>Reason</dt>
+  <dd class="request-reason"><%= request.reason %></dd>
+</dl>
+<%- include("request-summary-notes", { request }) %>

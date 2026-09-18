@@ -1,0 +1,11 @@
+<%# Warnings about a pending request whose punch has moved on since it was made. Needs `request`. %>
+<% if (request.status === "pending" && (request.kind === "change" || request.kind === "delete")) { %>
+  <% if (!request.punch_id) { %>
+    <p class="muted small">That punch has been deleted since this was requested.</p>
+  <% } else if (request.punch_type !== request.original_type || request.punch_timestamp !== request.original_timestamp) { %>
+    <p class="muted small">
+      That punch has been changed since this was requested. It's now
+      <%= PUNCH_LABELS[request.punch_type] %> at <%= fmt.formatDateTime(request.punch_timestamp) %>.
+    </p>
+  <% } %>
+<% } %>

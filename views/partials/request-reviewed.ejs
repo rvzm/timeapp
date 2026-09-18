@@ -1,0 +1,16 @@
+<%# A finished edit request in the Manage console: the same fields, plus how it was reviewed.
+    Read-only. Needs `request`. %>
+<div class="request-head">
+  <span class="muted small"><%= KIND_LABELS[request.kind] %></span>
+  <%- include("request-status", { request }) %>
+</div>
+
+<%- include("request-fields", { request }) %>
+
+<% if (request.reviewed_at || request.reviewer_name) { %>
+  <p class="small">
+    <% if (request.reviewer_name) { %>Reviewed by <%= request.reviewer_name %><% } else { %>Reviewed<% } %>
+    <% if (request.reviewed_at) { %> · <%= fmt.formatWhen(request.reviewed_at) %><% } %>
+    <% if (request.review_note) { %><span class="muted">— <%= request.review_note %></span><% } %>
+  </p>
+<% } %>

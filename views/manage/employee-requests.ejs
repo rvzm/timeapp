@@ -8,13 +8,11 @@
   <% if (pending.length === 0) { %>
     <p class="muted">No pending requests.</p>
   <% } else { %>
-    <ul class="request-list">
-      <% pending.forEach((request) => { %>
-        <li class="request">
-          <%- include("../partials/request-review", { request, back: `/manage/employees/${target.id}/requests` }) %>
-        </li>
-      <% }) %>
-    </ul>
+    <%- include("../partials/request-groups", {
+      groups: pendingGroups,
+      back: `/manage/employees/${target.id}/requests`,
+      showEmployee: false,
+    }) %>
   <% } %>
 </section>
 
@@ -23,11 +21,7 @@
   <% if (reviewed.length === 0) { %>
     <p class="muted">Nothing reviewed yet.</p>
   <% } else { %>
-    <ul class="request-list">
-      <% reviewed.forEach((request) => { %>
-        <li class="request"><%- include("../partials/request-item", { request }) %></li>
-      <% }) %>
-    </ul>
+    <%- include("../partials/request-groups", { groups: reviewedGroups, back: null, showEmployee: false }) %>
   <% } %>
 </section>
 

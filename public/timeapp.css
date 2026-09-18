@@ -1198,9 +1198,54 @@ legend { font-weight: 700; padding: 0; margin-bottom: 0.6rem; }
 .request-head { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem; }
 .request-summary { margin: 0.5rem 0 0.25rem; }
 .request-reason { margin: 0 0 0.6rem; white-space: pre-wrap; overflow-wrap: anywhere; }
-.request-review { display: flex; align-items: center; flex-wrap: wrap; gap: 0.5rem; }
-.request-review input { flex: 1; min-width: 12rem; }
 .table .request-summary { margin: 0; }
+
+/* Grouped requests: employee > week > day, with the shift labelled on each request. */
+.request-groups { display: grid; gap: calc(var(--space) * 1.25); }
+.request-group { display: grid; gap: 0.75rem; }
+.request-group-name { margin: 0; font-size: 1.05rem; }
+.request-week { display: grid; gap: 0.6rem; }
+/* The week rule doubles as the grouping line, so days below it read as one block. */
+.request-week-head {
+  margin: 0;
+  padding-bottom: 0.3rem;
+  border-bottom: var(--border-width) solid var(--edge);
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+.request-day { display: grid; gap: 0.5rem; }
+.request-day-head { margin: 0; font-size: 0.95rem; font-weight: 700; }
+.request-shift {
+  margin: 0 0 0.6rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+.request-shift-none { font-weight: 400; font-style: italic; }
+
+/* One request's labelled fields. The label column holds the longest label, then wraps
+   to stacked rows on narrow screens. */
+.request-fields {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 0.3rem 0.9rem;
+  margin: 0 0 0.75rem;
+}
+.request-fields dt { font-size: 0.85rem; color: var(--muted); }
+.request-fields dd { margin: 0; overflow-wrap: anywhere; }
+.request-fields dd.request-reason { margin: 0; white-space: pre-wrap; }
+
+.request-decide { display: grid; gap: 0.5rem; }
+.request-buttons { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.request-edits { border-top: var(--border-width) solid var(--edge); padding-top: 0.5rem; }
+.request-edits summary { cursor: pointer; font-size: 0.9rem; font-weight: 600; }
+.request-edits > :not(summary) { margin-top: 0.5rem; }
+
+@media (max-width: 34rem) {
+  .request-fields { grid-template-columns: minmax(0, 1fr); gap: 0.15rem; }
+  .request-fields dt { margin-top: 0.4rem; }
+}
 .badge-denied { --status-color: var(--danger); }
 
 /* Mandatory shifts */

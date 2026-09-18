@@ -225,6 +225,17 @@ const migrations = [
       UPDATE sessions SET last_seen_at = created_at;
     `);
   },
+
+  // 12: "Approve with edits". A reviewer can adjust what a request asks for before
+  // approving it; these record what was actually applied. NULL = applied as requested,
+  // so the employee's original ask always stays readable in the request row.
+  () => {
+    db.exec(`
+      ALTER TABLE edit_requests ADD COLUMN applied_type TEXT;
+      ALTER TABLE edit_requests ADD COLUMN applied_timestamp TEXT;
+      ALTER TABLE edit_requests ADD COLUMN applied_end_timestamp TEXT;
+    `);
+  },
 ];
 
 function migrate() {

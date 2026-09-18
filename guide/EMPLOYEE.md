@@ -100,6 +100,7 @@ Then click **Send request** (or **Request deletion**).
 **Track your requests** under **My Portal → Requests**. Each one shows what you asked for, your reason, and a status:
 - **Pending**: waiting for a manager. You can **Cancel request**.
 - **Approved** or **Auto-approved**: the change was made.
+- **Approved with edits**: the change was made, but the reviewer adjusted it. The request shows what you asked for and an **Applied as** line with what was actually recorded.
 - **Denied**: not changed.
 - **Cancelled**: you cancelled it.
 

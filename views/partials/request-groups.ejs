@@ -1,0 +1,54 @@
+<%# Edit requests grouped by employee, then week, then day, as built by groupRequests()
+    in requests.js. Needs `groups`, and `back` when they're reviewable (omit for read-only).
+    `showEmployee` false drops the employee heading, for a single employee's own page. %>
+<%
+  const reviewable = typeof back !== "undefined" && back !== null;
+  const withEmployee = typeof showEmployee === "undefined" ? true : showEmployee;
+%>
+<div class="request-groups">
+  <% groups.forEach((group) => { %>
+    <section class="request-group">
+      <% if (withEmployee) { %>
+        <h3 class="request-group-name">
+          <a href="/manage/employees/<%= group.userId %>/requests"><%= group.userName %></a>
+          <span class="muted">(<%= group.count %>)</span>
+        </h3>
+      <% } %>
+
+      <% group.weeks.forEach((week) => { %>
+        <div class="request-week">
+          <h4 class="request-week-head">Week of <%= fmt.formatDay(week.from) %></h4>
+
+          <% week.days.forEach((day) => { %>
+            <div class="request-day">
+              <h5 class="request-day-head"><%= fmt.formatDay(day.date) %></h5>
+
+              <ul class="request-list">
+                <% day.requests.forEach((request) => { %>
+                  <li class="request">
+                    <% if (request.shift) { %>
+                      <p class="request-shift">
+                        Shift
+                        <% if (request.shift.clockIn) { %><%= fmt.formatTime(request.shift.clockIn.timestamp) %><% } else { %>?<% } %>
+                        –
+                        <% if (request.shift.clockOut) { %><%= fmt.formatTime(request.shift.clockOut.timestamp) %><% } else { %>in progress<% } %>
+                      </p>
+                    <% } else { %>
+                      <p class="request-shift request-shift-none">Not part of a recorded shift</p>
+                    <% } %>
+
+                    <% if (reviewable) { %>
+                      <%- include("request-review", { request, back }) %>
+                    <% } else { %>
+                      <%- include("request-reviewed", { request }) %>
+                    <% } %>
+                  </li>
+                <% }) %>
+              </ul>
+            </div>
+          <% }) %>
+        </div>
+      <% }) %>
+    </section>
+  <% }) %>
+</div>
