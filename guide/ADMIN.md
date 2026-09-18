@@ -10,6 +10,7 @@ Admins can do everything managers can, for **every** account, and also manage ac
   - [Change a role or deactivate someone](#change-a-role-or-deactivate-someone)
   - [Reset a password](#reset-a-password)
 - [Teams](#teams)
+- [Site Broadcast](#site-broadcast)
 - [Settings](#settings)
 - [Locked out?](#locked-out)
 
@@ -25,6 +26,7 @@ Compared with a manager, an admin can:
 - **Delete anyone's shift notes.** Everyone else can only delete their own.
 - **Add accounts**, edit them, change roles, deactivate people and reset passwords.
 - **Set up teams**, which limit which employees a manager manages.
+- **Send a site broadcast**, a message pinned to every page for everyone.
 - **Change Admin → Settings.**
 
 On a person's page in **Manage**, admins also get an **Edit account** button, and the **Manage** page has **Add account**.
@@ -101,6 +103,25 @@ Teams decide which employees a manager manages:
   - **Remove** someone from the team.
   - **Rename team**.
   - **Delete team**: its members are left on no team (unless they're on another). No shifts or other history are affected.
+
+---
+
+## Site Broadcast
+![A broadcast in place](images/admin-broadcast.png)
+
+Use this to tell everyone something right now — "clock out by 4, the server goes down at 5."
+
+**Site Broadcast** sits in the top bar, just left of your name. Only admins see it. Click it, type your message and click **OK**. The message appears as a bar at the bottom of the page:
+
+- **Everyone sees it**, on every page, including people who aren't logged in yet — it shows on the login page too.
+- **People already using the app** get it within about 15 seconds, without reloading.
+- Keep it **under 200 characters**. Cancelling the box, or leaving it empty, sends nothing.
+
+There's only ever one broadcast. Sending a new one replaces the old one.
+
+Once a broadcast is up, the button reads **Dismiss Broadcast**. Click it to take the message down, again within about 15 seconds for everyone. Any admin can dismiss any broadcast, not just the one who sent it.
+
+**Stopping or restarting the server also clears it** (`npm stop`, `npm run restart`). The message is only held in memory, never saved, so it never outlives the server and there's no history of past broadcasts.
 
 ---
 
