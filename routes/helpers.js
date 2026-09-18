@@ -26,6 +26,14 @@ export function safeRedirect(value, fallback) {
   return /^\/(portal|manage)(\/|\?|$)/.test(url) ? url : fallback;
 }
 
+// Any page on this site from a form's `back` field, or `fallback`. Never another site.
+// For forms like the header's broadcast buttons, which submit from every page.
+export function safePath(value, fallback) {
+  const url = String(value ?? "");
+  // No backslashes: browsers read a leading "/\" the same as "//", i.e. another site.
+  return /^\/(?!\/)[\w\-./?=&%]*$/.test(url) ? url : fallback;
+}
+
 // Keeps the current range if it already includes `date`, otherwise jumps to that day.
 export function rangeIncluding(range, date) {
   return date >= range.from && date <= range.to ? range : { from: date, to: date };

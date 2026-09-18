@@ -672,6 +672,10 @@ code { font-family: var(--font-mono); font-size: 0.9em; }
 
 .topbar-actions { display: flex; align-items: center; gap: 0.5rem; }
 
+/* Site Broadcast / Dismiss Broadcast, admins only (views/partials/nav.ejs) */
+.broadcast-control { margin: 0; }
+.broadcast-control[hidden] { display: none; }
+
 /* Account menu under your name (views/partials/nav.ejs) */
 .user-menu { position: relative; }
 .user-menu > summary { list-style: none; color: var(--text); }
@@ -928,6 +932,26 @@ input, select, textarea {
 }
 .alert-error { background: var(--error-bg); border-color: var(--danger); }
 .alert-warn { background: var(--warn-bg); border-color: var(--status-break); }
+
+/* Site broadcast: an admin's message, pinned to every page until they dismiss it
+   or the server restarts (broadcast.js, views/partials/nav.ejs). */
+.broadcast {
+  position: fixed;
+  z-index: 50; /* over the page, under the Terminal style's scanlines */
+  left: 50%;
+  bottom: var(--space);
+  transform: translateX(-50%);
+  max-width: min(var(--content-width), calc(100vw - var(--space) * 2));
+  padding: 0.65rem 1.1rem;
+  background: var(--warn-bg);
+  border: var(--border-width) solid var(--status-break);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-pop);
+}
+.broadcast[hidden] { display: none; }
+.broadcast-message { margin: 0; text-align: center; }
+/* The toast is fixed, so on a short page it would sit over the footer. */
+body:has(.broadcast:not([hidden])) { padding-bottom: 4.5rem; }
 
 
 /* Sub-navigation tabs (e.g. Admin: Accounts / Settings) */
@@ -1268,6 +1292,7 @@ h3 { font-size: 1rem; }
   .user-name { max-width: 8rem; }
   .topbar-links { order: 3; flex-basis: 100%; }
   .range-form .field { width: 100%; }
+  .broadcast { padding: 0.6rem 0.8rem; }
 }
 
 
@@ -1338,7 +1363,7 @@ h3 { font-size: 1rem; }
      otherwise paint the page margins dark. */
   html[data-theme] { color-scheme: light; }
   html, body { background: #ffffff; }
-  .topbar, .footer, .no-print { display: none !important; }
+  .topbar, .footer, .no-print, .broadcast { display: none !important; }
   body::before, body::after, html::after { display: none !important; } /* no background layers or Terminal scanlines on paper */
   .container { max-width: none; padding: 0; }
   .timesheet { border: 0; border-radius: 0; padding: 0; }

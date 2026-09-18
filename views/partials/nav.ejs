@@ -1,4 +1,10 @@
 <% const currentUser = locals.user; const currentPath = locals.path || ""; %>
+<%# The site broadcast. Always here so /broadcast.js has something to fill in when one
+    starts while the page is open; empty and hidden until then. %>
+<div class="broadcast" id="broadcast" data-id="<%= locals.broadcast ? broadcast.id : "" %>"<%- locals.broadcast ? "" : " hidden" %>>
+  <p class="broadcast-message"><%= locals.broadcast ? broadcast.message : "" %></p>
+</div>
+<script src="/broadcast.js" defer></script>
 <header class="topbar">
   <div class="topbar-inner">
     <a class="brand" href="/"><%= appConfig.name %></a>
@@ -18,6 +24,19 @@
 
     <div class="topbar-actions">
       <% if (currentUser) { %>
+        <% if (isAdmin(currentUser)) { %>
+          <%# Both buttons are rendered, one hidden: /broadcast.js swaps them when another
+              admin starts or dismisses a broadcast, so the page needn't reload. %>
+          <form method="post" action="/broadcast" class="broadcast-control" data-broadcast-start<%- locals.broadcast ? " hidden" : "" %>>
+            <input type="hidden" name="back" value="<%= currentPath %>">
+            <input type="hidden" name="message">
+            <button class="btn btn-ghost btn-small">Site Broadcast</button>
+          </form>
+          <form method="post" action="/broadcast/dismiss" class="broadcast-control" data-broadcast-stop<%- locals.broadcast ? "" : " hidden" %>>
+            <input type="hidden" name="back" value="<%= currentPath %>">
+            <button class="btn btn-ghost btn-small">Dismiss Broadcast</button>
+          </form>
+        <% } %>
         <%# Account menu. <details> opens and closes without JavaScript; the script below
             just closes it on an outside click or Escape. %>
         <details class="user-menu">

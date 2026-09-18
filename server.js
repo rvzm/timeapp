@@ -7,6 +7,7 @@ import { app_config, server_config, session_config, cornershot_config } from "./
 import * as db from "./db.js";
 import * as time from "./time.js";
 import { getSettings } from "./settings.js";
+import { getBroadcast } from "./broadcast.js";
 import * as permissions from "./permissions.js";
 import { loadUser } from "./auth.js";
 import { KIND_LABELS, REQUEST_STATUS_LABELS, pendingRequestsFor } from "./requests.js";
@@ -21,6 +22,7 @@ import accountRoutes from "./routes/account.js";
 import notesRoutes from "./routes/notes.js";
 import manageRoutes from "./routes/manage.js";
 import adminRoutes from "./routes/admin.js";
+import broadcastRoutes from "./routes/broadcast.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -84,10 +86,13 @@ app.use((req, res, next) => {
   res.locals.theme = themeFor(req.user, getSettings());
   // For the badge on the Manage link.
   res.locals.pendingRequestCount = permissions.isManagerOrAdmin(req.user) ? pendingRequestsFor(req.user).length : 0;
+  // The site broadcast, if an admin has one up. Everyone sees it, logged in or not.
+  res.locals.broadcast = getBroadcast();
   next();
 });
 
 app.use(authRoutes);
+app.use(broadcastRoutes);
 app.use(clockRoutes);
 app.use(notesRoutes);
 app.use(accountRoutes);
