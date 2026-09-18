@@ -78,7 +78,7 @@ Good to know:
 ---
 
 ## Assign shifts
-The person's **Schedule** tab lists their assigned shifts from the last 2 weeks and the next 4, with **When**, **Hours**, **Attendance** and any **Note**. Click a row to select it.
+The person's **Schedule** tab lists their assigned shifts from the last 2 weeks and the next 4, with **When**, **Hours**, **Attendance** and any **Note**. The list is split into weeks, each headed e.g. "Week of Sun, Sep 20, 2026 – Sat, Sep 26, 2026 · 2 shifts · 16h 00m". Weeks with nothing assigned are skipped, and weeks start on the day set in **Admin → Settings**. Click a row to select it.
 
 Under **Modify schedule** the selected shift is shown as "Selected: Mon, Sep 21, 2026, 9:00 AM – 5:00 PM · 8h 00m", with three buttons:
 

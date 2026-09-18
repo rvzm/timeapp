@@ -118,6 +118,20 @@ function renderShiftsTab(req, res, target, { range, error = null, form = null, s
   }, statusCode);
 }
 
+// The assignments split into the weeks they start in, oldest first:
+// [{ from, to, assignments, workedMs }]. Weeks with nothing assigned are left out.
+function scheduleWeeks(assignments) {
+  const { weekStart } = getSettings();
+  const byWeek = Map.groupBy(assignments, (a) => time.weekRange(time.localDate(a.start_at), weekStart).from);
+
+  return [...byWeek].map(([weekFrom, list]) => ({
+    from: weekFrom,
+    to: time.addDays(weekFrom, 6),
+    assignments: list,
+    totalMs: list.reduce((total, a) => total + (Date.parse(a.end_at) - Date.parse(a.start_at)), 0),
+  })).sort((a, b) => a.from.localeCompare(b.from));
+}
+
 // Schedule: mandatory shifts from two weeks back to four weeks ahead, plus the three
 // dialogs that change them. `open` says which dialog to reopen after an error
 // ("add", "weekly" or "modify"), and `selected` which shift the list has picked.
@@ -128,9 +142,11 @@ function renderScheduleTab(req, res, target, {
   const today = time.localDate();
   const [from] = time.dayRangeUtc(time.addDays(today, -14));
   const [, to] = time.dayRangeUtc(time.addDays(today, 28));
+  const schedule = withAttendance(target.id, db.listScheduledForUser(target.id, from, to));
 
   renderEmployeeTab(res, target, "employee-schedule", {
-    schedule: withAttendance(target.id, db.listScheduledForUser(target.id, from, to)),
+    schedule,
+    weeks: scheduleWeeks(schedule),
     canSchedule: canManageSchedule(req.user, target),
     added: statusCode === 200 ? Number(req.query.added) || null : null,
     scheduleOpen: open,

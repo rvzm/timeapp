@@ -44,30 +44,41 @@
         <thead>
           <tr><th></th><th>When</th><th>Hours</th><th>Attendance</th><th>Note</th></tr>
         </thead>
-        <tbody>
-          <% schedule.forEach((a) => { %>
-            <tr>
-              <td>
-                <input type="radio" name="selected_shift" value="<%= a.id %>"
-                       aria-label="Select <%= fmt.formatRange(a.start_at, a.end_at) %>"
-                       data-start="<%= fmt.toDatetimeLocal(a.start_at) %>"
-                       data-end="<%= fmt.toDatetimeLocal(a.end_at) %>"
-                       data-note="<%= a.note %>"
-                       data-range="<%= fmt.formatRange(a.start_at, a.end_at) %>"
-                       data-hours="<%= hours(a) %>"
-                       <%- String(a.id) === String(selectedId) ? " checked" : "" %>
-                       <%- canSchedule ? "" : " disabled" %>>
-              </td>
-              <td><%= fmt.formatRange(a.start_at, a.end_at) %></td>
-              <td class="nowrap"><%= hours(a) %></td>
-              <td><%- include("../partials/attendance", { attendance: a.attendance }) %></td>
-              <td>
-                <%= a.note %>
-                <div class="muted small">Assigned by <%= a.assigned_by_name %></div>
-              </td>
+        <% weeks.forEach((week) => { %>
+          <tbody class="week-section">
+            <tr class="week-head">
+              <th colspan="5">
+                Week of <%= fmt.formatDay(week.from) %> – <%= fmt.formatDay(week.to) %>
+                <span class="muted small">
+                  · <%= week.assignments.length %> shift<%= week.assignments.length === 1 ? "" : "s" %>
+                  · <%= fmt.formatDuration(week.totalMs) %>
+                </span>
+              </th>
             </tr>
-          <% }) %>
-        </tbody>
+            <% week.assignments.forEach((a) => { %>
+              <tr>
+                <td>
+                  <input type="radio" name="selected_shift" value="<%= a.id %>"
+                         aria-label="Select <%= fmt.formatRange(a.start_at, a.end_at) %>"
+                         data-start="<%= fmt.toDatetimeLocal(a.start_at) %>"
+                         data-end="<%= fmt.toDatetimeLocal(a.end_at) %>"
+                         data-note="<%= a.note %>"
+                         data-range="<%= fmt.formatRange(a.start_at, a.end_at) %>"
+                         data-hours="<%= hours(a) %>"
+                         <%- String(a.id) === String(selectedId) ? " checked" : "" %>
+                         <%- canSchedule ? "" : " disabled" %>>
+                </td>
+                <td><%= fmt.formatRange(a.start_at, a.end_at) %></td>
+                <td class="nowrap"><%= hours(a) %></td>
+                <td><%- include("../partials/attendance", { attendance: a.attendance }) %></td>
+                <td>
+                  <%= a.note %>
+                  <div class="muted small">Assigned by <%= a.assigned_by_name %></div>
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        <% }) %>
       </table>
     </div>
   <% } %>

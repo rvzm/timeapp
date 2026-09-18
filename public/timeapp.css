@@ -1008,9 +1008,20 @@ legend { font-weight: 700; padding: 0; margin-bottom: 0.6rem; }
 .modal > form + form { padding: 0 calc(var(--space) * 1.25) calc(var(--space) * 1.25); }
 .modal .form-grid { gap: 0.75rem; }
 
+/* Week headings inside the schedule table */
+.week-section + .week-section .week-head th { padding-top: calc(var(--space) * 1.25); }
+.week-head th {
+  text-align: left;
+  font-family: var(--font-heading);
+  text-transform: var(--heading-transform);
+  letter-spacing: var(--heading-tracking);
+  border-bottom: var(--border-width) solid var(--edge);
+}
+.week-head th .small { text-transform: none; letter-spacing: normal; }
+
 /* A table whose rows are picked with a radio button (the employee's schedule) */
-.select-table tbody tr { cursor: pointer; }
-.select-table tbody tr:hover { background: var(--surface-2); }
+.select-table tbody tr:not(.week-head) { cursor: pointer; }
+.select-table tbody tr:not(.week-head):hover { background: var(--surface-2); }
 .select-table input[type="radio"] { width: auto; margin: 0; }
 .select-table td:first-child, .select-table th:first-child { width: 1%; }
 
