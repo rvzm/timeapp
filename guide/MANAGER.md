@@ -78,18 +78,30 @@ Good to know:
 ---
 
 ## Assign shifts
-On the person's **Schedule** tab, under **Assign a shift**:
+The person's **Schedule** tab lists their assigned shifts from the last 2 weeks and the next 4, with **When**, **Hours**, **Attendance** and any **Note**. Click a row to select it.
+
+Under **Modify schedule** the selected shift is shown as "Selected: Mon, Sep 21, 2026, 9:00 AM – 5:00 PM · 8h 00m", with three buttons:
+
+**Add Single Shift**
 1. Enter when it **Starts** and **Ends** (at most 24 hours), and an optional **Note** such as "Inventory day".
 2. Click **Assign shift**.
+
+**Add Weekly Shift** assigns the same hours on the days you pick, week after week:
+1. Tick the **Days**, e.g. Mon, Wed and Fri.
+2. Enter the **Starts** and **Ends** times. An end time earlier than the start means the shift runs past midnight.
+3. Pick the date to take the **First week from**, and how many weeks to **Repeat for** (1–26).
+4. Click **Assign shifts**. Each one becomes an ordinary assigned shift, so you can change or remove them one at a time. The page then says e.g. "6 shifts assigned."
+
+**Modify Shift** (only with a shift selected) changes that shift's **Starts**, **Ends** and **Note**. Click **Save changes**, or **Remove shift** to take it off the schedule.
 
 If something looks off, TimeApp asks you to **Check before assigning** instead of saving right away:
 - **"Overlaps another assigned shift: …"**
 - **"Unavailable on Mondays."**: they haven't marked that day as available.
 - **"Outside availability on Monday (available 8:00 AM – 6:00 PM)."**
 
-If you still want it, tick **Assign anyway** and click **Assign shift** again. Availability is only checked if the person has set it.
+For a weekly shift, each date with a problem is listed (the first 10, then "…and 3 more"). If you still want it, tick **Assign anyway** and submit again. Availability is only checked if the person has set it.
 
-**Remove** takes an assigned shift away. You can't assign shifts to yourself: "Only an admin can assign your own shifts."
+You can't assign shifts to yourself: "Only an admin can assign your own shifts." Changing the schedule needs JavaScript in your browser.
 
 **Attendance** is worked out automatically from the person's punches:
 

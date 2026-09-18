@@ -14,7 +14,7 @@ import { readTeamFilter, inTeamFilter } from "../teams.js";
 import { getSettings, saveSettings, readBreakLimitsForm, breakPolicyFor } from "../settings.js";
 import { availabilityWeek } from "../availability.js";
 import { reviewRequest, pendingByPunch, pendingRequestsFor } from "../requests.js";
-import { withAttendance, readAssignmentForm, findConflicts } from "../schedule.js";
+import { withAttendance, readAssignmentForm, readWeeklyForm, findConflicts } from "../schedule.js";
 import { buildTimesheet, readExportQuery, exportFilename, weekSoFar } from "../timesheet.js";
 import { toId, notFound, readRange, rangeIncluding, safeRedirect } from "./helpers.js";
 
@@ -118,8 +118,13 @@ function renderShiftsTab(req, res, target, { range, error = null, form = null, s
   }, statusCode);
 }
 
-// Schedule: mandatory shifts from two weeks back to four weeks ahead, plus the assign form.
-function renderScheduleTab(req, res, target, { form = null, error = null, conflicts = [], statusCode = 200 } = {}) {
+// Schedule: mandatory shifts from two weeks back to four weeks ahead, plus the three
+// dialogs that change them. `open` says which dialog to reopen after an error
+// ("add", "weekly" or "modify"), and `selected` which shift the list has picked.
+function renderScheduleTab(req, res, target, {
+  open = null, error = null, conflicts = [], selected = null,
+  addForm = null, weeklyForm = null, modifyForm = null, statusCode = 200,
+} = {}) {
   const today = time.localDate();
   const [from] = time.dayRangeUtc(time.addDays(today, -14));
   const [, to] = time.dayRangeUtc(time.addDays(today, 28));
@@ -127,9 +132,14 @@ function renderScheduleTab(req, res, target, { form = null, error = null, confli
   renderEmployeeTab(res, target, "employee-schedule", {
     schedule: withAttendance(target.id, db.listScheduledForUser(target.id, from, to)),
     canSchedule: canManageSchedule(req.user, target),
-    scheduleForm: form ?? { start: "", end: "", note: "", assignAnyway: false },
+    added: statusCode === 200 ? Number(req.query.added) || null : null,
+    scheduleOpen: open,
     scheduleError: error,
     scheduleConflicts: conflicts,
+    selectedId: selected,
+    addForm: addForm ?? { start: "", end: "", note: "", assignAnyway: false },
+    weeklyForm: weeklyForm ?? { days: [], start: "09:00", end: "17:00", from: today, weeks: "4", note: "", assignAnyway: false },
+    modifyForm,
   }, statusCode);
 }
 
@@ -269,20 +279,30 @@ router.post("/punches/:id", (req, res) => {
 // Managers assign employees; admins assign anyone. Nobody but an admin assigns a manager.
 // ===================================================================
 
-router.post("/employees/:id/schedule", (req, res) => {
-  const target = loadEmployee(req, res, req.params.id);
-  if (!target) return;
+// The employee whose schedule the current user may change, or null after answering
+// (403 for their own schedule, 404 for anyone they can't manage).
+function loadForSchedule(req, res, id) {
+  const target = loadEmployee(req, res, id);
+  if (!target) return null;
   if (!canManageSchedule(req.user, target)) {
-    return res.status(403).render("error", { title: "Not allowed", message: "Only an admin can assign your own shifts." });
+    res.status(403).render("error", { title: "Not allowed", message: "Only an admin can assign your own shifts." });
+    return null;
   }
+  return target;
+}
+
+// Add Single Shift.
+router.post("/employees/:id/schedule", (req, res) => {
+  const target = loadForSchedule(req, res, req.params.id);
+  if (!target) return;
 
   const { form, assignment, error } = readAssignmentForm(req.body);
-  if (error) return renderScheduleTab(req, res, target, { form, error, statusCode: 400 });
+  if (error) return renderScheduleTab(req, res, target, { open: "add", addForm: form, error, statusCode: 400 });
 
   // Conflicts don't block, but they have to be confirmed with "Assign anyway".
   const conflicts = findConflicts(target.id, assignment.start, assignment.end);
   if (conflicts.length && !form.assignAnyway) {
-    return renderScheduleTab(req, res, target, { form, conflicts, statusCode: 409 });
+    return renderScheduleTab(req, res, target, { open: "add", addForm: form, conflicts, statusCode: 409 });
   }
 
   db.insertScheduledShift({
@@ -296,13 +316,73 @@ router.post("/employees/:id/schedule", (req, res) => {
   res.redirect(`/manage/employees/${target.id}/schedule`);
 });
 
-router.post("/schedule/:id/delete", (req, res) => {
-  const assignment = db.getScheduledShift(toId(req.params.id));
-  const target = assignment && db.getUserById(assignment.user_id);
-  if (!assignment || !canManageSchedule(req.user, target)) return notFound(res, "assigned shift");
+// Add Weekly Shift: the same shift on chosen weekdays, repeated for a number of weeks.
+// Every occurrence becomes an ordinary assigned shift, so each can be changed on its own.
+router.post("/employees/:id/schedule/weekly", (req, res) => {
+  const target = loadForSchedule(req, res, req.params.id);
+  if (!target) return;
 
-  db.deleteScheduledShift(assignment.id);
-  res.redirect(safeRedirect(req.body.back, `/manage/employees/${target.id}/schedule`));
+  const { form, occurrences, error } = readWeeklyForm(req.body);
+  if (error) return renderScheduleTab(req, res, target, { open: "weekly", weeklyForm: form, error, statusCode: 400 });
+
+  const conflicts = occurrences.flatMap((shift) =>
+    findConflicts(target.id, shift.start, shift.end).map((conflict) => `${time.formatDay(time.localDate(shift.start))}: ${conflict}`));
+  if (conflicts.length && !form.assignAnyway) {
+    return renderScheduleTab(req, res, target, { open: "weekly", weeklyForm: form, conflicts, statusCode: 409 });
+  }
+
+  const createdAt = time.nowIso();
+  db.db.transaction(() => {
+    for (const shift of occurrences) {
+      db.insertScheduledShift({
+        userId: target.id,
+        startAt: shift.start,
+        endAt: shift.end,
+        note: shift.note,
+        assignedBy: req.user.id,
+        createdAt,
+      });
+    }
+  })();
+  res.redirect(`/manage/employees/${target.id}/schedule?added=${occurrences.length}`);
+});
+
+// The assigned shift with this id, if the current user may change it. Otherwise 404 and null.
+function loadAssignment(req, res, id) {
+  const assignment = db.getScheduledShift(toId(id));
+  const target = assignment && db.getUserById(assignment.user_id);
+  if (!assignment || !canManageSchedule(req.user, target)) {
+    notFound(res, "assigned shift");
+    return null;
+  }
+  return { assignment, target };
+}
+
+// Modify Shift: new times and note for one assigned shift.
+router.post("/schedule/:id", (req, res) => {
+  const found = loadAssignment(req, res, req.params.id);
+  if (!found) return;
+  const { assignment, target } = found;
+
+  const reopen = { open: "modify", selected: assignment.id };
+  const { form, assignment: changes, error } = readAssignmentForm(req.body);
+  if (error) return renderScheduleTab(req, res, target, { ...reopen, modifyForm: form, error, statusCode: 400 });
+
+  const conflicts = findConflicts(target.id, changes.start, changes.end, assignment.id);
+  if (conflicts.length && !form.assignAnyway) {
+    return renderScheduleTab(req, res, target, { ...reopen, modifyForm: form, conflicts, statusCode: 409 });
+  }
+
+  db.updateScheduledShift(assignment.id, { startAt: changes.start, endAt: changes.end, note: changes.note });
+  res.redirect(`/manage/employees/${target.id}/schedule`);
+});
+
+router.post("/schedule/:id/delete", (req, res) => {
+  const found = loadAssignment(req, res, req.params.id);
+  if (!found) return;
+
+  db.deleteScheduledShift(found.assignment.id);
+  res.redirect(safeRedirect(req.body.back, `/manage/employees/${found.target.id}/schedule`));
 });
 
 // The week's assignments for everyone the current user manages, one list per day.

@@ -60,7 +60,7 @@
     </div>
 
     <%# Opened by public/team.js. The tabs filter one list, so ticks carry over between them. %>
-    <dialog id="add-members" class="card member-dialog" aria-labelledby="add-members-title">
+    <dialog id="add-members" class="card modal" aria-labelledby="add-members-title">
       <form method="post" action="/admin/teams/<%= team.id %>/members" class="stack">
         <h2 id="add-members-title">Add members to <%= team.name %></h2>
 

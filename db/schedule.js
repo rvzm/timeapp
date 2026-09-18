@@ -18,6 +18,7 @@ const stmt = {
   insertScheduledShift: db.prepare(`
     INSERT INTO scheduled_shifts (user_id, start_at, end_at, note, assigned_by, created_at)
     VALUES (@userId, @startAt, @endAt, @note, @assignedBy, @createdAt)`),
+  updateScheduledShift: db.prepare("UPDATE scheduled_shifts SET start_at = @startAt, end_at = @endAt, note = @note WHERE id = @id"),
   deleteScheduledShift: db.prepare("DELETE FROM scheduled_shifts WHERE id = ?"),
 };
 
@@ -26,6 +27,9 @@ export const getScheduledShift = (id) => stmt.getScheduledShift.get(id);
 export const listScheduledForUser = (userId, fromIso, toIso) => stmt.listScheduledForUser.all(userId, toIso, fromIso);
 export const listScheduledBetween = (fromIso, toIso) => stmt.listScheduledBetween.all(toIso, fromIso);
 export const deleteScheduledShift = (id) => stmt.deleteScheduledShift.run(id);
+// Changing an assigned shift keeps who assigned it; only the times and note move.
+export const updateScheduledShift = (id, { startAt, endAt, note = "" }) =>
+  stmt.updateScheduledShift.run({ id, startAt, endAt, note });
 
 export function insertScheduledShift({ userId, startAt, endAt, note = "", assignedBy, createdAt }) {
   return Number(stmt.insertScheduledShift.run({ userId, startAt, endAt, note, assignedBy, createdAt }).lastInsertRowid);

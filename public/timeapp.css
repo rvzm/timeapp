@@ -960,9 +960,10 @@ legend { font-weight: 700; padding: 0; margin-bottom: 0.6rem; }
 .checkbox { display: flex; align-items: center; gap: 0.5rem; }
 .checkbox input { width: auto; }
 
-/* Dialogs (e.g. the team page's Add members). `.card` gives them each style's look.
+/* Dialogs (Add members, and the schedule's add/modify forms). `.card` gives them each
+   style's look; `.modal` alone is enough where a dialog shouldn't look like a card.
    The padding is on the form, so a click on the dialog element itself means the backdrop. */
-.member-dialog {
+.modal {
   width: min(32rem, calc(100vw - 2rem));
   max-height: min(40rem, calc(100vh - 2rem));
   padding: 0;
@@ -970,9 +971,9 @@ legend { font-weight: 700; padding: 0; margin-bottom: 0.6rem; }
   color: var(--text);
   box-shadow: var(--shadow-big);
 }
-.member-dialog::backdrop { background: rgba(0, 0, 0, 0.45); }
-.member-dialog > form { padding: calc(var(--space) * 1.25); }
-.member-dialog h2 { margin: 0; }
+.modal::backdrop { background: rgba(0, 0, 0, 0.45); }
+.modal > form { padding: calc(var(--space) * 1.25); }
+.modal h2 { margin: 0; }
 
 .dialog-tabs { display: flex; flex-wrap: wrap; gap: 0.25rem; border-bottom: var(--border-width) solid var(--border); }
 .dialog-tabs button {
@@ -1003,7 +1004,19 @@ legend { font-weight: 700; padding: 0; margin-bottom: 0.6rem; }
 .member-list .checkbox { padding: 0.5rem 0.75rem; cursor: pointer; }
 .member-list .checkbox:hover { background: var(--surface-2); }
 .member-list .checkbox > span { display: flex; flex-direction: column; }
-.member-dialog .hint { margin: 0; }
+.modal .hint { margin: 0; }
+.modal > form + form { padding: 0 calc(var(--space) * 1.25) calc(var(--space) * 1.25); }
+.modal .form-grid { gap: 0.75rem; }
+
+/* A table whose rows are picked with a radio button (the employee's schedule) */
+.select-table tbody tr { cursor: pointer; }
+.select-table tbody tr:hover { background: var(--surface-2); }
+.select-table input[type="radio"] { width: auto; margin: 0; }
+.select-table td:first-child, .select-table th:first-child { width: 1%; }
+
+/* The weekly shift's day checkboxes */
+.weekday-picker { display: flex; flex-wrap: wrap; gap: 0.75rem; border: 0; padding: 0; margin: 0; }
+.weekday-picker legend { padding: 0; font-weight: 600; }
 .alert-ok { background: color-mix(in srgb, var(--status-in) 12%, transparent); border-color: var(--status-in); }
 
 /* Label/value lists, e.g. profile details and availability */

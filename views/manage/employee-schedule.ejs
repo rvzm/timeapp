@@ -1,60 +1,207 @@
-<%# Manage Employee: Schedule tab (mandatory shifts). %>
+<%# Manage Employee: Schedule tab (mandatory shifts).
+    The list picks one shift; Modify Schedule's buttons open the add/weekly/modify dialogs. %>
 <%- include("../partials/head") %>
 <%- include("../partials/nav") %>
 <%- include("../partials/employee-head", { current: "schedule" }) %>
 
+<% const base = `/manage/employees/${target.id}`; %>
+<% const hours = (a) => fmt.formatDuration(Date.parse(a.end_at) - Date.parse(a.start_at)); %>
+<%# The error and conflicts belong to whichever dialog was submitted (scheduleOpen). %>
+<% const problems = (which) => { %>
+  <% if (scheduleOpen === which && scheduleError) { %>
+    <p class="alert alert-error"><%= scheduleError %></p>
+  <% } %>
+  <% if (scheduleOpen === which && scheduleConflicts.length) { %>
+    <div class="alert alert-warn">
+      <p><strong>Check before assigning:</strong></p>
+      <ul>
+        <% scheduleConflicts.slice(0, 10).forEach((conflict) => { %><li><%= conflict %></li><% }) %>
+        <% if (scheduleConflicts.length > 10) { %><li>…and <%= scheduleConflicts.length - 10 %> more.</li><% } %>
+      </ul>
+    </div>
+  <% } %>
+<% }; %>
+<% const assignAnyway = (which) => { %>
+  <% if (scheduleOpen === which && scheduleConflicts.length) { %>
+    <label class="checkbox">
+      <input type="checkbox" name="assign_anyway">
+      <span>Assign anyway</span>
+    </label>
+  <% } %>
+<% }; %>
+
 <section class="card">
   <h2>Mandatory shifts</h2>
+  <% if (added) { %>
+    <p class="alert alert-ok"><%= added %> shifts assigned.</p>
+  <% } %>
+
   <% if (schedule.length === 0) { %>
     <p class="muted">No shifts assigned in the last 2 weeks or the next 4.</p>
   <% } else { %>
-    <%- include("../partials/schedule-list", {
-      assignments: schedule,
-      canDelete: () => canSchedule,
-      back: `/manage/employees/${target.id}/schedule`,
-    }) %>
+    <div class="table-wrap">
+      <table class="table select-table">
+        <thead>
+          <tr><th></th><th>When</th><th>Hours</th><th>Attendance</th><th>Note</th></tr>
+        </thead>
+        <tbody>
+          <% schedule.forEach((a) => { %>
+            <tr>
+              <td>
+                <input type="radio" name="selected_shift" value="<%= a.id %>"
+                       aria-label="Select <%= fmt.formatRange(a.start_at, a.end_at) %>"
+                       data-start="<%= fmt.toDatetimeLocal(a.start_at) %>"
+                       data-end="<%= fmt.toDatetimeLocal(a.end_at) %>"
+                       data-note="<%= a.note %>"
+                       data-range="<%= fmt.formatRange(a.start_at, a.end_at) %>"
+                       data-hours="<%= hours(a) %>"
+                       <%- String(a.id) === String(selectedId) ? " checked" : "" %>
+                       <%- canSchedule ? "" : " disabled" %>>
+              </td>
+              <td><%= fmt.formatRange(a.start_at, a.end_at) %></td>
+              <td class="nowrap"><%= hours(a) %></td>
+              <td><%- include("../partials/attendance", { attendance: a.attendance }) %></td>
+              <td>
+                <%= a.note %>
+                <div class="muted small">Assigned by <%= a.assigned_by_name %></div>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
   <% } %>
 </section>
 
-<section class="card">
-  <h2>Assign a shift</h2>
-  <% if (canSchedule) { %>
-    <% if (scheduleError) { %>
-      <p class="alert alert-error"><%= scheduleError %></p>
-    <% } %>
-    <% if (scheduleConflicts.length) { %>
-      <div class="alert alert-warn">
-        <p><strong>Check before assigning:</strong></p>
-        <ul>
-          <% scheduleConflicts.forEach((conflict) => { %><li><%= conflict %></li><% }) %>
-        </ul>
-      </div>
-    <% } %>
-    <form method="post" action="/manage/employees/<%= target.id %>/schedule" class="form-grid">
-      <label class="field">
-        <span>Starts</span>
-        <input type="datetime-local" name="start" value="<%= scheduleForm.start %>" required>
-      </label>
-      <label class="field">
-        <span>Ends</span>
-        <input type="datetime-local" name="end" value="<%= scheduleForm.end %>" required>
-      </label>
-      <label class="field field-wide">
-        <span>Note <span class="hint">(optional)</span></span>
-        <input name="note" value="<%= scheduleForm.note %>" maxlength="200" placeholder="e.g. Inventory day">
-      </label>
-      <% if (scheduleConflicts.length) { %>
-        <label class="checkbox field-wide">
-          <input type="checkbox" name="assign_anyway">
-          <span>Assign anyway</span>
-        </label>
-      <% } %>
-      <div class="form-actions field-wide">
-        <button class="btn btn-primary">Assign shift</button>
-      </div>
-    </form>
-  <% } else { %>
+<section class="card" id="modify-schedule">
+  <h2>Modify schedule</h2>
+  <% if (!canSchedule) { %>
     <p class="muted small">Only an admin can assign your own shifts.</p>
+  <% } else { %>
+    <%# Without the dialogs (no JavaScript) the messages would have nowhere to show. %>
+    <% if (scheduleError) { %>
+      <noscript><p class="alert alert-error"><%= scheduleError %></p></noscript>
+    <% } %>
+
+    <p class="muted" data-selection-empty>No shift selected. Pick one above to change it.</p>
+    <p data-selection hidden>
+      Selected: <strong data-selection-range></strong> · <span data-selection-hours></span>
+    </p>
+
+    <div class="form-actions">
+      <button type="button" class="btn btn-primary" data-open-dialog="add-shift">Add Single Shift</button>
+      <button type="button" class="btn btn-primary" data-open-dialog="add-weekly">Add Weekly Shift</button>
+      <button type="button" class="btn" data-open-dialog="modify-shift" data-needs-selection disabled>Modify Shift</button>
+    </div>
+    <noscript><p class="muted small">Changing the schedule needs JavaScript.</p></noscript>
+
+    <%# ----- Add Single Shift ----- %>
+    <dialog id="add-shift" class="modal" aria-labelledby="add-shift-title"<%- scheduleOpen === "add" ? " data-open-on-load" : "" %>>
+      <form method="post" action="<%= base %>/schedule" class="stack">
+        <h2 id="add-shift-title">Add a single shift</h2>
+        <% problems("add"); %>
+        <div class="form-grid">
+          <label class="field">
+            <span>Starts</span>
+            <input type="datetime-local" name="start" value="<%= addForm.start %>" required>
+          </label>
+          <label class="field">
+            <span>Ends</span>
+            <input type="datetime-local" name="end" value="<%= addForm.end %>" required>
+          </label>
+          <label class="field field-wide">
+            <span>Note <span class="hint">(optional)</span></span>
+            <input name="note" value="<%= addForm.note %>" maxlength="200" placeholder="e.g. Inventory day">
+          </label>
+        </div>
+        <% assignAnyway("add"); %>
+        <div class="form-actions">
+          <button class="btn btn-primary">Assign shift</button>
+          <button type="button" class="btn btn-ghost" data-close-dialog>Cancel</button>
+        </div>
+      </form>
+    </dialog>
+
+    <%# ----- Add Weekly Shift ----- %>
+    <dialog id="add-weekly" class="modal" aria-labelledby="add-weekly-title"<%- scheduleOpen === "weekly" ? " data-open-on-load" : "" %>>
+      <form method="post" action="<%= base %>/schedule/weekly" class="stack">
+        <h2 id="add-weekly-title">Add a weekly shift</h2>
+        <p class="muted small">The same hours on the days you pick, repeated week by week. Each one becomes its own assigned shift.</p>
+        <% problems("weekly"); %>
+        <fieldset class="weekday-picker">
+          <legend>Days</legend>
+          <% fmt.WEEKDAY_NAMES.forEach((name, day) => { %>
+            <label class="checkbox">
+              <input type="checkbox" name="days" value="<%= day %>"<%- weeklyForm.days.includes(String(day)) ? " checked" : "" %>>
+              <span><%= name.slice(0, 3) %></span>
+            </label>
+          <% }) %>
+        </fieldset>
+        <div class="form-grid">
+          <label class="field">
+            <span>Starts</span>
+            <input type="time" name="start" value="<%= weeklyForm.start %>" required>
+          </label>
+          <label class="field">
+            <span>Ends</span>
+            <input type="time" name="end" value="<%= weeklyForm.end %>" required>
+            <span class="hint">Earlier than the start means the shift runs past midnight.</span>
+          </label>
+          <label class="field">
+            <span>First week from</span>
+            <input type="date" name="from" value="<%= weeklyForm.from %>" required>
+          </label>
+          <label class="field">
+            <span>Repeat for</span>
+            <input type="number" name="weeks" value="<%= weeklyForm.weeks %>" min="1" max="26" required>
+            <span class="hint">Weeks (1–26).</span>
+          </label>
+          <label class="field field-wide">
+            <span>Note <span class="hint">(optional)</span></span>
+            <input name="note" value="<%= weeklyForm.note %>" maxlength="200" placeholder="e.g. Opening shift">
+          </label>
+        </div>
+        <% assignAnyway("weekly"); %>
+        <div class="form-actions">
+          <button class="btn btn-primary">Assign shifts</button>
+          <button type="button" class="btn btn-ghost" data-close-dialog>Cancel</button>
+        </div>
+      </form>
+    </dialog>
+
+    <%# ----- Modify Shift: the times and note of the selected shift, or remove it ----- %>
+    <dialog id="modify-shift" class="modal" aria-labelledby="modify-shift-title"<%- scheduleOpen === "modify" ? " data-open-on-load" : "" %>>
+      <form method="post" data-modify-form class="stack">
+        <h2 id="modify-shift-title">Modify shift</h2>
+        <p class="muted" data-selection-range></p>
+        <% problems("modify"); %>
+        <div class="form-grid">
+          <label class="field">
+            <span>Starts</span>
+            <input type="datetime-local" name="start" value="<%= modifyForm ? modifyForm.start : "" %>" required>
+          </label>
+          <label class="field">
+            <span>Ends</span>
+            <input type="datetime-local" name="end" value="<%= modifyForm ? modifyForm.end : "" %>" required>
+          </label>
+          <label class="field field-wide">
+            <span>Note <span class="hint">(optional)</span></span>
+            <input name="note" value="<%= modifyForm ? modifyForm.note : "" %>" maxlength="200">
+          </label>
+        </div>
+        <% assignAnyway("modify"); %>
+        <div class="form-actions">
+          <button class="btn btn-primary">Save changes</button>
+          <button type="button" class="btn btn-ghost" data-close-dialog>Cancel</button>
+        </div>
+      </form>
+      <form method="post" data-remove-form class="modal-footer"
+            data-question="Remove this assigned shift?" onsubmit="return confirm(this.dataset.question)">
+        <input type="hidden" name="back" value="<%= base %>/schedule">
+        <button class="btn btn-small btn-ghost-danger">Remove shift</button>
+      </form>
+    </dialog>
+    <script src="/schedule.js" defer></script>
   <% } %>
 </section>
 

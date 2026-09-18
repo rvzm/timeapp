@@ -8,6 +8,8 @@ import { loadShifts } from "./shifts.js";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const NOTE_MAX = 200;
+const MAX_WEEKS = 26;
+const TIME_RE = /^([01]\d|2[0-3]):([0-5]\d)$/;
 
 // ===================================================================
 // ===== Attendance =====
@@ -83,11 +85,58 @@ export function readAssignmentForm(body) {
   return { form, assignment: { start, end, note: form.note } };
 }
 
+// Validates the weekly (repeating) assign form: weekdays, a time of day, a first week,
+// and how many weeks to repeat. Returns { form } plus either { occurrences } (one
+// { start, end, note } per shift to create) or { error }.
+export function readWeeklyForm(body) {
+  const form = {
+    days: [body.days ?? []].flat().map(String),
+    start: String(body.start ?? ""),
+    end: String(body.end ?? ""),
+    from: String(body.from ?? ""),
+    weeks: String(body.weeks ?? ""),
+    note: String(body.note ?? "").trim(),
+    assignAnyway: body.assign_anyway === "on",
+  };
+  // Only "0".."6"; an empty or stray value must not read as Sunday.
+  const weekdays = form.days.filter((day) => /^[0-6]$/.test(day)).map(Number);
+  const weeks = Number(form.weeks);
+
+  if (weekdays.length === 0) return { form, error: "Pick at least one day of the week." };
+  if (!TIME_RE.test(form.start) || !TIME_RE.test(form.end)) return { form, error: "Enter a valid start and end time." };
+  if (form.end === form.start) return { form, error: "The end time must be after the start time." };
+  if (!time.isValidDate(form.from)) return { form, error: "Enter a valid date to start from." };
+  if (!Number.isInteger(weeks) || weeks < 1 || weeks > MAX_WEEKS) return { form, error: `Repeat for 1 to ${MAX_WEEKS} weeks.` };
+  if (form.note.length > NOTE_MAX) return { form, error: `Keep the note under ${NOTE_MAX} characters.` };
+
+  // An end time earlier than the start means the shift runs past midnight into the next day.
+  const overnight = form.end < form.start;
+  const occurrences = [];
+  for (let week = 0; week < weeks; week++) {
+    for (const weekday of weekdays) {
+      const date = time.addDays(firstDateOn(form.from, weekday), week * 7);
+      const start = time.fromDatetimeLocal(`${date}T${form.start}`);
+      const end = time.fromDatetimeLocal(`${overnight ? time.addDays(date, 1) : date}T${form.end}`);
+      // A DST jump can make a wall-clock time not exist on a given day; skip those.
+      if (start && end) occurrences.push({ start, end, note: form.note });
+    }
+  }
+  if (occurrences.length === 0) return { form, error: "That doesn't land on any shifts. Check the days and times." };
+  return { form, occurrences: occurrences.sort((a, b) => a.start.localeCompare(b.start)) };
+}
+
+// The first date on or after `date` that falls on `weekday` (0 = Sunday).
+function firstDateOn(date, weekday) {
+  return time.addDays(date, (weekday - time.weekdayOf(date) + 7) % 7);
+}
+
 // Reasons an assignment might be a mistake: it overlaps the employee's other assigned
 // shifts, or falls outside their weekly availability (if they've set it).
-// Returns a list of messages; empty means no conflicts.
-export function findConflicts(userId, startIso, endIso) {
+// Returns a list of messages; empty means no conflicts. `ignoreId` skips one existing
+// assignment, for when that's the one being changed.
+export function findConflicts(userId, startIso, endIso, ignoreId = null) {
   const conflicts = db.listScheduledForUser(userId, startIso, endIso)
+    .filter((other) => other.id !== ignoreId) // the shift being edited doesn't clash with itself
     .map((other) => `Overlaps another assigned shift: ${time.formatRange(other.start_at, other.end_at)}.`);
 
   const windows = db.listAvailability(userId);
