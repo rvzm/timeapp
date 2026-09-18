@@ -129,11 +129,14 @@ To restore, stop the server and run `npm run migrate`. You can point it at anoth
 ## Part 2: Your first 10 minutes as admin
 
 1. **Log in** with the account you created with `npm run seed`. Admins land on **Admin**.
+
+   ![The login page](images/login.webp)
 2. **Check Admin → Settings.** In particular:
    - **Timezone**: every time in the app uses it.
    - **Weeks start on**: affects weekly views and exports.
    - **Mode** under **Punch edit requests**: whether employees can ask for punch fixes, and whether a manager has to approve them.
    - **Failed logins**: how many wrong passwords in a row lock an account, and for how long. Locked accounts are unlocked under **Admin → Logins**, which also shows who's signed in.
+   - **Appearance and logins**: the default look for everyone, including **Default light or dark** and whether people get the sun/moon light/dark button in the top bar.
 
    Every field is explained in the [Admin guide](ADMIN.md#settings).
 3. **Set break rules** under **Manage → Break rules**: how many breaks per shift, and how long each can be before it's flagged. Leave a field blank for no limit.

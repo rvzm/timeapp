@@ -29,6 +29,7 @@ Guides for the people who use and run TimeApp are in [`guide/`](guide/):
 | [Employee](guide/EMPLOYEE.md) | Clocking in and out, your shifts, fixing punches, schedule, profile, and exports |
 | [Manager](guide/MANAGER.md) | Managing employees' punches, schedules, edit requests, and break rules |
 | [Admin](guide/ADMIN.md) | Accounts, roles, passwords, and app settings |
+| [Theme engine](guide/theme_engine/THEME_ENGINE.md) | Every style, color (light and dark) and background pictured, how looks are chosen, and adding your own |
 | [Appearance](guide/APPEARANCE.md) | Styles, colors, light/dark, and backgrounds | It is Vibe-Coded with Claude Code.
 
 Sometimes Claude Code is used to help with grouping Git commits properly after doing a lot of edits, as well as used for helping with edits and bugfixes.
@@ -85,6 +86,7 @@ Database changes run automatically when the app starts, so updating is just pull
 | `public/timeapp.css` | Styles. Tweak the "Configurable defaults" block at the top |
 | `themes.js` | Color themes and light/dark modes: the list, and which theme a page uses |
 | `public/export.js` | The timesheet's PDF and image buttons |
+| `public/mode-toggle.js` | The top-bar light/dark button |
 | `data/` | The SQLite database (created on first run) |
 
 # How it works
@@ -108,8 +110,8 @@ Database changes run automatically when the app starts, so updating is just pull
 - **Managing one employee.** Each employee's Manage page has tabs: **Shifts** (punches, notes, add/edit/delete), **Schedule** (mandatory shifts), **Requests** (their edit requests), and **Details** (profile, availability, break allowance).
 - **Mandatory shifts** are assigned from the Schedule tab of an employee's Manage page. An assignment that overlaps another, or falls outside the employee's weekly availability, needs an "Assign anyway" confirmation. Attendance (On time, Late, Left early, Missed) is worked out from punches using the grace minutes setting.
 - **Timesheet export** (My Portal → Export timesheet, or an employee's Manage page) covers a day, week, or month. *Save as PDF* uses the browser's print dialog; *Download image* makes a PNG with html-to-image.
-- **Themes.** Each person picks a style (Modern, Minimal, Boxworld, Terminal, or Blueprint: fonts, corners, borders, and shadows), a color theme (Standard, Ocean, Forest, Sunset, Grape, Fire, Beach, Mountain, Plum, Obsidian), light, dark, or match-my-device, and a background tinted from the theme color (None, Glow, Aurora, Dots, Grain, Waves, Starfield, Cityscape, Farm, or Cornershot; Aurora, Waves, Starfield, and Cornershot move slowly and Farm's windmill turns) in **Settings**. It's saved to their account. The login page, and anyone who hasn't picked, get the default from Admin → Settings. The palettes are in section 2 of `public/timeapp.css`; to add a color, add its light and dark blocks there and its name to `themes.js`.
-- **Settings.** Admin → Settings saves the timezone, clock format, week start, default style, color theme, light/dark mode, and background, login length, failed-login locking, grace minutes, and request options in the database. `config.js` holds the defaults.
+- **Themes.** Each person picks a style (Modern, Minimal, Boxworld, Terminal, or Blueprint: fonts, corners, borders, and shadows), a color theme (Standard, Ocean, Forest, Sunset, Grape, Fire, Beach, Mountain, Plum, Obsidian), and a background tinted from the theme color (None, Glow, Aurora, Dots, Grain, Waves, Starfield, Cityscape, Farm, or Cornershot; Aurora, Waves, Starfield, and Cornershot move slowly and Farm's windmill turns) in **Settings**, and switches light/dark with the sun/moon button in the top bar. Both are saved to their account (the button also works logged out, remembered in a cookie). The login page, and anyone who hasn't picked, get the defaults from Admin → Settings, which can also turn the button off. See the [Theme engine guide](guide/theme_engine/THEME_ENGINE.md). The palettes are in section 2 of `public/timeapp.css`; to add a color, add its light and dark blocks there and its name to `themes.js`.
+- **Settings.** Admin → Settings saves the timezone, clock format, week start, default style, color theme, light/dark mode (and whether the top-bar light/dark button shows), and background, login length, failed-login locking, grace minutes, and request options in the database. `config.js` holds the defaults.
 - **Sessions** are rows in the `sessions` table; the browser holds the id in a signed cookie. Each row records when it was last used and the address and user agent it started from. Logging out, deactivation, password resets, and an admin on Admin → Logins delete rows, which ends those sessions immediately.
 - **Failed logins** are counted on the account (`users.failed_logins`). Enough wrong passwords in a row sets `users.locked_until`, and until then every login is refused, right password or not. A successful login, a quiet stretch as long as the attempt window, or an admin clears the count. The limits are in Admin → Settings.
 - **Timestamps** are stored as ISO 8601 UTC text and shown in the configured timezone.
@@ -117,10 +119,10 @@ Database changes run automatically when the app starts, so updating is just pull
 
 # Features
 - **Clock Portal** - Clock in or out, or go on/return from your break(s).
-- **Employee Portal** - View, manage, and export your shifts. Add notes to shifts and request edits to be approved.
+- **Employee Portal** - A home summary of hours worked against hours scheduled (today, week, month, year), your shifts with notes and exports, your schedule grouped by week with requests off, and your punch edit requests (modify or cancel while pending).
 - **Profile and Settings** - From the menu under your name: view and edit your profile, set your availability, see upcoming mandatory shifts, change your password and theme, and export all your shift data as CSV.
 - **Admin Console** - View and manage employee accounts, assign people as managers or admins, modify employee shifts, and change configurable interface options.
 - **Login security** - See who's signed in and on what, end any session or log everyone out, and lock accounts automatically after repeated wrong passwords (Admin → Logins).
-- **Manager Console** - View and modify employee shifts, approve/deny shift edit requests, assign mandatory shifts, and edit allowed breaks.
+- **Manager Console** - View and modify employee shifts, approve/deny punch edit requests and requests off, assign mandatory shifts, see each day's schedule and availability for your team, and edit allowed breaks.
 - **Employee Management** - Admins and managers can view/approve/deny an employees punch edit requests, view/edit their punches/shifts, and export their shift data. Admins can also modify their profile information.
 - **Shift Export** - Employees can export a PDF or image displaying their punches and shifts for the day/week/month (selectable), admins can do the same from the employees "Manage Employee" page

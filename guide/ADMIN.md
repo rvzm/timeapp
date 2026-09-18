@@ -38,7 +38,7 @@ On a person's page in **Manage**, admins also get an **Edit account** button, an
 ---
 
 ## Accounts
-![The Accounts list](images/admin-accounts.png)
+![The Accounts list](images/admin-accounts.webp)
 
 **Admin** opens the **Accounts** tab: everyone, with their name and email, **Username**, **Role**, **Team**, **Job title**, **Employee #**, and whether the account is **Active** or **Inactive**. Once there are teams, a **Team:** row above the list filters it to **All teams**, one team, or **No team**. The buttons on each row:
 - **Edit**: opens the account.
@@ -115,7 +115,7 @@ Teams decide which employees a manager manages:
 ---
 
 ## Site Broadcast
-![A broadcast in place](images/admin-broadcast.png)
+![A broadcast in place](images/admin-broadcast.webp)
 
 Use this to tell everyone something right now — "clock out by 4, the server goes down at 5."
 
@@ -134,7 +134,7 @@ Once a broadcast is up, the button reads **Dismiss Broadcast**. Click it to take
 ---
 
 ## Logins
-![The Logins page](images/admin-logins.png)
+![The Logins page](images/admin-logins.webp)
 
 **Admin → Logins** shows who is signed in right now and which accounts are locked out.
 
@@ -162,7 +162,7 @@ Locking protects against someone guessing passwords, so it counts attempts per a
 ---
 
 ## Settings
-![Admin settings](images/admin-settings.png)
+![Admin settings](images/admin-settings.webp)
 
 **Admin → Settings** controls app-wide options. Click **Save settings**; changes apply right away, with no restart. Anything you save here replaces the defaults in `config.js`.
 
@@ -172,7 +172,12 @@ Locking protects against someone guessing passwords, so it counts attempts per a
 - **Weeks start on**: the first day of the week for **This week** / **Last week**, the weekly schedule, weekly timesheet exports, and the order of days in everyone's availability.
 
 ### Appearance and logins
-- **Default style**, **Default color theme**, **Default light or dark**, **Default background**: the look for the login page, and for everyone who hasn't picked their own in **Settings**. People who have picked keep their choice. See the [Appearance guide](APPEARANCE.md).
+- **Default style**, **Default color theme**, **Default background**: the look for the login page, and for everyone who hasn't picked their own in **Settings**. People who have picked keep their choice.
+- **Default light or dark**: **Match my device**, **Light** or **Dark**, for the login page and anyone who hasn't used the light/dark button in the top bar.
+- **Show the light/dark button in the top bar**: turn it off, and everyone gets the default light or dark (what people chose before is kept for if you turn it back on).
+- **Let people switch light/dark on the login page too**: the button also appears when logged out, and the choice is remembered in that browser.
+
+See the [Appearance guide](APPEARANCE.md), or the [Theme engine guide](theme_engine/THEME_ENGINE.md) for every option pictured.
 - **Login length (hours)**: 1–720. How long someone stays logged in before logging in again. It applies to new logins.
 - **Grace minutes**: 0–240. How much slack people get before an assigned shift counts as **Late** or **Left early**.
 

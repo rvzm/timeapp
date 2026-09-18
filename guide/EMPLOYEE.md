@@ -21,13 +21,14 @@ Managers and admins use everything here too, for their own time. Related: [Manag
 Open the TimeApp address you were given, enter your **Username** and **Password**, and click **Log in**. Your username isn't case-sensitive. You land on the **Clock** page.
 
 - **The top bar** has **Clock** and **My Portal**. Managers also see **Manage**, and admins **Admin**.
+- **The sun/moon button** next to your name switches between light and dark (if your admin has left it on). See the [Appearance guide](APPEARANCE.md#light-or-dark).
 - **Your name** in the top right opens a menu with **Profile**, **Settings** and **Log out**.
 - **All times** are shown in your workplace's timezone; the page footer says which one.
 
 ---
 
 ## Clock in, take breaks, clock out
-![The Clock page](images/clock.png)
+![The Clock page](images/clock.webp)
 
 The **Clock** page shows your status (**Clocked Out**, **Clocked In** or **On Break**), then:
 - **Last clock**: your last **Clock In** or **Clock Out** and how long ago it was. On a break, it says "On break since …" and how long the break has lasted.
@@ -55,6 +56,8 @@ Under the buttons, **Today** lists today's punches, grouped into shifts.
 ---
 
 ## Your Portal home
+![My Portal: Home](images/portal-home.webp)
+
 **My Portal** opens on **Home**, a summary of your time:
 
 - **Hours worked**: time worked **Today**, **This week**, **This month** and **Year to date**. These use the same rules as your shifts and timesheets: a shift counts on the day it starts, and a shift with a missing punch isn't counted until it's fixed (the tile says how many were left out).
@@ -64,7 +67,7 @@ Under the buttons, **Today** lists today's punches, grouped into shifts.
 ---
 
 ## See your shifts
-![My Portal: My shifts](images/portal-shifts.png)
+![My Portal: My shifts](images/portal-shifts.webp)
 
 **My Portal → My shifts** shows this week's shifts.
 - **Change the dates:** set **From** and **To** and click **Show**, or use **This week** / **Last week**.
@@ -99,13 +102,15 @@ You can't edit punches yourself, but you can ask. Every request needs a **Reason
 | Add a punch you forgot (e.g. a clock-out) | At the top of **My Portal → My shifts**, next to **Request Missing:**, click **punch**. Pick the **Punch** type and **Date & time**. |
 | Add a whole shift that never got recorded | Next to **Request Missing:**, click **shift**. Enter when you **Clocked in** and **Clocked out**. |
 
-![Requesting a change](images/request-new.png)
+![Requesting a change](images/request-new.webp)
 
 Then click **Send request** (or **Request deletion**).
 - **Approval:** if the form says "A manager will review your request before anything changes", nothing changes until a manager approves.
 - **Honor system:** if it says "Your change will apply right away and be logged", the change is made immediately.
 
 **Rules:** times can't be in the future, and a missing shift can be at most 24 hours. A change request has to actually change something, and a punch can only have one pending request at a time. A punch with a pending request shows **Change requested** or **Delete requested**.
+
+![My Portal: Requests](images/portal-requests.webp)
 
 **Track your requests** under **My Portal → Requests**, laid out the way your managers see them: **Pending** first, then **Past requests**, each grouped by the week and day of the punch they're about, with the shift that punch belongs to. Each request lists its **Punch type**, the **Original punch**, the **Requested edit**, and your **Reason**, with a status:
 - **Pending**: waiting for a manager. Click **Modify** to change the times or your reason (what kind of request it is, and which punch it's about, stay the same), or **Cancel request** to withdraw it. A modified request stays pending.
@@ -121,6 +126,8 @@ If requests are turned off, you'll see "Punch edit requests are turned off. Talk
 ---
 
 ## See your schedule
+![My Portal: Schedule, with requests off](images/portal-schedule.webp)
+
 **My Portal → Schedule** lists the shifts a manager has assigned you: **Upcoming mandatory shifts** (including one that's under way) and the **Past 30 days**. Each list is grouped by week, and each week shows its **Scheduled hours** and how many shifts it has; the list's heading gives its total. Each shift shows its times, its length, who assigned it, and any note. The current week can appear in both lists: its finished shifts under **Past 30 days** and the rest under **Upcoming**.
 
 How assigned shifts are marked:
@@ -134,7 +141,10 @@ How assigned shifts are marked:
 | **Missed** | It ended and you never clocked in during it. |
 | **On time** | You were there for it. |
 
-**Ask for a shift off.** Next to an upcoming shift, click **Request off**, say why in **Reason**, and click **Send request**. The button is replaced by where your request stands:
+**Ask for a shift off.** Next to an upcoming shift, click **Request off**, say why in **Reason**, and click **Send request**.
+
+![Requesting a shift off](images/request-off.webp)
+ The button is replaced by where your request stands:
 - **Pending**: waiting for a manager, and you're still expected until it's approved. Click **Cancel** to withdraw it (the **Request off** button comes back).
 - **Approved OFF**: you're off. The shift stays on your schedule marked **Approved OFF**, and it isn't counted in your scheduled hours (on **Home** too).
 - **Denied**: you're still expected. Your manager's note, if any, is shown next to it.
@@ -146,7 +156,7 @@ Your **Profile** also lists your upcoming assigned shifts.
 ---
 
 ## Export a timesheet
-![A weekly timesheet](images/export.png)
+![A weekly timesheet](images/export.webp)
 
 1. On **My Portal → My shifts**, click **Export timesheet**.
 2. Pick a **Period** (**Day**, **Week** or **Month**), put any date in that period in **Including**, and click **Show**.
@@ -157,7 +167,7 @@ The timesheet lists each shift's in and out times, breaks and time worked, with 
 ---
 
 ## Your profile and availability
-![Your profile](images/profile.png)
+![Your profile](images/profile.webp)
 
 Open **Profile** from the menu under your name.
 

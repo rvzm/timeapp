@@ -25,7 +25,7 @@ Your own clock, shifts, requests and profile work just like an employee's; see t
 ---
 
 ## The Manage page
-![The Manage page](images/manage-employees.png)
+![The Manage page](images/manage-employees.webp)
 
 Click **Manage** in the top bar. When edit requests are waiting, the tabs show a count, e.g. **Requests (1)**.
 
@@ -57,7 +57,7 @@ The top shows the person's username, role, job title, employee number and curren
 ---
 
 ## Fix punches
-![An employee's Shifts tab](images/manage-employee-shifts.png)
+![An employee's Shifts tab](images/manage-employee-shifts.webp)
 
 On the **Shifts** tab, pick **From** and **To** dates and click **Show**; **Today** jumps back to today. If any shift is missing a punch, a banner says so, and those shifts are highlighted. Missing punches keep a shift out of the person's totals.
 
@@ -119,7 +119,7 @@ The grace period is **Grace minutes** in **Admin → Settings**, 5 by default.
 ---
 
 ## Review edit requests
-![Pending edit requests](images/manage-requests.png)
+![Pending edit requests](images/manage-requests.webp)
 
 Employees ask for punch fixes through requests. Find them under **Manage → Requests**, which lists everyone's, or on a person's **Requests** tab.
 
@@ -163,6 +163,8 @@ Things you might see:
 - **Honor system**: requests apply immediately, and appear here as **Auto-approved**.
 
 ### Requests off
+![The Time off card](images/manage-time-off.webp)
+
 Employees can ask to be let off an assigned shift that hasn't started yet, with a reason. These appear in the **Time off** card on **Manage → Requests**, which shows the **Name**, the **Shift**, when it was **Requested**, and the **Reason**. They're counted in the **Requests** badge too. You see the ones for people whose schedule you can change (never your own), filtered by the team you picked.
 
 - **Approve OFF**: the shift stays on the schedule, marked **Approved OFF**. It no longer counts toward scheduled hours and is never marked Late or Missed.
@@ -173,6 +175,8 @@ Add a note in the box before choosing either. Under **Recently reviewed** in the
 ---
 
 ## See the week's schedule
+![Manage: Schedule](images/manage-schedule.webp)
+
 **Manage → Schedule** lists everyone you can schedule, for each day of the week, starting with the "Week of …". It follows the team you picked in **Team:**. Use **← Previous**, **This week** and **Next →** to move between weeks. Each day's heading says how many people are scheduled.
 
 - **Scheduled** people come first, in start-time order. Each of their shifts shows its time, any note, its attendance badges, and **Remove**.
