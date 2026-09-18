@@ -96,8 +96,8 @@ You can't edit punches yourself, but you can ask. Every request needs a **Reason
 |---|---|
 | Fix a punch's type or time | In **My shifts**, click **Request change** next to the punch. Pick what it **Should be** and the right **Date & time**. |
 | Remove a punch made by mistake | Click **Request delete** next to the punch. |
-| Add a punch you forgot (e.g. a clock-out) | Click **Request a missing punch** at the top of **My Portal → My shifts**. Pick the **Punch** type and **Date & time**. |
-| Add a whole shift that never got recorded | Click **Request a missing shift**. Enter when you **Clocked in** and **Clocked out**. |
+| Add a punch you forgot (e.g. a clock-out) | At the top of **My Portal → My shifts**, next to **Request Missing:**, click **punch**. Pick the **Punch** type and **Date & time**. |
+| Add a whole shift that never got recorded | Next to **Request Missing:**, click **shift**. Enter when you **Clocked in** and **Clocked out**. |
 
 ![Requesting a change](images/request-new.png)
 
@@ -121,7 +121,7 @@ If requests are turned off, you'll see "Punch edit requests are turned off. Talk
 ---
 
 ## See your schedule
-**My Portal → Schedule** lists the shifts a manager has assigned you: **Upcoming mandatory shifts** (including one that's under way) and the **Past 30 days**. Each shows who assigned it and any note.
+**My Portal → Schedule** lists the shifts a manager has assigned you: **Upcoming mandatory shifts** (including one that's under way) and the **Past 30 days**. Each list is grouped by week, and each week shows its **Scheduled hours** and how many shifts it has; the list's heading gives its total. Each shift shows its times, its length, who assigned it, and any note. The current week can appear in both lists: its finished shifts under **Past 30 days** and the rest under **Upcoming**.
 
 How assigned shifts are marked:
 
