@@ -671,6 +671,13 @@ code { font-family: var(--font-mono); font-size: 0.9em; }
 .topbar-links a[aria-current="page"] { color: var(--text); background: var(--surface-2); }
 
 .topbar-actions { display: flex; align-items: center; gap: 0.5rem; }
+/* The light/dark button: a moon while light (click for dark), a sun while dark */
+.mode-toggle { margin: 0; }
+.mode-toggle .btn { display: inline-flex; align-items: center; padding-inline: 0.5rem; }
+.mode-icon { width: 1.1rem; height: 1.1rem; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.mode-icon-moon { fill: currentColor; stroke: none; }
+[data-theme="dark"] .mode-icon-moon,
+:root:not([data-theme="dark"]) .mode-icon-sun { display: none; }
 
 /* Site Broadcast / Dismiss Broadcast, admins only (views/partials/nav.ejs) */
 .broadcast-control { margin: 0; }
@@ -1238,6 +1245,7 @@ legend { font-weight: 700; padding: 0; margin-bottom: 0.6rem; }
 
 .request-decide { display: grid; gap: 0.5rem; }
 .request-buttons { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.request-list + h3 { margin-top: calc(var(--space) * 1.5); }
 .request-edits { border-top: var(--border-width) solid var(--edge); padding-top: 0.5rem; }
 .request-edits summary { cursor: pointer; font-size: 0.9rem; font-weight: 600; }
 .request-edits > :not(summary) { margin-top: 0.5rem; }
@@ -1349,20 +1357,26 @@ h3 { font-size: 1rem; }
   margin: 0;
 }
 .stat-tile { min-width: 0; text-align: center; }
+/* Drawn by hand: browsers ignore accent-color on <progress> inconsistently */
 .stat-tile progress {
+  appearance: none;
   width: 100%;
   height: 0.5rem;
   margin-top: 0.35rem;
-  accent-color: var(--accent);
+  border: 0;
   border-radius: var(--radius-pill);
   overflow: hidden;
+  background: color-mix(in srgb, var(--text) 12%, transparent);
 }
+.stat-tile progress::-webkit-progress-bar { background: color-mix(in srgb, var(--text) 12%, transparent); }
+.stat-tile progress::-webkit-progress-value { background: var(--accent); }
+.stat-tile progress::-moz-progress-bar { background: var(--accent); }
 .week-table .is-today td {
   background: color-mix(in srgb, var(--accent) 10%, transparent);
 }
 .week-table .is-today td:first-child { box-shadow: inset 3px 0 0 var(--accent-line); }
 .week-table .badge { margin-left: 0.35rem; }
-.week-table tfoot th { text-align: left; }
+.week-table tfoot td { border-bottom: 0; }
 .week-table td:last-child,
 .week-table th:last-child { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
 
