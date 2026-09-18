@@ -75,7 +75,9 @@ export const time_config = {
 export const ui_config = {
   defaultStyle: "modern",   // [setting] Theme style (fonts, corners, borders, shadows) for anyone who hasn't picked: "modern", "minimal", "boxworld", "terminal", or "blueprint"
   defaultColor: "standard", // [setting] Color theme for anyone who hasn't picked one: "standard", "ocean", "forest", "sunset", "grape", "fire", "beach", "mountain", "plum", or "obsidian"
-  defaultTheme: "system",   // [setting] Light/dark for anyone who hasn't picked: "system" (match the device), "light", or "dark"
+  defaultTheme: "system",   // [setting] Light/dark for anyone who hasn't used the top-bar button: "system" (match the device), "light", or "dark"
+  showModeToggle: true,     // [setting] true = a light/dark button in the top bar; false = everyone gets defaultTheme
+  rememberGuestMode: true,  // [setting] true = the button works on the login page too, remembered in a browser cookie
   defaultBackground: "aurora", // [setting] Page background for anyone who hasn't picked: "none" (plain), "glow", "aurora" (moving), "dots", "grain", "waves" (moving), "starfield" (moving), "cityscape", "farm" (turning windmill), or "cornershot" (moving)
 };
 

@@ -56,28 +56,38 @@ export const THEME_STYLE_LABELS = {
   blueprint: "Blueprint",
 };
 
+// Light or dark from the top-bar button: saved on the account, or for someone logged out in
+// this cookie (when the rememberGuestMode setting allows). Only ever "light" or "dark".
+export const MODE_COOKIE = "timeapp_mode";
+export const PICKABLE_MODES = ["light", "dark"];
+
 // The theme a page should use: { style, color, mode, background }. The user's own choice where
-// they've made one (and it's still a known value), otherwise the app default. `user` may be null.
-export function themeFor(user, settings) {
+// they've made one (and it's still a known value), otherwise the app default. `user` may be null;
+// `guestMode` is the MODE_COOKIE value, used only when logged out. With the showModeToggle
+// setting off, everyone gets the default mode.
+export function themeFor(user, settings, guestMode = null) {
+  const pickedMode = !settings.showModeToggle ? null
+    : user ? user.theme_mode
+    : settings.rememberGuestMode ? guestMode
+    : null;
   return {
     style: THEME_STYLES.includes(user?.theme_style) ? user.theme_style : settings.defaultStyle,
     color: THEME_COLORS.includes(user?.theme_color) ? user.theme_color : settings.defaultColor,
-    mode: THEME_MODES.includes(user?.theme_mode) ? user.theme_mode : settings.defaultTheme,
+    mode: THEME_MODES.includes(pickedMode) ? pickedMode : settings.defaultTheme,
     background: THEME_BACKGROUNDS.includes(user?.theme_background) ? user.theme_background : settings.defaultBackground,
   };
 }
 
-// Validates the Settings → Appearance form. Returns { values: { style, color, mode, background } } or { error }.
+// Validates the Settings → Appearance form. Returns { values: { style, color, background } } or
+// { error }. Light/dark isn't on it: that's the top-bar button (POST /theme-mode).
 export function readThemeForm(body) {
   const style = String(body.style ?? "");
   const color = String(body.color ?? "");
-  const mode = String(body.mode ?? "");
   const background = String(body.background ?? "");
   if (!THEME_STYLES.includes(style)) return { error: "Pick a style." };
   if (!THEME_COLORS.includes(color)) return { error: "Pick a color theme." };
-  if (!THEME_MODES.includes(mode)) return { error: "Pick light, dark, or match my device." };
   if (!THEME_BACKGROUNDS.includes(background)) return { error: "Pick a background." };
-  return { values: { style, color, mode, background } };
+  return { values: { style, color, background } };
 }
 
 // ===================================================================

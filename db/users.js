@@ -30,6 +30,7 @@ const stmt = {
   setUserActive: db.prepare("UPDATE users SET active = ? WHERE id = ?"),
   setUserRole: db.prepare("UPDATE users SET role = ? WHERE id = ?"),
   setUserTheme: db.prepare("UPDATE users SET theme_color = ?, theme_mode = ?, theme_background = ?, theme_style = ? WHERE id = ?"),
+  setUserThemeMode: db.prepare("UPDATE users SET theme_mode = ? WHERE id = ?"),
   setBreakLimits: db.prepare("UPDATE users SET break_max_count = ?, break_max_minutes = ? WHERE id = ?"),
   // ----- Failed logins and lockouts -----
   addFailedLogin: db.prepare("UPDATE users SET failed_logins = failed_logins + 1, last_failed_at = ? WHERE id = ?"),
@@ -64,6 +65,8 @@ export const setUserRole = (id, role) => stmt.setUserRole.run(role, id);
 // A person's own theme; null = use the app default for that part.
 export const setUserTheme = (id, { color, mode, background = null, style = null }) =>
   stmt.setUserTheme.run(color, mode, background, style, id);
+// Just light or dark, from the top-bar button.
+export const setUserThemeMode = (id, mode) => stmt.setUserThemeMode.run(mode, id);
 export const setPasswordHash = (id, passwordHash) => stmt.setPasswordHash.run(passwordHash, id);
 
 // Counts one wrong password. `lockUntil` is an ISO time, or null to leave the account unlocked.

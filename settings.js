@@ -15,6 +15,8 @@ const DEFAULTS = {
   defaultStyle: ui_config.defaultStyle,
   defaultColor: ui_config.defaultColor,
   defaultTheme: ui_config.defaultTheme, // light/dark mode
+  showModeToggle: ui_config.showModeToggle ?? true, // older config.js files don't have these two
+  rememberGuestMode: ui_config.rememberGuestMode ?? true,
   defaultBackground: ui_config.defaultBackground,
   sessionHours: session_config.maxAgeHours,
   maxFailedLogins: login_config.maxFailedLogins,
@@ -74,6 +76,8 @@ export function readSettingsForm(body) {
     defaultStyle: String(body.defaultStyle ?? ""),
     defaultColor: String(body.defaultColor ?? "standard"),
     defaultTheme: String(body.defaultTheme ?? ""),
+    showModeToggle: body.showModeToggle === "on",
+    rememberGuestMode: body.rememberGuestMode === "on",
     defaultBackground: String(body.defaultBackground ?? ""),
     sessionHours: wholeNumberOrText(body.sessionHours),
     maxFailedLogins: wholeNumberOrText(body.maxFailedLogins),
